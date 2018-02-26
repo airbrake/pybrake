@@ -15,11 +15,11 @@ def get_code_hunk(filename, line):
 
   lines = dict()
   with f:
-    for i, line in enumerate(f):
-      if i < start:
+    for lineno, line in enumerate(f, 1):
+      if lineno < start:
         continue
-      if i > end:
+      if lineno > end:
         break
-      lines[i] = line.rstrip('\n')
+      lines[lineno] = line.rstrip('\n')
 
   return lines
