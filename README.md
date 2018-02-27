@@ -1,5 +1,7 @@
 # Python exception notifier for Airbrake
 
+[![Build Status](https://travis-ci.org/airbrake/pybrake.svg?branch=master)](https://travis-ci.org/airbrake/pybrake)
+
 ## Installation
 
 pybrake requires Python 3.5+.
