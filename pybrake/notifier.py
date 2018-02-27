@@ -212,19 +212,23 @@ class Notifier:
       if i <= depth:
         continue
 
-      frame = dict(
-        file=self._clean_filename(f.filename),
-        function=f.name,
-        line=f.lineno,
-      )
-
-      lines = get_code_hunk(f.filename, f.lineno)
-      if lines is not None:
-        frame['code'] = lines
-
+      frame = self._build_frame(f.filename, f.name, f.lineno)
       backtrace.append(frame)
 
     return backtrace
+
+  def _build_frame(self, filename, func, line):
+    frame = dict(
+      file=self._clean_filename(filename),
+      function=func,
+      line=line,
+    )
+
+    lines = get_code_hunk(filename, line)
+    if lines is not None:
+      frame['code'] = lines
+
+    return frame
 
   def _clean_filename(self, s):
     if '/lib/python' in s and '/site-packages/' in s:

@@ -63,3 +63,21 @@ def my_filter(notice):
 
 notifier.add_filter(my_filter)
 ```
+
+## Logging integration
+
+pybrake provide logging handler that sends your logs to Airbrake:
+
+```python
+import logging
+import pybrake
+
+
+airbrake_handler = pybrake.LoggingHandler(notifier=notifier,
+                                          level=logging.ERROR)
+
+logger = logging.getLogger('test')
+logger.addHandler(airbrake_handler)
+
+logger.error('something bad happened')
+```
