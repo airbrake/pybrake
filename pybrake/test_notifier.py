@@ -63,6 +63,8 @@ def test_build_notice_from_str():
     7: '',
     8: 'def build_notice_from_str(notifier, s):',
     9: '    return notifier.build_notice(s)',
+    10: '',
+    11: '',
   }
 
 
