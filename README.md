@@ -34,7 +34,7 @@ except Exception as err:
     notice = future.result()
 ```
 
-By default `notify` sends errors asynchronously using `ThreadPoolExecutor` and returning a `concurrent.futures.Future`, but synchronous API is also available:
+By default `notify` sends errors asynchronously using `ThreadPoolExecutor` and returns a `concurrent.futures.Future`, but synchronous API is also available:
 
 ```python
 notice = notifier.notify_sync(err)
@@ -82,4 +82,13 @@ logger = logging.getLogger('test')
 logger.addHandler(airbrake_handler)
 
 logger.error('something bad happened')
+```
+
+## Development
+
+Running tests:
+
+``` shell
+pip install -r test-requirements.txt
+pytest
 ```
