@@ -1,4 +1,5 @@
 import json
+import collections
 import collections.abc
 
 
@@ -38,7 +39,13 @@ def set_default(obj):
     return list(obj)
   if isinstance(obj, (bytes, bytearray)):
     return obj.decode('utf8', 'ignore')
-  raise TypeError(obj)
+  if isinstance(obj, collections.UserDict):
+    return obj.data
+  if isinstance(obj, collections.UserList):
+    return obj.data
+  if isinstance(obj, collections.UserString):
+    return obj.data
+  raise TypeError(type(obj))
 
 
 class Truncator:
@@ -75,6 +82,8 @@ class Truncator:
       return self.truncate_str(v)
     if isinstance(v, (bytes, bytearray)):
       return self.truncate_str(v.decode('utf8', 'ignore'))
+    if isinstance(v, collections.UserString):
+      return self.truncate_str(v.data)
 
     if isinstance(v, collections.abc.Mapping):
       return self.truncate_dict(v)

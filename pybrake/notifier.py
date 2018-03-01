@@ -4,7 +4,7 @@ import traceback as tb
 import socket
 import urllib.request, urllib.error
 import queue
-from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
 import json
 import time
 
@@ -36,6 +36,7 @@ class Notifier:
                **kwargs):
     self._filters = []
     self._rate_limit_reset = 0
+    self._max_queue_size = kwargs.get('max_queue_size', 1000)
     self._thread_pool = None
 
     self._airbrake_url = _AIRBRAKE_URL_FORMAT.format(host, project_id)
@@ -156,24 +157,26 @@ class Notifier:
     notice['error'] = _ERR_IP_RATE_LIMITED
     return notice;
 
-  def _get_thread_pool(self):
-    if self._thread_pool is None:
-      self._thread_pool = self._thread_pool_executor()
-    return self._thread_pool
-
   def notify(self, err):
     """Asynchronously notifies Airbrake about exception from separate thread.
 
     Returns concurrent.futures.Future.
     """
-    return self._get_thread_pool().submit(self.notify_sync, err)
+    notice = self.build_notice(err)
+    return self.send_notice(notice)
 
   def send_notice(self, notice):
     """Asynchronously sends notice to Airbrake from separate thread.
 
     Returns concurrent.futures.Future.
     """
-    return self._get_thread_pool().submit(self.send_notice_sync, notice)
+    pool = self._get_thread_pool()
+    if pool._work_queue.qsize() >= self._max_queue_size:
+      notice['error'] = 'queue is full'
+      f = futures.Future()
+      f.set_result(notice)
+      return f
+    return pool.submit(self.send_notice_sync, notice)
 
   def _build_errors(self, err, depth=0):
     if isinstance(err, str):
@@ -245,9 +248,7 @@ class Notifier:
     ctx = self._context.copy()
     return ctx
 
-  def _thread_pool_executor(self):
-    pool = ThreadPoolExecutor()
-    if pool._work_queue is None:
-      raise ValueError('can not patch ThreadPoolExecutor')
-    pool._work_queue = queue.Queue(maxsize=1000)
-    return pool
+  def _get_thread_pool(self):
+    if self._thread_pool is None:
+      self._thread_pool = futures.ThreadPoolExecutor()
+    return self._thread_pool

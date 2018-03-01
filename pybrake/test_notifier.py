@@ -1,5 +1,8 @@
-from pybrake import Notifier
+import queue
 
+import pytest
+
+from .notifier import Notifier
 from .test_helper import get_exception, build_notice_from_str
 
 
@@ -140,6 +143,18 @@ def test_truncation():
   notice = notifier.send_notice_sync(notice)
 
   assert len(notice['params']['param']) == 1024
+
+
+def _test_full_queue():
+  notifier = Notifier(max_queue_size=10)
+
+  for i in range(100):
+    future = notifier.notify('hello')
+
+  notifier.close()
+
+  notice = future.result()
+  assert notice['error'] == 'queue is full'
 
 
 def _test_rate_limited():
