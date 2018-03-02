@@ -2,11 +2,11 @@ from setuptools import setup
 
 
 def readme():
-  with open('README.md') as f:
+  with open('README.rst') as f:
     return f.read()
 
 setup(name='pybrake',
-      version='0.1',
+      version='0.1.1',
       description='Python exception notifier for Airbrake',
       long_description=readme(),
       classifiers=[

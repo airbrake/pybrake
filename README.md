@@ -86,9 +86,15 @@ logger.error('something bad happened')
 
 ## Development
 
-Running tests:
+Runn tests:
 
-``` shell
+```shell
 pip install -r test-requirements.txt
 pytest
+```
+
+Upload to PyPI:
+
+```shell
+python setup.py sdist upload
 ```

@@ -54,7 +54,7 @@ class LoggingHandler(logging.Handler):
 
     error = dict(
       type=record.name,
-      message=record.message,
+      message=record.msg,
       backtrace=self._build_backtrace(record),
     )
     return error
