@@ -1,5 +1,6 @@
 import logging
 
+from .notifier import Notifier
 from .code_hunks import get_code_hunk
 
 
@@ -26,8 +27,10 @@ _LOG_RECORD_ATTRS_TO_COPY = [
 
 
 class LoggingHandler(logging.Handler):
-  def __init__(self, notifier=None, level=logging.ERROR):
+  def __init__(self, notifier=None, level=logging.ERROR, **kwargs):
     logging.Handler.__init__(self, level=level)
+    if notifier is None:
+      notifier = Notifier(**kwargs)
     self._notifier = notifier
 
   def emit(self, record):
