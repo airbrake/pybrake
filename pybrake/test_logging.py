@@ -57,16 +57,16 @@ def test_logging_handler_record_exception():
   assert error['message'] == 'hello'
 
   backtrace = error['backtrace']
-  assert len(backtrace) == 37
+  assert len(backtrace) == 1
 
   frame = backtrace[0]
   assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
   assert frame['function'] == 'build_logging_record_exception'
-  assert frame['line'] == 24
+  assert frame['line'] == 21
   assert frame['code'] == {
+    19: '  logger, dh = logger_dummy_handler()',
+    20: '  try:',
+    21: "    raise ValueError('hello')",
     22: '  except Exception as err:',
     23: '    logger.exception(err)',
-    24: '    return dh.record',
-    25: '',
-    26: '',
   }

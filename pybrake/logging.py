@@ -2,6 +2,7 @@ import logging
 
 from .notifier import Notifier
 from .code_hunks import get_code_hunk
+from .utils import get_django_notifier
 
 
 def _log_record_attrs():
@@ -30,7 +31,7 @@ class LoggingHandler(logging.Handler):
   def __init__(self, notifier=None, level=logging.ERROR, **kwargs):
     logging.Handler.__init__(self, level=level)
     if notifier is None:
-      notifier = Notifier(**kwargs)
+      notifier = get_django_notifier() or Notifier(**kwargs)
     self._notifier = notifier
 
   def emit(self, record):
@@ -60,8 +61,8 @@ class LoggingHandler(logging.Handler):
     return error
 
   def _build_error_from_exc_info(self, exc_info):
-    cls, err, traceback = exc_info
-    backtrace = self._notifier._build_backtrace(traceback.tb_frame)
+    cls, err, tb = exc_info
+    backtrace = self._notifier._build_backtrace_tb(tb)
     error = dict(
       type=cls.__name__,
       message=str(err),
@@ -70,7 +71,7 @@ class LoggingHandler(logging.Handler):
     return error
 
   def _build_backtrace(self, record):
-    frame = self._notifier._build_frame(
+    frame = self._notifier._frame_with_code(
       record.pathname, record.funcName, record.lineno)
     backtrace = [frame]
     return backtrace

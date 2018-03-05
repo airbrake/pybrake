@@ -1,4 +1,5 @@
 import os
+import sys
 import platform
 import traceback as tb
 import socket
@@ -25,6 +26,9 @@ _CONTEXT = dict(
   os=platform.platform(),
   language='Python/%s' % platform.python_version(),
   hostname=socket.gethostname(),
+  versions=dict(
+    python=platform.python_version(),
+  ),
 )
 
 
@@ -68,12 +72,15 @@ class Notifier:
     notice = self.build_notice(err)
     return self.send_notice_sync(notice)
 
-  def build_notice(self, err, depth=0):
+  def build_notice(self, err):
     """Builds Airbrake notice from the exception."""
     notice = dict(
-      errors=self._build_errors(err, depth=depth),
+      errors=self._build_errors(err),
       context=self._build_context(),
-      params=dict(),
+      params=dict(
+        sys_executable=sys.executable,
+        sys_path=sys.path,
+      ),
     )
     return notice
 
@@ -178,9 +185,9 @@ class Notifier:
       return f
     return pool.submit(self.send_notice_sync, notice)
 
-  def _build_errors(self, err, depth=0):
+  def _build_errors(self, err):
     if isinstance(err, str):
-      backtrace = self._build_backtrace(None, depth=depth)
+      backtrace = self._build_backtrace_frame(sys._getframe())
       return [{
         'message': err,
         'backtrace': backtrace,
@@ -189,12 +196,11 @@ class Notifier:
     errors = []
     while err != None:
       errors.append(self._build_error(err))
-      err = err.__cause__
+      err = err.__cause__ or err.__context__
     return errors
 
   def _build_error(self, err):
-    frame = err.__traceback__.tb_frame
-    backtrace = self._build_backtrace(frame)
+    backtrace = self._build_backtrace_tb(err.__traceback__)
     error = dict(
       type=err.__class__.__name__,
       message=str(err),
@@ -202,32 +208,56 @@ class Notifier:
     )
     return error
 
-  def _build_backtrace(self, frame, depth=0):
-    stack = tb.StackSummary.extract(tb.walk_stack(frame))
-
+  def _build_backtrace_tb(self, tb):
     backtrace = []
-    i = 0
-    for f in stack:
-      if f.filename.endswith('pybrake/notifier.py'):
-        continue
-
-      i += 1
-      if i <= depth:
-        continue
-
-      frame = self._build_frame(f.filename, f.name, f.lineno)
-      backtrace.append(frame)
-
+    for frame, lineno in self._walk_tb(tb):
+      f = self._build_frame(frame, lineno)
+      if f:
+        backtrace.append(f)
     return backtrace
 
-  def _build_frame(self, filename, func, line):
+  def _walk_tb(self, tb):
+    while tb is not None:
+      yield tb.tb_frame, tb.tb_lineno
+      tb = tb.tb_next
+
+  def _build_backtrace_frame(self, f):
+    backtrace = []
+    for frame, lineno in self._walk_stack(f):
+      f = self._build_frame(frame, lineno)
+      if f:
+        backtrace.append(f)
+    return backtrace
+
+  def _walk_stack(self, f):
+    while f is not None:
+      yield f, f.f_lineno
+      f = f.f_back
+
+  def _build_frame(self, f, line):
+    if f.f_locals.get('__traceback_hide__'):
+      return None
+
+    filename = f.f_code.co_filename
+    func = f.f_code.co_name
+
+    if filename.endswith('pybrake/notifier.py'):
+      return None
+
+    loader = f.f_globals.get('__loader__')
+    module_name = f.f_globals.get('__name__')
+    return self._frame_with_code(filename, func, line,
+                                 loader=loader,
+                                 module_name=module_name)
+
+  def _frame_with_code(self, filename, func, line, loader=None, module_name=None):
     frame = dict(
       file=self._clean_filename(filename),
       function=func,
       line=line,
     )
 
-    lines = get_code_hunk(filename, line)
+    lines = get_code_hunk(filename, line, loader=loader, module_name=module_name)
     if lines is not None:
       frame['code'] = lines
 

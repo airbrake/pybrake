@@ -6,7 +6,7 @@ def readme():
     return f.read()
 
 setup(name='pybrake',
-      version='0.1.1',
+      version='0.1.2',
       description='Python exception notifier for Airbrake',
       long_description=readme(),
       classifiers=[

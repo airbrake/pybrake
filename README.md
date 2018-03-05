@@ -19,7 +19,7 @@ import pybrake
 
 
 notifier = pybrake.Notifier(project_id=123,
-                            project_key='abc',
+                            project_key='FIXME',
                             environment='production')
 ```
 
@@ -82,6 +82,48 @@ logger = logging.getLogger('test')
 logger.addHandler(airbrake_handler)
 
 logger.error('something bad happened')
+```
+
+## Django integration
+
+First you need to add pybrake config to your Django settings.py file:
+
+```python
+AIRBRAKE = dict(
+    project_id=123,
+    project_key='FIXME',
+)
+```
+
+Then you can activate Airbrake middleware:
+
+```python
+MIDDLEWARE = [
+    ...
+    'pybrake.django.AirbrakeMiddleware',
+]
+```
+
+Add configure logging handler:
+
+```python
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'airbrake': {
+            'level': 'ERROR',
+            'class': 'pybrake.LoggingHandler',
+        },
+    },
+    'loggers': {
+        'app': {
+            'handlers': ['airbrake'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
 ```
 
 ## Development

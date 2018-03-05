@@ -20,18 +20,19 @@ def test_build_notice_from_exception():
   assert error['message'] == 'hello'
 
   backtrace = error['backtrace']
-  assert len(backtrace) == 37
+  assert len(backtrace) == 1
 
   frame = backtrace[0]
   assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
   assert frame['function'] == 'get_exception'
-  assert frame['line'] == 5
+  assert frame['line'] == 3
+  print(frame['code'])
   assert frame['code'] == {
+    1: 'def get_exception():',
+    2: '  try:',
     3: "    raise ValueError('hello')",
     4: '  except Exception as err:',
     5: '    return err',
-    6: '',
-    7: ''
   }
 
   context = notice['context']

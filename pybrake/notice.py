@@ -38,14 +38,12 @@ def set_default(obj):
   if isinstance(obj, set):
     return list(obj)
   if isinstance(obj, (bytes, bytearray)):
-    return obj.decode('utf8', 'ignore')
-  if isinstance(obj, collections.UserDict):
+    return obj.decode('utf8', 'replace')
+  if isinstance(obj, (collections.UserDict,
+                      collections.UserList,
+                      collections.UserString)):
     return obj.data
-  if isinstance(obj, collections.UserList):
-    return obj.data
-  if isinstance(obj, collections.UserString):
-    return obj.data
-  raise TypeError(type(obj))
+  return str(obj)
 
 
 class Truncator:
@@ -81,7 +79,7 @@ class Truncator:
     if isinstance(v, str):
       return self.truncate_str(v)
     if isinstance(v, (bytes, bytearray)):
-      return self.truncate_str(v.decode('utf8', 'ignore'))
+      return self.truncate_str(v.decode('utf8', 'replace'))
     if isinstance(v, collections.UserString):
       return self.truncate_str(v.data)
 
