@@ -1,12 +1,15 @@
 from setuptools import setup
 
+import pybrake
+
 
 def readme():
   with open('README.rst') as f:
     return f.read()
 
+
 setup(name='pybrake',
-      version='0.1.2',
+      version=pybrake.__version__,
       description='Python exception notifier for Airbrake',
       long_description=readme(),
       classifiers=[

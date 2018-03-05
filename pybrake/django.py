@@ -10,9 +10,6 @@ from django.utils.module_loading import import_string
 from .utils import get_django_notifier
 
 
-logger = logging.getLogger('django')
-
-
 class AirbrakeMiddleware:
   def __init__(self, get_response):
     self.get_response = get_response
@@ -60,8 +57,7 @@ class AirbrakeMiddleware:
 
       notice['context']['user'] = user_info
 
-    f = self._notifier.send_notice(notice)
-    print(f.result())
+    self._notifier.send_notice(notice)
 
 
 @functools.lru_cache()

@@ -6,7 +6,7 @@ Python exception notifier for Airbrake
 Installation
 ------------
 
-pybrake requires Python 3.5+.
+pybrake requires Python 3.4+.
 
 .. code:: shell
 
@@ -23,7 +23,7 @@ Creating notifier:
 
 
     notifier = pybrake.Notifier(project_id=123,
-                                project_key='abc',
+                                project_key='FIXME',
                                 environment='production')
 
 Sending errors to Airbrake:
@@ -33,9 +33,7 @@ Sending errors to Airbrake:
     try:
         raise ValueError('hello')
     except Exception as err:
-        future = notifier.notify(err)
-        # future has type concurrent.futures.Future
-        notice = future.result()
+        notifier.notify(err)
 
 By default ``notify`` sends errors asynchronously using
 ``ThreadPoolExecutor`` and returns a ``concurrent.futures.Future``, but
@@ -90,15 +88,76 @@ pybrake provide logging handler that sends your logs to Airbrake:
 
     logger.error('something bad happened')
 
+Django integration
+------------------
+
+First you need to add pybrake config to your Django settings.py file:
+
+.. code:: python
+
+    AIRBRAKE = dict(
+        project_id=123,
+        project_key='FIXME',
+    )
+
+Then you can activate Airbrake middleware:
+
+.. code:: python
+
+    MIDDLEWARE = [
+        ...
+        'pybrake.django.AirbrakeMiddleware',
+    ]
+
+And configure logging handler:
+
+.. code:: python
+
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'airbrake': {
+                'level': 'ERROR',
+                'class': 'pybrake.LoggingHandler',
+            },
+        },
+        'loggers': {
+            'app': {
+                'handlers': ['airbrake'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+        },
+    }
+
+Disabling pybrake logs
+----------------------
+
+pybrake logger can be silenced using following code:
+
+.. code:: python
+
+    import logging
+
+
+    logging.getLogger("pybrake").setLevel(logging.CRITICAL)
+
 Development
 -----------
 
-Running tests:
+Run tests:
 
 .. code:: shell
 
     pip install -r test-requirements.txt
     pytest
+
+Upload to PyPI:
+
+.. code:: shell
+
+    python setup.py sdist upload
 
 .. |Build Status| image:: https://travis-ci.org/airbrake/pybrake.svg?branch=master
    :target: https://travis-ci.org/airbrake/pybrake

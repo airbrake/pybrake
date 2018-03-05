@@ -29,9 +29,7 @@ Sending errors to Airbrake:
 try:
     raise ValueError('hello')
 except Exception as err:
-    future = notifier.notify(err)
-    # future has type concurrent.futures.Future
-    notice = future.result()
+    notifier.notify(err)
 ```
 
 By default `notify` sends errors asynchronously using `ThreadPoolExecutor` and returns a `concurrent.futures.Future`, but synchronous API is also available:

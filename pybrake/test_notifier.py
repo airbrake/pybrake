@@ -36,11 +36,10 @@ def test_build_notice_from_exception():
   }
 
   context = notice['context']
-  assert context['notifier'] == {
-    'name': 'pybrake',
-    'url': 'https://github.com/airbrake/pybrake',
-    'version': '0.0.1',
-  }
+  assert context['notifier']['name'] == 'pybrake'
+  assert context['notifier']['url'] == 'https://github.com/airbrake/pybrake'
+  assert context['notifier']['version']
+
   for k in ['os', 'language', 'hostname']:
     assert context[k]
 

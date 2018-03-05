@@ -12,7 +12,7 @@ import logging
 
 from .notice import jsonify_notice
 from .code_hunks import get_code_hunk
-from .utils import get_logger
+from .utils import logger
 
 
 _ERR_IP_RATE_LIMITED = 'IP is rate limited'
@@ -22,7 +22,7 @@ _AIRBRAKE_URL_FORMAT = '{}/api/v3/projects/{}/notices'
 _CONTEXT = dict(
   notifier=dict(
     name='pybrake',
-    version='0.0.1',
+    version='0.2.0',
     url='https://github.com/airbrake/pybrake',
   ),
   os=platform.platform(),
@@ -32,8 +32,6 @@ _CONTEXT = dict(
     python=platform.python_version(),
   ),
 )
-
-_logger = get_logger()
 
 
 class Notifier:
@@ -117,20 +115,20 @@ class Notifier:
       resp = err
     except Exception as err:
       notice['error'] = err
-      _logger.error(notice['error'])
+      logger.error(notice['error'])
       return notice
 
     try:
       body = resp.read()
     except Exception as err:
       notice['error'] = err
-      _logger.error(notice['error'])
+      logger.error(notice['error'])
       return notice
 
     if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
       notice['error'] = 'unexpected Airbrake response status code'
       notice['error_info'] = dict(code=resp.code, body=body)
-      _logger.error(notice['error'])
+      logger.error(notice['error'])
       return notice
 
     if resp.code == 429:
@@ -140,7 +138,7 @@ class Notifier:
       data = json.loads(body.decode('utf-8'))
     except Exception as err:
       notice['error'] = err
-      _logger.error(notice['error'])
+      logger.error(notice['error'])
       return notice
 
     if 'id' in data:
@@ -149,12 +147,12 @@ class Notifier:
 
     if 'message' in data:
       notice['error'] = data['message']
-      _logger.error(notice['error'])
+      logger.error(notice['error'])
       return notice
 
     notice['error'] = 'unexpected Airbrake response'
     notice['error_info'] = dict(data=data)
-    _logger.error(notice['error'])
+    logger.error(notice['error'])
     return notice
 
   def _rate_limited(self, notice, resp):
