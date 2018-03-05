@@ -57,7 +57,7 @@ def test_build_notice_from_str():
   assert error['message'] == 'hello'
 
   backtrace = error['backtrace']
-  assert len(backtrace) == 37
+  assert len(backtrace) >= 1
 
   frame = backtrace[0]
   assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'

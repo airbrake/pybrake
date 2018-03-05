@@ -280,5 +280,6 @@ class Notifier:
 
   def _get_thread_pool(self):
     if self._thread_pool is None:
-      self._thread_pool = futures.ThreadPoolExecutor()
+      max_workers = (os.cpu_count() or 1) * 5
+      self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
     return self._thread_pool
