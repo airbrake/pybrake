@@ -4,7 +4,7 @@
 
 ## Installation
 
-pybrake requires Python 3.5+.
+pybrake requires Python 3.4+.
 
 ``` shell
 pip install -U pybrake
