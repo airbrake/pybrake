@@ -104,7 +104,7 @@ MIDDLEWARE = [
 ]
 ```
 
-Add configure logging handler:
+And configure logging handler:
 
 ```python
 LOGGING = {
@@ -126,9 +126,20 @@ LOGGING = {
 }
 ```
 
+## Disabling pybrake logs
+
+pybrake logger can be silenced using following code:
+
+``` python
+import logging
+
+
+logging.getLogger("pybrake").setLevel(logging.CRITICAL)
+```
+
 ## Development
 
-Runn tests:
+Run tests:
 
 ```shell
 pip install -r test-requirements.txt

@@ -8,9 +8,11 @@ import queue
 from concurrent import futures
 import json
 import time
+import logging
 
 from .notice import jsonify_notice
 from .code_hunks import get_code_hunk
+from .utils import get_logger
 
 
 _ERR_IP_RATE_LIMITED = 'IP is rate limited'
@@ -30,6 +32,8 @@ _CONTEXT = dict(
     python=platform.python_version(),
   ),
 )
+
+_logger = get_logger()
 
 
 class Notifier:
@@ -113,17 +117,20 @@ class Notifier:
       resp = err
     except Exception as err:
       notice['error'] = err
+      _logger.error(notice['error'])
       return notice
 
     try:
       body = resp.read()
     except Exception as err:
       notice['error'] = err
+      _logger.error(notice['error'])
       return notice
 
     if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
       notice['error'] = 'unexpected Airbrake response status code'
       notice['error_info'] = dict(code=resp.code, body=body)
+      _logger.error(notice['error'])
       return notice
 
     if resp.code == 429:
@@ -133,6 +140,7 @@ class Notifier:
       data = json.loads(body.decode('utf-8'))
     except Exception as err:
       notice['error'] = err
+      _logger.error(notice['error'])
       return notice
 
     if 'id' in data:
@@ -141,10 +149,12 @@ class Notifier:
 
     if 'message' in data:
       notice['error'] = data['message']
+      _logger.error(notice['error'])
       return notice
 
-    notice['error'] = 'unexpected Airbrake data'
+    notice['error'] = 'unexpected Airbrake response'
     notice['error_info'] = dict(data=data)
+    _logger.error(notice['error'])
     return notice
 
   def _rate_limited(self, notice, resp):
@@ -155,7 +165,7 @@ class Notifier:
 
     try:
       delay = int(v)
-    except Exception as err:
+    except ValueError as err:
       notice['error'] = err
       return notice
 
