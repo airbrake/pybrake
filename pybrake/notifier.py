@@ -13,6 +13,7 @@ import logging
 from .notice import jsonify_notice
 from .code_hunks import get_code_hunk
 from .utils import logger
+from .version import __version__
 
 
 _ERR_IP_RATE_LIMITED = 'IP is rate limited'
@@ -22,7 +23,7 @@ _AIRBRAKE_URL_FORMAT = '{}/api/v3/projects/{}/notices'
 _CONTEXT = dict(
   notifier=dict(
     name='pybrake',
-    version='0.2.0',
+    version=__version__,
     url='https://github.com/airbrake/pybrake',
   ),
   os=platform.platform(),
