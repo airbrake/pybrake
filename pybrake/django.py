@@ -30,15 +30,15 @@ class AirbrakeMiddleware:
     ctx['versions'] = versions
 
     req_filter = get_exception_reporter_filter(request)
-    notice['params'].update(dict(
-      request_scheme=request.scheme,
-      request_method=request.method,
-      request_GET=request.GET,
-      request_POST=req_filter.get_post_parameters(request),
-      request_META=dict(request.META),
-      request_FILES=request.FILES,
-      request_COOKIES=request.COOKIES,
-    ))
+    notice['params']['request'] = dict(
+      scheme=request.scheme,
+      method=request.method,
+      GET=request.GET,
+      POST=req_filter.get_post_parameters(request),
+      META=dict(request.META),
+      FILES=request.FILES,
+      COOKIES=request.COOKIES,
+    )
 
     if request.user.is_authenticated:
       user = request.user
