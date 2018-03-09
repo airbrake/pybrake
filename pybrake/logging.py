@@ -1,8 +1,7 @@
 import logging
 
 from .notifier import Notifier
-from .code_hunks import get_code_hunk
-from .utils import get_django_notifier
+from .global_notifier import get_global_notifier
 
 
 def _log_record_attrs():
@@ -31,14 +30,14 @@ class LoggingHandler(logging.Handler):
   def __init__(self, notifier=None, level=logging.ERROR, **kwargs):
     logging.Handler.__init__(self, level=level)
     if notifier is None:
-      notifier = get_django_notifier() or Notifier(**kwargs)
+      notifier = get_global_notifier() or Notifier(**kwargs)
     self._notifier = notifier
 
   def emit(self, record):
     try:
       notice = self.build_notice(record)
       self._notifier.send_notice(notice)
-    except Exception:
+    except Exception: # pylint: disable=broad-except
       self.handleError(record)
 
   def build_notice(self, record):

@@ -1,5 +1,3 @@
-import logging
-
 from .notifier import Notifier
 from .logging import LoggingHandler, _LOG_RECORD_ATTRS_TO_COPY
 from .test_helper import build_logging_record_error, build_logging_record_exception
@@ -67,6 +65,6 @@ def test_logging_handler_record_exception():
     19: '  logger, dh = logger_dummy_handler()',
     20: '  try:',
     21: "    raise ValueError('hello')",
-    22: '  except Exception as err:',
+    22: '  except ValueError as err:',
     23: '    logger.exception(err)',
   }

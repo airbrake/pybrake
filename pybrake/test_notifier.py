@@ -1,7 +1,3 @@
-import queue
-
-import pytest
-
 from .notifier import Notifier
 from .test_helper import get_exception, build_notice_from_str
 
@@ -31,7 +27,7 @@ def test_build_notice_from_exception():
     1: 'def get_exception():',
     2: '  try:',
     3: "    raise ValueError('hello')",
-    4: '  except Exception as err:',
+    4: '  except ValueError as err:',
     5: '    return err',
   }
 
@@ -65,7 +61,7 @@ def test_build_notice_from_str():
   assert frame['code'] == {
     7: '',
     8: 'def build_notice_from_str(notifier, s):',
-    9: '    return notifier.build_notice(s)',
+    9: '  return notifier.build_notice(s)',
     10: '',
     11: '',
   }
@@ -88,12 +84,12 @@ def test_root_directory():
 
 
 def test_filter_data():
-  def filter(notice):
+  def notifier_filter(notice):
     notice['params']['param'] = 'value'
     return notice
 
   notifier = Notifier()
-  notifier.add_filter(filter)
+  notifier.add_filter(notifier_filter)
 
   notice = notifier.notify_sync('hello')
 
@@ -148,7 +144,7 @@ def test_truncation():
 def _test_full_queue():
   notifier = Notifier(max_queue_size=10)
 
-  for i in range(100):
+  for _ in range(100):
     future = notifier.notify('hello')
 
   notifier.close()
@@ -160,7 +156,7 @@ def _test_full_queue():
 def _test_rate_limited():
   notifier = Notifier()
 
-  for i in range(101):
+  for _ in range(101):
     future = notifier.notify('hello')
 
   notice = future.result()

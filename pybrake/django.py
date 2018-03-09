@@ -1,19 +1,16 @@
-import sys
-import logging
 import functools
 
 import django
 from django.conf import settings
-from django.views.debug import SafeExceptionReporterFilter
 from django.utils.module_loading import import_string
 
-from .utils import get_django_notifier
+from .global_notifier import get_global_notifier
 
 
 class AirbrakeMiddleware:
   def __init__(self, get_response):
     self.get_response = get_response
-    self._notifier = get_django_notifier()
+    self._notifier = get_global_notifier()
 
   def __call__(self, request):
     response = self.get_response(request)
@@ -52,7 +49,7 @@ class AirbrakeMiddleware:
 
       names = [user.first_name, user.last_name]
       names = [x for x in names if x]
-      if len(names) > 0:
+      if names:
         user_info['name'] = ' '.join(names)
 
       notice['context']['user'] = user_info
@@ -62,10 +59,10 @@ class AirbrakeMiddleware:
 
 @functools.lru_cache()
 def get_default_exception_reporter_filter():
-    # Instantiate the default filter for the first time and cache it.
-    return import_string(settings.DEFAULT_EXCEPTION_REPORTER_FILTER)()
+  # Instantiate the default filter for the first time and cache it.
+  return import_string(settings.DEFAULT_EXCEPTION_REPORTER_FILTER)()
 
 
 def get_exception_reporter_filter(request):
-    default_filter = get_default_exception_reporter_filter()
-    return getattr(request, 'exception_reporter_filter', default_filter)
+  default_filter = get_default_exception_reporter_filter()
+  return getattr(request, 'exception_reporter_filter', default_filter)

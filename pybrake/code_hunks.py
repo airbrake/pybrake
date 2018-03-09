@@ -2,18 +2,18 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=1000)
-def get_code_hunk(filename, line, nlines=2, loader=None, module_name=None):
+def get_code_hunk(filename, lineno, nlines=2, loader=None, module_name=None):
   lines = _get_lines_from_file(filename, loader=loader, module_name=module_name)
   if lines is None:
     return None
 
-  start = max(0, line - 1 - nlines)
-  end = min(line + nlines, len(lines))
+  start = max(0, lineno - 1 - nlines)
+  end = min(lineno + nlines, len(lines))
   hunk = dict()
-  for lineno, line in enumerate(lines[start:end], start + 1):
+  for i, line in enumerate(lines[start:end], start + 1):
     if isinstance(line, bytes):
       line = line.decode('utf8', 'replace')
-    hunk[lineno] = line.rstrip('\n')
+    hunk[i] = line.rstrip('\n')
 
   return hunk
 

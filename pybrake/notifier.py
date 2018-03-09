@@ -1,14 +1,12 @@
 import os
 import sys
 import platform
-import traceback as tb
 import socket
-import urllib.request, urllib.error
-import queue
+import urllib.request
+import urllib.error
 from concurrent import futures
 import json
 import time
-import logging
 
 from .notice import jsonify_notice
 from .code_hunks import get_code_hunk
@@ -114,14 +112,14 @@ class Notifier:
       resp = urllib.request.urlopen(req, timeout=5)
     except urllib.error.HTTPError as err:
       resp = err
-    except Exception as err:
+    except Exception as err: # pylint: disable=broad-except
       notice['error'] = err
       logger.error(notice['error'])
       return notice
 
     try:
       body = resp.read()
-    except Exception as err:
+    except IOError as err:
       notice['error'] = err
       logger.error(notice['error'])
       return notice
@@ -136,8 +134,15 @@ class Notifier:
       return self._rate_limited(notice, resp)
 
     try:
-      data = json.loads(body.decode('utf-8'))
-    except Exception as err:
+      body = body.decode('utf-8')
+    except UnicodeDecodeError as err:
+      notice['error'] = err
+      logger.error(notice['error'])
+      return notice
+
+    try:
+      data = json.loads(body)
+    except ValueError as err: # json.JSONDecodeError requires Python 3.5+
       notice['error'] = err
       logger.error(notice['error'])
       return notice
@@ -171,7 +176,7 @@ class Notifier:
     self._rate_limit_reset = time.time() + delay
 
     notice['error'] = _ERR_IP_RATE_LIMITED
-    return notice;
+    return notice
 
   def notify(self, err):
     """Asynchronously notifies Airbrake about exception from separate thread.
@@ -259,6 +264,7 @@ class Notifier:
                                  loader=loader,
                                  module_name=module_name)
 
+  # pylint: disable=too-many-arguments
   def _frame_with_code(self, filename, func, line, loader=None, module_name=None):
     frame = dict(
       file=self._clean_filename(filename),
