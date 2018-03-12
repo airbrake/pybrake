@@ -1,6 +1,5 @@
 import functools
 
-import django
 from django.conf import settings
 from django.utils.module_loading import import_string
 
@@ -28,10 +27,6 @@ class AirbrakeMiddleware:
     user_addr = get_remote_addr(request)
     if user_addr:
       ctx['userAddr'] = user_addr
-
-    versions = notice['context'].get('versions', {})
-    versions['django'] = django.get_version()
-    ctx['versions'] = versions
 
     req_filter = get_exception_reporter_filter(request)
     notice['params']['request'] = dict(
