@@ -131,6 +131,27 @@ And configure logging handler:
         },
     }
 
+Flask integration
+-----------------
+
+Flask integration uses Flask signals and therefore requires blinker
+library.
+
+.. code:: python
+
+    from flask import Flask
+    import pybrake.flask
+
+
+
+    app = Flask(__name__)
+
+    app.config['PYBRAKE'] = dict(
+        project_id=123,
+        project_key='FIXME',
+    )
+    app = pybrake.flask.init_app(app)
+
 Disabling pybrake logs
 ----------------------
 
