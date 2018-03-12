@@ -227,7 +227,7 @@ class Notifier:
     for frame, lineno in self._walk_tb(tb):
       f = self._build_frame(frame, lineno)
       if f:
-        backtrace.append(f)
+        backtrace.insert(0, f)
     return backtrace
 
   def _walk_tb(self, tb):
