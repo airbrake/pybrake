@@ -25,6 +25,10 @@ class AirbrakeMiddleware:
     ctx = notice['context']
     ctx['url'] = request.build_absolute_uri()
 
+    user_addr = get_remote_addr(request)
+    if user_addr:
+      ctx['userAddr'] = user_addr
+
     versions = notice['context'].get('versions', {})
     versions['django'] = django.get_version()
     ctx['versions'] = versions
@@ -38,6 +42,7 @@ class AirbrakeMiddleware:
       META=dict(request.META),
       FILES=request.FILES,
       COOKIES=request.COOKIES,
+      session=dict(request.session),
     )
 
     if request.user.is_authenticated:
@@ -52,9 +57,16 @@ class AirbrakeMiddleware:
       if names:
         user_info['name'] = ' '.join(names)
 
-      notice['context']['user'] = user_info
+      ctx['user'] = user_info
 
     self._notifier.send_notice(notice)
+
+
+def get_remote_addr(request):
+  x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+  if x_forwarded_for:
+    return x_forwarded_for.split(',')[0]
+  return request.META.get('REMOTE_ADDR')
 
 
 @functools.lru_cache()
