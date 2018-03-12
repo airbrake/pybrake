@@ -11,7 +11,7 @@ import time
 from .notice import jsonify_notice
 from .code_hunks import get_code_hunk
 from .utils import logger
-from .version import __version__
+from .version import version
 
 
 _ERR_IP_RATE_LIMITED = 'IP is rate limited'
@@ -21,7 +21,7 @@ _AIRBRAKE_URL_FORMAT = '{}/api/v3/projects/{}/notices'
 _CONTEXT = dict(
   notifier=dict(
     name='pybrake',
-    version=__version__,
+    version=version,
     url='https://github.com/airbrake/pybrake',
   ),
   os=platform.platform(),
@@ -291,6 +291,14 @@ class Notifier:
 
   def _build_context(self):
     ctx = self._context.copy()
+
+    versions = ctx['versions']
+    for name, mod in sys.modules.items():
+      if name.startswith('_'):
+        continue
+      if hasattr(mod, '__version__'):
+        versions[name] = mod.__version__
+
     return ctx
 
   def _get_thread_pool(self):

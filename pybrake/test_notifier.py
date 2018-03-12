@@ -22,7 +22,6 @@ def test_build_notice_from_exception():
   assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
   assert frame['function'] == 'get_exception'
   assert frame['line'] == 3
-  print(frame['code'])
   assert frame['code'] == {
     1: 'def get_exception():',
     2: '  try:',
@@ -36,7 +35,7 @@ def test_build_notice_from_exception():
   assert context['notifier']['url'] == 'https://github.com/airbrake/pybrake'
   assert context['notifier']['version']
 
-  for k in ['os', 'language', 'hostname']:
+  for k in ['os', 'language', 'hostname', 'versions']:
     assert context[k]
 
 
