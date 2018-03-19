@@ -286,7 +286,7 @@ class Notifier:
         s = '[SITE_PACKAGES]/' + s[ind+len(needed):]
         return s
 
-    s = s.replace(self._context['rootDirectory'], '[PROJECT_ROOT]')
+    s = s.replace(self._context['rootDirectory'], '/PROJECT_ROOT')
     return s
 
   def _build_context(self):
