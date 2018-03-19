@@ -19,7 +19,7 @@ def test_build_notice_from_exception():
   assert len(backtrace) == 1
 
   frame = backtrace[0]
-  assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
+  assert frame['file'] == '/PROJECT_ROOT/pybrake/test_helper.py'
   assert frame['function'] == 'get_exception'
   assert frame['line'] == 3
   assert frame['code'] == {
@@ -54,7 +54,7 @@ def test_build_notice_from_str():
   assert len(backtrace) >= 1
 
   frame = backtrace[0]
-  assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
+  assert frame['file'] == '/PROJECT_ROOT/pybrake/test_helper.py'
   assert frame['function'] == 'build_notice_from_str'
   assert frame['line'] == 9
   assert frame['code'] == {

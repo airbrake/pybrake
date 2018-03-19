@@ -20,7 +20,7 @@ def test_logging_handler_record_error():
   assert len(backtrace) == 1
 
   frame = backtrace[0]
-  assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
+  assert frame['file'] == '/PROJECT_ROOT/pybrake/test_helper.py'
   assert frame['function'] == 'build_logging_record_error'
   assert frame['line'] == 14
   assert frame['code'] == {
@@ -58,7 +58,7 @@ def test_logging_handler_record_exception():
   assert len(backtrace) == 1
 
   frame = backtrace[0]
-  assert frame['file'] == '[PROJECT_ROOT]/pybrake/test_helper.py'
+  assert frame['file'] == '/PROJECT_ROOT/pybrake/test_helper.py'
   assert frame['function'] == 'build_logging_record_exception'
   assert frame['line'] == 21
   assert frame['code'] == {
