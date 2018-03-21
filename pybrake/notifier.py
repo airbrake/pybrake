@@ -10,6 +10,7 @@ import time
 
 from .notice import jsonify_notice
 from .code_hunks import get_code_hunk
+from .git import get_git_revision
 from .utils import logger
 from .version import version
 
@@ -50,6 +51,11 @@ class Notifier:
 
     self._context = _CONTEXT.copy()
     self._context['rootDirectory'] = kwargs.get('root_directory', os.getcwd())
+
+    rev = get_git_revision(self._context['rootDirectory'])
+    if rev is not None:
+      self._context['revision'] = rev
+
     if 'environment' in kwargs:
       self._context['environment'] = kwargs['environment']
 
