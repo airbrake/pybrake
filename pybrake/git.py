@@ -31,10 +31,13 @@ def _get_git_revision(dirpath):
   refs_file = os.path.join(dirpath, '.git', 'packed-refs')
   with open(refs_file) as f:
     for line in f:
-      if not line or line[0] == '#' or line[0] == '^':
+      if not line or line[0] in ('#', '^'):
         continue
 
       parts = line.rstrip().split(' ')
+      if len(parts) != 2:
+        continue
+
       if parts[1] == head:
         return parts[0]
 
