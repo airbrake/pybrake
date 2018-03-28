@@ -10,9 +10,10 @@ pybrake requires Python 3.4+.
 pip install -U pybrake
 ```
 
-## Usage
+## Configuration
 
-Creating notifier:
+To configure the pybrake notifier you will need your Airbrake project's `id` and
+`api_key`, these are available from your project's settings page.
 
 ```python
 import pybrake
@@ -23,7 +24,7 @@ notifier = pybrake.Notifier(project_id=123,
                             environment='production')
 ```
 
-Sending errors to Airbrake:
+## Sending errors to Airbrake
 
 ```python
 try:
@@ -32,7 +33,11 @@ except Exception as err:
     notifier.notify(err)
 ```
 
-By default `notify` sends errors asynchronously using `ThreadPoolExecutor` and returns a `concurrent.futures.Future`, but synchronous API is also available:
+### Sending errors synchronously
+
+By default, the `notify` function sends errors asynchronously using
+`ThreadPoolExecutor` and returns a `concurrent.futures.Future`, a synchronous
+API is also made available with the `notify_sync` function:
 
 ```python
 notice = notifier.notify_sync(err)
@@ -42,7 +47,10 @@ else:
     print(notice['error'])
 ```
 
-You can also set custom params on all reported notices:
+## Adding custom params
+
+You can add custom params to every error notice before it's sent to Airbrake
+with the `add_filter` function.
 
 ```python
 def my_filter(notice):
@@ -52,7 +60,11 @@ def my_filter(notice):
 notifier.add_filter(my_filter)
 ```
 
-Or ignore notices:
+## Ignoring notices
+
+There may be some notices/errors thrown in your application that you're not
+interested in sending to Airbrake, you can ignore these using the `add_filter`
+function.
 
 ```python
 def my_filter(notice):
@@ -66,7 +78,7 @@ notifier.add_filter(my_filter)
 
 ## Logging integration
 
-pybrake provide logging handler that sends your logs to Airbrake:
+pybrake provides a logging handler that sends your logs to Airbrake.
 
 ```python
 import logging
@@ -84,7 +96,8 @@ logger.error('something bad happened')
 
 ## Django integration
 
-First you need to add pybrake config to your Django settings.py file:
+First you need to add your pybrake config to your Django `settings.py` file
+using your project's `id` and `api_key`.
 
 ```python
 AIRBRAKE = dict(
@@ -93,7 +106,7 @@ AIRBRAKE = dict(
 )
 ```
 
-Then you can activate Airbrake middleware:
+The next step is activating the Airbrake middleware.
 
 ```python
 MIDDLEWARE = [
@@ -102,7 +115,8 @@ MIDDLEWARE = [
 ]
 ```
 
-And configure logging handler:
+The last step is configuring the airbrake logging handler. After that you are
+ready to start reporting errors to Airbrake from your Django app.
 
 ```python
 LOGGING = {
@@ -126,7 +140,8 @@ LOGGING = {
 
 ## Flask integration
 
-Flask integration uses Flask signals and therefore requires blinker library.
+The Flask integration leverages Flask signals and therefore requires the blinker
+library.
 
 ```python
 from flask import Flask
@@ -145,7 +160,8 @@ app = pybrake.flask.init_app(app)
 
 ## Disabling pybrake logs
 
-pybrake logger can be silenced using following code:
+The pybrake logger can be silenced by setting the logging level to
+`logging.CRITICAL`.
 
 ``` python
 import logging
@@ -156,14 +172,14 @@ logging.getLogger("pybrake").setLevel(logging.CRITICAL)
 
 ## Development
 
-Run tests:
+### Running the tests
 
 ```shell
 pip install -r test-requirements.txt
 pytest
 ```
 
-Upload to PyPI:
+### Uploading to PyPI
 
 ```shell
 python setup.py sdist upload
