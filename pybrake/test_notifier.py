@@ -82,6 +82,16 @@ def test_root_directory():
   assert notice['context']['rootDirectory'] == '/root/dir'
 
 
+def test_notice_extra_params():
+
+  notifier = Notifier()
+
+  notice = notifier.notify_sync('hello', extra=dict(x=10, y=0))
+
+  assert notice['params']['x'] == 10
+  assert notice['params']['y'] == 0
+
+
 def test_filter_data():
   def notifier_filter(notice):
     notice['params']['param'] = 'value'

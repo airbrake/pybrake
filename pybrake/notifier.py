@@ -71,15 +71,15 @@ class Notifier:
     """
     self._filters.append(filter_fn)
 
-  def notify_sync(self, err):
+  def notify_sync(self, err, *, extra=None):
     """Notifies Airbrake about exception.
 
     Under the hood notify is a shortcut for build_notice and send_notice.
     """
-    notice = self.build_notice(err)
+    notice = self.build_notice(err, extra=extra)
     return self.send_notice_sync(notice)
 
-  def build_notice(self, err):
+  def build_notice(self, err, *, extra=None):
     """Builds Airbrake notice from the exception."""
     notice = dict(
       errors=self._build_errors(err),
@@ -87,6 +87,7 @@ class Notifier:
       params=dict(
         sys_executable=sys.executable,
         sys_path=sys.path,
+        **{} if extra is None else extra
       ),
     )
     return notice
@@ -184,12 +185,12 @@ class Notifier:
     notice['error'] = _ERR_IP_RATE_LIMITED
     return notice
 
-  def notify(self, err):
+  def notify(self, err, *, extra=None):
     """Asynchronously notifies Airbrake about exception from separate thread.
 
     Returns concurrent.futures.Future.
     """
-    notice = self.build_notice(err)
+    notice = self.build_notice(err, extra=extra)
     return self.send_notice(notice)
 
   def send_notice(self, notice):
