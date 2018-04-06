@@ -49,7 +49,15 @@ else:
 
 ## Adding custom params
 
-You can add custom params to every error notice before it's sent to Airbrake
+To set custom params you can build and send notice in separate steps:
+
+```python
+notice = notifier.build_notice(err)
+notice['params']['myparam'] = 'myvalue'
+notifier.send_notice(notice)
+```
+
+You can also add custom params to every error notice before it's sent to Airbrake
 with the `add_filter` function.
 
 ```python
