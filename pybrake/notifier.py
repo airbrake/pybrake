@@ -206,6 +206,9 @@ class Notifier:
     return pool.submit(self.send_notice_sync, notice)
 
   def _build_errors(self, err):
+    if err is None:
+      return []
+
     if isinstance(err, str):
       backtrace = self._build_backtrace_frame(sys._getframe())
       return [{

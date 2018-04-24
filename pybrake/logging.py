@@ -41,11 +41,10 @@ class LoggingHandler(logging.Handler):
       self.handleError(record)
 
   def build_notice(self, record):
-    notice = dict(
-      errors=[self._build_error(record)],
-      context=self._build_context(record),
-      params=self._build_params(record),
-    )
+    notice = self._notifier.build_notice(None)
+    notice['errors'].append(self._build_error(record))
+    self._update_context(notice['context'], record)
+    self._update_params(notice['params'], record)
     return notice
 
   def _build_error(self, record):
@@ -75,16 +74,11 @@ class LoggingHandler(logging.Handler):
     backtrace = [frame]
     return backtrace
 
-  def _build_context(self, record):
-    ctx = dict(
-      severity=record.levelname,
-      component=record.module,
-    )
-    return ctx
+  def _update_context(self, context, record):
+    context['severity'] = record.levelname
+    context['component'] = record.module
 
-  def _build_params(self, record):
-    params = dict()
-
+  def _update_params(self, params, record):
     extra = self._build_extra(record)
     if extra is not None:
       params['extra'] = extra
@@ -93,7 +87,6 @@ class LoggingHandler(logging.Handler):
       v = getattr(record, attr)
       if v is not None:
         params[attr] = v
-    return params
 
   def _build_extra(self, record):
     extra = None
