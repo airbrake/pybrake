@@ -66,6 +66,14 @@ def test_build_notice_from_str():
   }
 
 
+def test_build_notice_from_none():
+  notifier = Notifier()
+  notice = notifier.build_notice(None)
+
+  errors = notice['errors']
+  assert not errors
+
+
 def test_environment():
   notifier = Notifier(environment='production')
 
