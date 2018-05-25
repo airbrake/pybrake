@@ -25,7 +25,7 @@ def _get_lines_from_file(filename, loader=None, module_name=None):
       source = loader.get_source(module_name)
     except ImportError:
       pass
-    if source is not None:
+    else:
       return source.splitlines()
 
   try:
