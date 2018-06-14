@@ -1,5 +1,8 @@
+from urllib.error import URLError
+
 from .notifier import Notifier
 from .test_helper import get_exception, build_notice_from_str
+
 
 
 def test_build_notice_from_exception():
@@ -135,7 +138,8 @@ def test_unknown_host():
 
   notice = notifier.notify_sync('hello')
 
-  assert str(notice['error']) == '<urlopen error [Errno -2] Name or service not known>'
+  assert isinstance(notice['error'], URLError)
+  assert 'not known>' in str(notice['error'])
 
 
 def test_truncation():
@@ -146,6 +150,17 @@ def test_truncation():
   notice = notifier.send_notice_sync(notice)
 
   assert len(notice['params']['param']) == 1024
+
+
+def test_revision_override():
+  notifier = Notifier(revision='1234')
+  assert notifier._context['revision'] == '1234'
+
+
+def test_revision_from_git(monkeypatch):
+  monkeypatch.setattr('pybrake.notifier.get_git_revision', lambda x: '4321')
+  notifier = Notifier()
+  assert notifier._context['revision'] == '4321'
 
 
 def _test_full_queue():
