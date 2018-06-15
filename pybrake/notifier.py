@@ -52,7 +52,9 @@ class Notifier:
     self._context = _CONTEXT.copy()
     self._context['rootDirectory'] = kwargs.get('root_directory', os.getcwd())
 
-    rev = get_git_revision(self._context['rootDirectory'])
+    rev = kwargs.get('revision')
+    if rev is None:
+      rev = get_git_revision(self._context['rootDirectory'])
     if rev is not None:
       self._context['revision'] = rev
 
