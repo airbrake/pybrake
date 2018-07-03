@@ -54,6 +54,7 @@ class Notifier:
 
     rev = kwargs.get('revision')
     if rev is None:
+      # https://devcenter.heroku.com/changelog-items/630
       rev = os.environ.get('SOURCE_VERSION')
     if rev is None:
       rev = get_git_revision(self._context['rootDirectory'])
