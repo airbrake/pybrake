@@ -54,6 +54,8 @@ class Notifier:
 
     rev = kwargs.get('revision')
     if rev is None:
+      rev = os.environ.get('SOURCE_VERSION')
+    if rev is None:
       rev = get_git_revision(self._context['rootDirectory'])
     if rev is not None:
       self._context['revision'] = rev
