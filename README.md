@@ -84,6 +84,20 @@ def my_filter(notice):
 notifier.add_filter(my_filter)
 ```
 
+## Filtering keys
+
+With `keys_blacklist` option you can specify list of keys containing sensitive information that must be filtered out, e.g.:
+
+```python
+notifier = pybrake.Notifier(
+    ...
+    keys_blacklist=[
+        'password',           # exact match
+        re.compile('secret'), # regexp match
+    ],
+)
+```
+
 ## Logging integration
 
 pybrake provides a logging handler that sends your logs to Airbrake.

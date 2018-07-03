@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import platform
 import socket
@@ -9,6 +10,7 @@ import json
 import time
 
 from .notice import jsonify_notice
+from .blacklist_filter import make_blacklist_filter
 from .code_hunks import get_code_hunk
 from .git import get_git_revision
 from .utils import logger
@@ -63,6 +65,12 @@ class Notifier:
 
     if 'environment' in kwargs:
       self._context['environment'] = kwargs['environment']
+
+    keys_blacklist = kwargs.get('keys_blacklist', [
+      re.compile('password'),
+      re.compile('secret'),
+    ])
+    self.add_filter(make_blacklist_filter(keys_blacklist))
 
   def close(self):
     if self._thread_pool is not None:

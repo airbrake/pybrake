@@ -31,10 +31,10 @@ def jsonify_notice(notice):
 
 
 def _jsonify(obj):
-  return json.dumps(obj, default=set_default)
+  return json.dumps(obj, default=_set_default)
 
 
-def set_default(obj):
+def _set_default(obj):
   if isinstance(obj, set):
     return list(obj)
   if isinstance(obj, (bytes, bytearray)):
