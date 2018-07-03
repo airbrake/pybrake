@@ -1,3 +1,4 @@
+import re
 from urllib.error import URLError
 
 from .notifier import Notifier
@@ -161,6 +162,32 @@ def test_revision_from_git(monkeypatch):
   monkeypatch.setattr('pybrake.notifier.get_git_revision', lambda x: '4321')
   notifier = Notifier()
   assert notifier._context['revision'] == '4321'
+
+
+def _test_keys_blacklist(keys_blacklist):
+  notifier = Notifier(keys_blacklist=keys_blacklist)
+
+  notice = notifier.build_notice('hello')
+  notice['params'] = dict(
+    key1='value1',
+    key2='value2',
+    key3=dict(key1='value1'),
+  )
+  notice = notifier.send_notice_sync(notice)
+
+  assert notice['params'] == {
+    'key1': '[Filtered]',
+    'key2': 'value2',
+    'key3': {'key1': '[Filtered]'},
+  }
+
+
+def test_keys_blacklist_exact():
+  _test_keys_blacklist(['key1'])
+
+
+def test_keys_blacklist_regexp():
+  _test_keys_blacklist([re.compile('key1')])
 
 
 def _test_full_queue():
