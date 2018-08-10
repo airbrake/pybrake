@@ -230,7 +230,7 @@ class Notifier:
       }]
 
     errors = []
-    while err != None:
+    while err is not None:
       errors.append(self._build_error(err))
       err = err.__cause__ or err.__context__
     return errors
