@@ -131,7 +131,7 @@ def test_unauthorized():
 
   notice = notifier.notify_sync('hello')
 
-  assert notice['error'] == 'API key is required'
+  assert notice['error'] == 'Project API key is required'
 
 
 def test_unknown_host():
