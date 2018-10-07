@@ -9,7 +9,6 @@ def get_git_revision(dirpath):
   try:
     return _get_git_revision(dirpath)
   except (OSError, IOError) as err:
-    logger.error('get_git_revision failed: %s', err)
     return None
 
 
