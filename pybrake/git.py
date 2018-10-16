@@ -1,14 +1,11 @@
 import os
 from functools import lru_cache
 
-from .utils import logger
-
-
 @lru_cache(maxsize=1000)
 def get_git_revision(dirpath):
   try:
     return _get_git_revision(dirpath)
-  except (OSError, IOError) as err:
+  except (OSError, IOError):
     return None
 
 
