@@ -1,4 +1,6 @@
 pytest
+pytest-benchmark
 pylint
 django
 flask
+tdigest
