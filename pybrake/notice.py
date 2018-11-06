@@ -1,6 +1,5 @@
 import json
 import collections
-import collections.abc
 
 
 _MAX_JSON_SIZE = 64000 # 64kb
