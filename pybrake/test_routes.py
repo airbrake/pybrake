@@ -30,22 +30,21 @@ def test_route_stat():
     assert headers['Authorization'] == 'Bearer token1'
 
     route_stats = json.loads(hist.text)
-    assert route_stats == {
-      'routes' : [{
-        'method': 'GET',
-        'route': 'ping',
-        'statusCode': 200,
-        'count': 1,
-        'sum': 123,
-        'sumsq': 15129,
-        'time': "2000-01-01T00:00:00Z",
-      }, {
-        'method': 'GET',
-        'route': 'pong',
-        'statusCode': 200,
-        'count': 2,
-        'sum': 246,
-        'sumsq': 30258,
-        'time': "2000-01-01T00:00:00Z",
-      }]
-    }
+    route_stats = sorted(route_stats["routes"], key=lambda k: k['route'])
+    assert route_stats == [{
+      'method': 'GET',
+      'route': 'ping',
+      'statusCode': 200,
+      'count': 1,
+      'sum': 123,
+      'sumsq': 15129,
+      'time': "2000-01-01T00:00:00Z",
+    }, {
+      'method': 'GET',
+      'route': 'pong',
+      'statusCode': 200,
+      'count': 2,
+      'sum': 246,
+      'sumsq': 30258,
+      'time': "2000-01-01T00:00:00Z",
+    }]
