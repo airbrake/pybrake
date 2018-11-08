@@ -9,13 +9,13 @@ class RouteStat():
   def __dict__(self):
     return {s: getattr(self, s) for s in self.__slots__ if hasattr(self, s)}
 
-  def __init__(self, method, route, status_code, time, ms):
+  def __init__(self, method='', route='', status_code=0, time=None):
     self.method = method
     self.route = route
     self.statusCode = status_code
-    self.count = 1
-    self.sum = ms
-    self.sumsq = ms*ms
+    self.count = 0
+    self.sum = 0
+    self.sumsq = 0
     self.time = time.replace(second=0, microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
 
   def add(self, ms):
@@ -23,11 +23,8 @@ class RouteStat():
     self.sum += ms
     self.sumsq += ms * ms
 
-def route_stat_key(method, route, status_code, time):
-  return "{}:{}:{}:{}".format(method, route, status_code, time)
-
 class RouteStats():
-  def __init__(self, project_id, project_key, host):
+  def __init__(self, project_id=0, project_key='', host=''):
     self._project_id = project_id
     self._airbrake_headers = {
       'Content-Type': 'application/json',
@@ -46,17 +43,6 @@ class RouteStats():
       self._thread = Timer(self._flush_period, self._flush)
       self._thread.start()
 
-  def inc_request(self, method='', route='', status_code=0, time=None, ms=0):
-    self._init()
-
-    statKey = route_stat_key(method, route, status_code, time)
-    with self._lock:
-      if statKey in self._stats:
-        stat = self._stats.get(statKey)
-        stat.add(ms)
-      else:
-        self._stats[statKey] = RouteStat(method, route, status_code, time, ms)
-
   def _flush(self):
     stats = dict()
     with self._lock:
@@ -68,3 +54,20 @@ class RouteStats():
 
     stats_json = json.dumps({"routes": [stat.__dict__ for _, stat in stats.items()]})
     requests.post(self._api_url, data=stats_json, headers=self._airbrake_headers)
+
+  def inc_request(self, method='', route='', status_code=0, time=None, ms=0):
+    self._init()
+
+    statKey = route_stat_key(method, route, status_code, time)
+    with self._lock:
+      if statKey in self._stats:
+        stat = self._stats.get(statKey)
+      else:
+        stat = RouteStat(method=method, route=route, status_code=status_code, time=time)
+        self._stats[statKey] = stat
+
+      stat.add(ms)
+
+def route_stat_key(method='', route='', status_code=0, time=None):
+  tm = time.replace(second=0, microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
+  return "{}:{}:{}:{}".format(method, route, status_code, tm)

@@ -11,4 +11,6 @@ disable=missing-docstring,
    duplicate-code,
    too-many-return-statements,
    too-many-arguments,
-   too-many-instance-attributes
+   too-many-instance-attributes,
+   assignment-from-no-return,
+   unused-argument
