@@ -331,6 +331,5 @@ class Notifier:
       self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
     return self._thread_pool
 
-  def inc_request(self, method='', route='', status_code=0, time=None, ms=0):
-    self._routes.inc_request(
-      method=method, route=route, status_code=status_code, time=time, ms=ms)
+  def notify_request(self, **kwargs):
+    self._routes.notify_request(**kwargs)

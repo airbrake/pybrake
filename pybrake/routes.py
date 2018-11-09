@@ -10,7 +10,7 @@ class RouteStat():
   __slots__ = [
     'method',
     'route',
-    'statusCode',
+    'status_code',
     'count',
     'sum',
     'sumsq',
@@ -29,7 +29,7 @@ class RouteStat():
   def __init__(self, method='', route='', status_code=0, time=None):
     self.method = method
     self.route = route
-    self.statusCode = status_code
+    self.status_code = status_code
     self.count = 0
     self.sum = 0
     self.sumsq = 0
@@ -50,7 +50,7 @@ class RouteStats():
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + project_key,
     }
-    self._api_url = "{}/api/v4/projects/{}/routes-stats".format(host, project_id)
+    self._api_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
 
     self._thread = None
     self._lock = Lock()
@@ -75,7 +75,7 @@ class RouteStats():
     stats_json = json.dumps({"routes": [stat.__dict__ for _, stat in stats.items()]})
     requests.post(self._api_url, data=stats_json, headers=self._airbrake_headers)
 
-  def inc_request(self, method='', route='', status_code=0, time=None, ms=0):
+  def notify_request(self, method='', route='', status_code=0, time=None, ms=0):
     self._init()
 
     statKey = route_stat_key(method, route, status_code, time)
