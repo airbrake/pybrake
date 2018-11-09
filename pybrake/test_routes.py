@@ -39,6 +39,7 @@ def test_route_stat():
       'sum': 123,
       'sumsq': 15129,
       'time': "2000-01-01T00:00:00Z",
+      "tdigest":  "AAAAAkA5AAAAAAAAAAAAAUL2AAAB"
     }, {
       'method': 'GET',
       'route': 'pong',
@@ -47,4 +48,5 @@ def test_route_stat():
       'sum': 246,
       'sumsq': 30258,
       'time': "2000-01-01T00:00:00Z",
+      "tdigest": "AAAAAkA5AAAAAAAAAAAAAUL2AAAC",
     }]

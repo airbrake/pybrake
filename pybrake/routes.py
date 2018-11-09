@@ -1,13 +1,30 @@
-from threading import Lock, Timer
+import base64
 import json
+from threading import Lock, Timer
+from tdigest import TDigest
 import requests
 
+from .tdigest import as_bytes
+
 class RouteStat():
-  __slots__ = ['method', 'route', 'statusCode', 'count', 'sum', 'sumsq', 'time']
+  __slots__ = [
+    'method',
+    'route',
+    'statusCode',
+    'count',
+    'sum',
+    'sumsq',
+    'time',
+    "td",
+    "tdigest"
+  ]
 
   @property
   def __dict__(self):
-    return {s: getattr(self, s) for s in self.__slots__ if hasattr(self, s)}
+    tdigest = as_bytes(self.td)
+    self.tdigest = base64.b64encode(tdigest).decode('ascii')
+
+    return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
   def __init__(self, method='', route='', status_code=0, time=None):
     self.method = method
@@ -17,11 +34,14 @@ class RouteStat():
     self.sum = 0
     self.sumsq = 0
     self.time = time.replace(second=0, microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
+    self.td = TDigest()
+    self.tdigest = None
 
   def add(self, ms):
     self.count += 1
     self.sum += ms
     self.sumsq += ms * ms
+    self.td.update(ms)
 
 class RouteStats():
   def __init__(self, project_id=0, project_key='', host=''):
