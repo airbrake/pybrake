@@ -24,7 +24,7 @@ def after_request(notifier):
       logger.error("processing time is not valid")
       return response
 
-    notifier.inc_request(
+    notifier.notify_request(
       method=request.method, route=str(request.endpoint),
       status_code=response.status_code, time=now, ms=dur.millisecond,
     )

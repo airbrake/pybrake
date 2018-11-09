@@ -13,13 +13,13 @@ def test_route_stat():
   route_stats._flush_period = 1
 
   with requests_mock.mock() as m:
-    url = "http://test.com/api/v4/projects/1/routes-stats"
+    url = "http://test.com/api/v5/projects/1/routes-stats"
     m.post(url, json=_request_callback)
 
     tm = datetime(2000, 1, 1, 0, 0)
-    route_stats.inc_request("GET", "ping", 200, tm, 123)
-    route_stats.inc_request("GET", "pong", 200, tm, 123)
-    route_stats.inc_request("GET", "pong", 200, tm, 123)
+    route_stats.notify_request("GET", "ping", 200, tm, 123)
+    route_stats.notify_request("GET", "pong", 200, tm, 123)
+    route_stats.notify_request("GET", "pong", 200, tm, 123)
 
     route_stats._thread.join()
     assert m.call_count == 1
@@ -34,7 +34,7 @@ def test_route_stat():
     assert route_stats == [{
       'method': 'GET',
       'route': 'ping',
-      'statusCode': 200,
+      'status_code': 200,
       'count': 1,
       'sum': 123,
       'sumsq': 15129,
@@ -43,7 +43,7 @@ def test_route_stat():
     }, {
       'method': 'GET',
       'route': 'pong',
-      'statusCode': 200,
+      'status_code': 200,
       'count': 2,
       'sum': 246,
       'sumsq': 30258,
