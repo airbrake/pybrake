@@ -10,6 +10,7 @@ import json
 import time as tm
 
 from .notice import jsonify_notice
+from .git import find_git_dir
 from .routes import RouteStats
 from .blacklist_filter import make_blacklist_filter
 from .code_hunks import get_code_hunk
@@ -61,7 +62,10 @@ class Notifier:
       # https://devcenter.heroku.com/changelog-items/630
       rev = os.environ.get('SOURCE_VERSION')
     if rev is None:
-      rev = get_git_revision(self._context['rootDirectory'])
+      git_dir = find_git_dir(self._context['rootDirectory'])
+      if git_dir != "":
+        rev = get_git_revision(git_dir)
+
     if rev is not None:
       self._context['revision'] = rev
 
