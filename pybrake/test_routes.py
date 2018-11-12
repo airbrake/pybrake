@@ -1,4 +1,4 @@
-from datetime import datetime
+import calendar
 import json
 import requests_mock
 
@@ -16,10 +16,11 @@ def test_route_stat():
     url = "http://test.com/api/v5/projects/1/routes-stats"
     m.post(url, json=_request_callback)
 
-    tm = datetime(2000, 1, 1, 0, 0)
-    route_stats.notify_request("GET", "ping", 200, tm, 123)
-    route_stats.notify_request("GET", "pong", 200, tm, 123)
-    route_stats.notify_request("GET", "pong", 200, tm, 123)
+    start_time = calendar.timegm((2000, 1, 1, 0, 0, 0, 0, 0, 0))
+    end_time = start_time + 0.123
+    route_stats.notify_request("GET", "ping", 200, start_time, end_time)
+    route_stats.notify_request("GET", "pong", 200, start_time, end_time)
+    route_stats.notify_request("GET", "pong", 200, start_time, end_time)
 
     route_stats._thread.join()
     assert m.call_count == 1

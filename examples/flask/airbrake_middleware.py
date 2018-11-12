@@ -1,4 +1,4 @@
-import datetime
+import time
 from flask import g, request
 from pybrake.utils import logger
 
@@ -8,26 +8,19 @@ def setup_airbrake_middleware(app, notifier):
 
 def before_request():
   def before_request_middleware():
-    g.flask_request_start_time = datetime.datetime.now()
+    g.request_start_time = time.time()
 
   return before_request_middleware
 
 def after_request(notifier):
   def after_request_middleware(response):
-    if not hasattr(g, 'flask_request_start_time'):
-      logger.error("flask_request_start_time is empty")
-      return response
-
-    now = datetime.datetime.utcnow()
-    dur = now - g.flask_request_start_time
-    if dur == 0:
-      logger.error("processing time is not valid")
+    if not hasattr(g, 'request_start_time'):
+      logger.error("request_start_time is empty")
       return response
 
     notifier.notify_request(
-      method=request.method, route=str(request.endpoint),
-      status_code=response.status_code, time=now, ms=dur.millisecond,
-    )
+      method=request.method, route=str(request.endpoint), status_code=response.status_code,
+      start_time=g.request_start_time, end_time=time.time())
 
     return response
 

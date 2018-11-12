@@ -1,5 +1,6 @@
 import base64
 import json
+from datetime import datetime
 from threading import Lock, Timer
 from tdigest import TDigest
 import requests
@@ -33,7 +34,7 @@ class RouteStat():
     self.count = 0
     self.sum = 0
     self.sumsq = 0
-    self.time = time.replace(second=0, microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
+    self.time = time_to_str(time)
     self.td = TDigest()
     self.tdigest = None
 
@@ -75,19 +76,25 @@ class RouteStats():
     stats_json = json.dumps({"routes": [stat.__dict__ for _, stat in stats.items()]})
     requests.post(self._api_url, data=stats_json, headers=self._airbrake_headers)
 
-  def notify_request(self, method='', route='', status_code=0, time=None, ms=0):
+  def notify_request(self, method='', route='', status_code=0, start_time=None, end_time=None):
     self._init()
 
-    statKey = route_stat_key(method, route, status_code, time)
+    statKey = route_stat_key(method, route, status_code, start_time)
     with self._lock:
       if statKey in self._stats:
         stat = self._stats.get(statKey)
       else:
-        stat = RouteStat(method=method, route=route, status_code=status_code, time=time)
+        stat = RouteStat(method=method, route=route, status_code=status_code, time=start_time)
         self._stats[statKey] = stat
 
+      dur = end_time - start_time
+      ms = int(dur*1000)
       stat.add(ms)
 
+def time_to_str(time):
+  t = datetime.utcfromtimestamp(time).replace(second=0, microsecond=0)
+  return t.strftime('%Y-%m-%dT%H:%M:%SZ')
+
 def route_stat_key(method='', route='', status_code=0, time=None):
-  tm = time.replace(second=0, microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
-  return "{}:{}:{}:{}".format(method, route, status_code, tm)
+  time = int(time/60)*60
+  return "{}:{}:{}:{}".format(method, route, status_code, time)
