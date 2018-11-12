@@ -48,3 +48,21 @@ def get_git_head(dirpath):
   head_file = os.path.join(dirpath, '.git', 'HEAD')
   with open(head_file) as f:
     return f.read().rstrip()
+
+def find_git_dir(directory):
+  """Returns first directory containing .git file checking the dir and parent dirs."""
+  directory = os.path.abspath(directory)
+  if not os.path.exists(directory):
+    return ""
+
+  for _ in range(10):
+    path = os.path.join(directory, '.git')
+    if os.path.exists(path):
+      return directory
+
+    if directory == "/":
+      return ""
+
+    directory = os.path.abspath(os.path.join(directory, os.pardir))
+
+  return ""
