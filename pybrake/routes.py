@@ -87,8 +87,7 @@ class RouteStats():
         stat = RouteStat(method=method, route=route, status_code=status_code, time=start_time)
         self._stats[statKey] = stat
 
-      dur = end_time - start_time
-      ms = int(dur*1000)
+      ms = round((end_time - start_time) * 1000, 2)
       stat.add(ms)
 
 def time_to_str(time):
@@ -96,5 +95,5 @@ def time_to_str(time):
   return t.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 def route_stat_key(method='', route='', status_code=0, time=None):
-  time = int(time/60)*60
+  time = time // 60 * 60
   return "{}:{}:{}:{}".format(method, route, status_code, time)
