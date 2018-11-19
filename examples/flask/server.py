@@ -2,8 +2,8 @@ from flask import Flask, request
 from time import sleep
 from random import randrange
 from argparse import ArgumentParser
-from airbrake_middleware import setup_airbrake_middleware
 import pybrake
+from pybrake.flask import setup_airbrake_middleware
 
 parser = ArgumentParser()
 parser.add_argument("-project_id", dest="project_id", help="airbrake project ID")
