@@ -180,6 +180,53 @@ app.config['PYBRAKE'] = dict(
 app = pybrake.flask.init_app(app)
 ```
 
+## aiohttp integration (python 3.5+)
+
+Setup airbrake's middleware and config for your web application:
+
+```python
+# app.py
+
+from aiohttp import web
+from pybrake.aiohttp import create_airbrake_middleware
+
+airbrake_middleware = create_airbrake_middleware() 
+
+app = web.Application(middlewares=[airbrake_middleware])
+
+app['airbrake_config'] = dict(
+  project_id=123,
+  project_key='FIXME',
+  environment='production'  # optional
+)
+```
+
+Also, you can pass custom handlers to `create_airbrake_middleware`:
+
+```python
+# middlewares.py
+
+import aiohttp_jinja2
+from pybrake.aiohttp import create_airbrake_middleware
+
+
+async def handle_404(request):
+    return aiohttp_jinja2.render_template('404.html', request, {})
+
+
+async def handle_500(request):
+    return aiohttp_jinja2.render_template('500.html', request, {})
+
+
+def setup_middlewares(app):
+    airbrake_middleware = create_airbrake_middleware({
+        404: handle_404,
+        500: handle_500
+    }) 
+        
+    app.middlewares.append(airbrake_middleware)
+```
+
 ## Disabling pybrake logs
 
 The pybrake logger can be silenced by setting the logging level to
