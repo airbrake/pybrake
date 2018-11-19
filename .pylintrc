@@ -9,4 +9,8 @@ disable=missing-docstring,
    protected-access,
    too-few-public-methods,
    duplicate-code,
-   too-many-return-statements
+   too-many-return-statements,
+   too-many-arguments,
+   too-many-instance-attributes,
+   assignment-from-no-return,
+   unused-argument

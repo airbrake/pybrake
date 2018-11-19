@@ -7,9 +7,11 @@ import urllib.request
 import urllib.error
 from concurrent import futures
 import json
-import time
+import time as tm
 
 from .notice import jsonify_notice
+from .git import find_git_dir
+from .routes import RouteStats
 from .blacklist_filter import make_blacklist_filter
 from .code_hunks import get_code_hunk
 from .git import get_git_revision
@@ -53,13 +55,17 @@ class Notifier:
 
     self._context = _CONTEXT.copy()
     self._context['rootDirectory'] = kwargs.get('root_directory', os.getcwd())
+    self._routes = RouteStats(project_id, project_key, host)
 
     rev = kwargs.get('revision')
     if rev is None:
       # https://devcenter.heroku.com/changelog-items/630
       rev = os.environ.get('SOURCE_VERSION')
     if rev is None:
-      rev = get_git_revision(self._context['rootDirectory'])
+      git_dir = find_git_dir(self._context['rootDirectory'])
+      if git_dir != "":
+        rev = get_git_revision(git_dir)
+
     if rev is not None:
       self._context['revision'] = rev
 
@@ -118,7 +124,7 @@ class Notifier:
         return notice
       notice = r
 
-    if time.time() < self._rate_limit_reset:
+    if tm.time() < self._rate_limit_reset:
       notice['error'] = _ERR_IP_RATE_LIMITED
       return notice
 
@@ -192,7 +198,7 @@ class Notifier:
       notice['error'] = err
       return notice
 
-    self._rate_limit_reset = time.time() + delay
+    self._rate_limit_reset = tm.time() + delay
 
     notice['error'] = _ERR_IP_RATE_LIMITED
     return notice
@@ -328,3 +334,6 @@ class Notifier:
       max_workers = (os.cpu_count() or 1) * 5
       self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
     return self._thread_pool
+
+  def notify_request(self, **kwargs):
+    self._routes.notify_request(**kwargs)

@@ -4,3 +4,6 @@ pylint
 django
 flask
 tdigest
+requests
+requests_mock
+aiohttp
