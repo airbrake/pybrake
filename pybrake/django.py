@@ -23,6 +23,7 @@ class AirbrakeMiddleware:
 
     ctx = notice['context']
     ctx['url'] = request.build_absolute_uri()
+    ctx['route'] = request.resolver_match.url_name
 
     user_addr = get_remote_addr(request)
     if user_addr:
