@@ -29,6 +29,7 @@ def _handle_exception(sender, exception, **_):
   ctx = notice['context']
   ctx['method'] = request.method
   ctx['url'] = request.url
+  ctx['route'] = str(request.endpoint)
 
   try:
     user_addr = request.access_route[0]
