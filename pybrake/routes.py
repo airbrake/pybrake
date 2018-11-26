@@ -11,7 +11,7 @@ class RouteStat():
   __slots__ = [
     'method',
     'route',
-    'status_code',
+    'statusCode',
     'count',
     'sum',
     'sumsq',
@@ -30,7 +30,7 @@ class RouteStat():
   def __init__(self, method='', route='', status_code=0, time=None):
     self.method = method
     self.route = route
-    self.status_code = status_code
+    self.statusCode = status_code
     self.count = 0
     self.sum = 0
     self.sumsq = 0
