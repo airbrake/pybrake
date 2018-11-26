@@ -35,7 +35,7 @@ def test_route_stat():
     assert route_stats == [{
       'method': 'GET',
       'route': 'ping',
-      'status_code': 200,
+      'statusCode': 200,
       'count': 1,
       'sum': 123,
       'sumsq': 15129,
@@ -44,7 +44,7 @@ def test_route_stat():
     }, {
       'method': 'GET',
       'route': 'pong',
-      'status_code': 200,
+      'statusCode': 200,
       'count': 2,
       'sum': 246,
       'sumsq': 30258,
