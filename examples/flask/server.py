@@ -12,23 +12,26 @@ parser.add_argument("-host", dest="host", help="airbrake host")
 args = parser.parse_args()
 
 app = Flask(__name__)
-app.config['PYBRAKE'] = dict(
+app.config["PYBRAKE"] = dict(
     project_id=args.project_id,
     project_key=args.project_key,
     host=args.host,
-    environment='test'
+    environment="test",
 )
 
 app = init_app(app)
 
-@app.route('/ping',methods=['GET'])
+
+@app.route("/ping", methods=["GET"])
 def ping():
-    return 'Pong'
+    return "Pong"
 
-@app.route('/hello/<name>',methods=['GET'])
+
+@app.route("/hello/<name>", methods=["GET"])
 def hello(name):
-  sleep(randrange(0, 3))
+    sleep(randrange(0, 3))
 
-  return "Hello {}".format(name)
+    return "Hello {}".format(name)
+
 
 app.run(debug=True)

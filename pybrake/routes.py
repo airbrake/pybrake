@@ -7,93 +7,103 @@ import requests
 
 from .tdigest import as_bytes
 
-class RouteStat():
-  __slots__ = [
-    'method',
-    'route',
-    'statusCode',
-    'count',
-    'sum',
-    'sumsq',
-    'time',
-    'td',
-    'tdigest'
-  ]
 
-  @property
-  def __dict__(self):
-    tdigest = as_bytes(self.td)
-    self.tdigest = base64.b64encode(tdigest).decode('ascii')
+class RouteStat:
+    __slots__ = [
+        "method",
+        "route",
+        "statusCode",
+        "count",
+        "sum",
+        "sumsq",
+        "time",
+        "td",
+        "tdigest",
+    ]
 
-    return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
+    @property
+    def __dict__(self):
+        tdigest = as_bytes(self.td)
+        self.tdigest = base64.b64encode(tdigest).decode("ascii")
 
-  def __init__(self, method='', route='', status_code=0, time=None):
-    self.method = method
-    self.route = route
-    self.statusCode = status_code
-    self.count = 0
-    self.sum = 0
-    self.sumsq = 0
-    self.time = time_to_str(time)
-    self.td = TDigest()
-    self.tdigest = None
+        return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-  def add(self, ms):
-    self.count += 1
-    self.sum += ms
-    self.sumsq += ms * ms
-    self.td.update(ms)
+    def __init__(self, method="", route="", status_code=0, time=None):
+        self.method = method
+        self.route = route
+        self.statusCode = status_code
+        self.count = 0
+        self.sum = 0
+        self.sumsq = 0
+        self.time = time_to_str(time)
+        self.td = TDigest()
+        self.tdigest = None
 
-class RouteStats():
-  def __init__(self, project_id=0, project_key='', host=''):
-    self._project_id = project_id
-    self._airbrake_headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + project_key,
-    }
-    self._api_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
+    def add(self, ms):
+        self.count += 1
+        self.sum += ms
+        self.sumsq += ms * ms
+        self.td.update(ms)
 
-    self._thread = None
-    self._lock = Lock()
-    self._flush_period = 15.0
-    self._stats = None
 
-  def _init(self):
-    if self._stats is None:
-      self._stats = {}
-      self._thread = Timer(self._flush_period, self._flush)
-      self._thread.start()
+class RouteStats:
+    def __init__(self, project_id=0, project_key="", host=""):
+        self._project_id = project_id
+        self._airbrake_headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + project_key,
+        }
+        self._api_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
 
-  def _flush(self):
-    stats = dict()
-    with self._lock:
-      stats = self._stats
-      self._stats = None
+        self._thread = None
+        self._lock = Lock()
+        self._flush_period = 15.0
+        self._stats = None
 
-    if not stats:
-      raise ValueError("Stats is empty")
+    def _init(self):
+        if self._stats is None:
+            self._stats = {}
+            self._thread = Timer(self._flush_period, self._flush)
+            self._thread.start()
 
-    stats_json = json.dumps({"routes": [stat.__dict__ for _, stat in stats.items()]})
-    requests.post(self._api_url, data=stats_json, headers=self._airbrake_headers)
+    def _flush(self):
+        stats = dict()
+        with self._lock:
+            stats = self._stats
+            self._stats = None
 
-  def notify_request(self, method='', route='', status_code=0, start_time=None, end_time=None):
-    self._init()
+        if not stats:
+            raise ValueError("Stats is empty")
 
-    statKey = route_stat_key(method, route, status_code, start_time)
-    with self._lock:
-      if statKey in self._stats:
-        stat = self._stats.get(statKey)
-      else:
-        stat = RouteStat(method=method, route=route, status_code=status_code, time=start_time)
-        self._stats[statKey] = stat
+        stats_json = json.dumps(
+            {"routes": [stat.__dict__ for _, stat in stats.items()]}
+        )
+        requests.post(self._api_url, data=stats_json, headers=self._airbrake_headers)
 
-      ms = round((end_time - start_time) * 1000, 2)
-      stat.add(ms)
+    def notify_request(
+        self, method="", route="", status_code=0, start_time=None, end_time=None
+    ):
+        self._init()
+
+        statKey = route_stat_key(method, route, status_code, start_time)
+        with self._lock:
+            if statKey in self._stats:
+                stat = self._stats.get(statKey)
+            else:
+                stat = RouteStat(
+                    method=method, route=route, status_code=status_code, time=start_time
+                )
+                self._stats[statKey] = stat
+
+            ms = round((end_time - start_time) * 1000, 2)
+            stat.add(ms)
+
 
 def time_to_str(time):
-  t = datetime.utcfromtimestamp(time).replace(second=0, microsecond=0)
-  return t.strftime('%Y-%m-%dT%H:%M:%SZ')
+    t = datetime.utcfromtimestamp(time).replace(second=0, microsecond=0)
+    return t.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-def route_stat_key(method='', route='', status_code=0, time=None):
-  time = time // 60 * 60
-  return "{}:{}:{}:{}".format(method, route, status_code, time)
+
+def route_stat_key(method="", route="", status_code=0, time=None):
+    time = time // 60 * 60
+    return "{}:{}:{}:{}".format(method, route, status_code, time)

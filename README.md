@@ -190,7 +190,7 @@ Setup airbrake's middleware and config for your web application:
 from aiohttp import web
 from pybrake.aiohttp import create_airbrake_middleware
 
-airbrake_middleware = create_airbrake_middleware() 
+airbrake_middleware = create_airbrake_middleware()
 
 app = web.Application(middlewares=[airbrake_middleware])
 
@@ -222,8 +222,8 @@ def setup_middlewares(app):
     airbrake_middleware = create_airbrake_middleware({
         404: handle_404,
         500: handle_500
-    }) 
-        
+    })
+
     app.middlewares.append(airbrake_middleware)
 ```
 
