@@ -2,8 +2,8 @@ from flask import Flask, request
 from time import sleep
 from random import randrange
 from argparse import ArgumentParser
-from airbrake_middleware import setup_airbrake_middleware
 import pybrake
+from pybrake.flask import init_app
 
 parser = ArgumentParser()
 parser.add_argument("-project_id", dest="project_id", help="airbrake project ID")
@@ -11,11 +11,15 @@ parser.add_argument("-project_key", dest="project_key", help="airbrake project k
 parser.add_argument("-host", dest="host", help="airbrake host")
 args = parser.parse_args()
 
-notifier = pybrake.Notifier(
-	args.project_id, args.project_key, args.host, environment='test')
-
 app = Flask(__name__)
-setup_airbrake_middleware(app, notifier)
+app.config['PYBRAKE'] = dict(
+    project_id=args.project_id,
+    project_key=args.project_key,
+    host=args.host,
+    environment='test'
+)
+
+app = init_app(app)
 
 @app.route('/ping',methods=['GET'])
 def ping():
