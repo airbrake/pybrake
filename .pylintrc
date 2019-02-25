@@ -12,5 +12,4 @@ disable=missing-docstring,
    too-many-return-statements,
    too-many-arguments,
    too-many-instance-attributes,
-   assignment-from-no-return,
    unused-argument
