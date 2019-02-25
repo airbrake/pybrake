@@ -16,8 +16,8 @@ class RouteStat():
     'sum',
     'sumsq',
     'time',
-    "td",
-    "tdigest"
+    'td',
+    'tdigest'
   ]
 
   @property
