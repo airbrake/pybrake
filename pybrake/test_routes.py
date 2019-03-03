@@ -18,9 +18,9 @@ def test_route_stat():
 
         start_time = calendar.timegm((2000, 1, 1, 0, 0, 0, 0, 0, 0))
         end_time = start_time + 0.123
-        route_stats.notify_request("GET", "ping", 200, start_time, end_time)
-        route_stats.notify_request("GET", "pong", 200, start_time, end_time)
-        route_stats.notify_request("GET", "pong", 200, start_time, end_time)
+        route_stats.notify("GET", "ping", 200, start_time, end_time)
+        route_stats.notify("GET", "pong", 200, start_time, end_time)
+        route_stats.notify("GET", "pong", 200, start_time, end_time)
 
         route_stats._thread.join()
         assert m.call_count == 1

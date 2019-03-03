@@ -73,9 +73,6 @@ def get_headers(request):
 
 def attr_from_request(request, attr_name):
     if hasattr(request, attr_name):
-
         attr = getattr(request, attr_name)
-
         return attr() if inspect.ismethod(attr) else attr
-
     return None

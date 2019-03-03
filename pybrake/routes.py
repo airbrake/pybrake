@@ -28,14 +28,14 @@ class RouteStat:
 
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-    def __init__(self, method="", route="", status_code=0, time=None):
+    def __init__(self, *args, method="", route="", status_code=0, time=None):
         self.method = method
         self.route = route
         self.statusCode = status_code
         self.count = 0
         self.sum = 0
         self.sumsq = 0
-        self.time = time_to_str(time)
+        self.time = time_trunc_minute(time)
         self.td = TDigest()
         self.tdigest = None
 
@@ -47,13 +47,14 @@ class RouteStat:
 
 
 class RouteStats:
-    def __init__(self, project_id=0, project_key="", host=""):
+    def __init__(self, *args, project_id=0, project_key="", host="", **kwargs):
         self._project_id = project_id
         self._airbrake_headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
         self._api_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
+        self._env = kwargs.get("environment")
 
         self._thread = None
         self._lock = Lock()
@@ -67,20 +68,23 @@ class RouteStats:
             self._thread.start()
 
     def _flush(self):
-        stats = dict()
+        stats = None
         with self._lock:
             stats = self._stats
             self._stats = None
 
         if not stats:
-            raise ValueError("Stats is empty")
+            raise ValueError("stats is empty")
 
-        stats_json = json.dumps(
-            {"routes": [stat.__dict__ for _, stat in stats.items()]}
+        out = {"routes": [v.__dict__ for v in stats.values()]}
+        if self._env:
+            out["environment"] = self._env
+
+        requests.post(
+            self._api_url, data=json.dumps(out), headers=self._airbrake_headers
         )
-        requests.post(self._api_url, data=stats_json, headers=self._airbrake_headers)
 
-    def notify_request(
+    def notify(
         self, method="", route="", status_code=0, start_time=None, end_time=None
     ):
         self._init()
@@ -99,7 +103,7 @@ class RouteStats:
             stat.add(ms)
 
 
-def time_to_str(time):
+def time_trunc_minute(time):
     t = datetime.utcfromtimestamp(time).replace(second=0, microsecond=0)
     return t.strftime("%Y-%m-%dT%H:%M:%SZ")
 

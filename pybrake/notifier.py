@@ -36,8 +36,15 @@ _CONTEXT = dict(
 
 class Notifier:
     def __init__(
-        self, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
+        self,
+        *args,
+        project_id=0,
+        project_key="",
+        host="https://api.airbrake.io",
+        **kwargs
     ):
+        self.routes = RouteStats(project_id, project_key, host, **kwargs)
+
         self._filters = []
         self._rate_limit_reset = 0
         self._max_queue_size = kwargs.get("max_queue_size", 1000)
@@ -51,7 +58,6 @@ class Notifier:
 
         self._context = _CONTEXT.copy()
         self._context["rootDirectory"] = kwargs.get("root_directory", os.getcwd())
-        self._routes = RouteStats(project_id, project_key, host)
 
         rev = kwargs.get("revision")
         if rev is None:
@@ -315,6 +321,3 @@ class Notifier:
             max_workers = (os.cpu_count() or 1) * 5
             self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
         return self._thread_pool
-
-    def notify_request(self, **kwargs):
-        self._routes.notify_request(**kwargs)

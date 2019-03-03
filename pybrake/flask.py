@@ -43,7 +43,7 @@ def _after_request(notifier):
             logger.error("request_start_time is empty")
             return response
 
-        notifier.notify_request(
+        notifier.routes.notify(
             method=request.method,
             route=str(request.endpoint),
             status_code=response.status_code,
