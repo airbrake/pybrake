@@ -1,3 +1,4 @@
+import time
 import functools
 
 from django.conf import settings
@@ -12,7 +13,22 @@ class AirbrakeMiddleware:
         self._notifier = get_global_notifier()
 
     def __call__(self, request):
+        start_time = time.time()
+
         response = self.get_response(request)
+
+        if request.resolver_match:
+            route = request.resolver_match.view_name
+        else:
+            route = "UNKNOWN"
+        self._notifier.routes.notify(
+            method=request.method,
+            route=route,
+            status_code=response.status_code,
+            start_time=start_time,
+            end_time=time.time(),
+        )
+
         return response
 
     def process_exception(self, request, exception):
