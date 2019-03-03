@@ -126,7 +126,7 @@ class RouteStats:
             return
 
     def notify(
-        self, method="", route="", status_code=0, start_time=None, end_time=None
+        self, *, method="", route="", status_code=0, start_time=None, end_time=None
     ):
         self._init()
 
