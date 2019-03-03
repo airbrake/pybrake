@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from flask import Flask, request
 from time import sleep
 from random import randrange
@@ -8,15 +10,11 @@ from pybrake.flask import init_app
 parser = ArgumentParser()
 parser.add_argument("-project_id", dest="project_id", help="airbrake project ID")
 parser.add_argument("-project_key", dest="project_key", help="airbrake project key")
-parser.add_argument("-host", dest="host", help="airbrake host")
 args = parser.parse_args()
 
 app = Flask(__name__)
 app.config["PYBRAKE"] = dict(
-    project_id=args.project_id,
-    project_key=args.project_key,
-    host=args.host,
-    environment="test",
+    project_id=args.project_id, project_key=args.project_key, environment="test"
 )
 
 app = init_app(app)

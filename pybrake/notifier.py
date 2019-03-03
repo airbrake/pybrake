@@ -21,7 +21,7 @@ from .version import version
 
 _ERR_IP_RATE_LIMITED = "IP is rate limited"
 
-_AIRBRAKE_URL_FORMAT = "{}/api/v3/projects/{}/notices"
+_AB_URL_FORMAT = "{}/api/v3/projects/{}/notices"
 
 _CONTEXT = dict(
     notifier=dict(
@@ -36,22 +36,19 @@ _CONTEXT = dict(
 
 class Notifier:
     def __init__(
-        self,
-        *args,
-        project_id=0,
-        project_key="",
-        host="https://api.airbrake.io",
-        **kwargs
+        self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):
-        self.routes = RouteStats(project_id, project_key, host, **kwargs)
+        self.routes = RouteStats(
+            project_id=project_id, project_key=project_key, host=host, **kwargs
+        )
 
         self._filters = []
         self._rate_limit_reset = 0
         self._max_queue_size = kwargs.get("max_queue_size", 1000)
         self._thread_pool = None
 
-        self._airbrake_url = _AIRBRAKE_URL_FORMAT.format(host, project_id)
-        self._airbrake_headers = {
+        self._ab_url = _AB_URL_FORMAT.format(host, project_id)
+        self._ab_headers = {
             "authorization": "Bearer " + project_key,
             "content-type": "application/json",
         }
@@ -127,9 +124,7 @@ class Notifier:
             return notice
 
         data = jsonify_notice(notice)
-        req = urllib.request.Request(
-            self._airbrake_url, data=data, headers=self._airbrake_headers
-        )
+        req = urllib.request.Request(self._ab_url, data=data, headers=self._ab_headers)
 
         try:
             resp = urllib.request.urlopen(req, timeout=5)
@@ -148,7 +143,9 @@ class Notifier:
             return notice
 
         if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
-            notice["error"] = "unexpected Airbrake response status code"
+            notice["error"] = "airbrake: unexpected response status_code={}".format(
+                resp.code
+            )
             notice["error_info"] = dict(code=resp.code, body=body)
             logger.error(notice["error"])
             return notice

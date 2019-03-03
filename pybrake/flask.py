@@ -45,7 +45,7 @@ def _after_request(notifier):
 
         notifier.routes.notify(
             method=request.method,
-            route=str(request.endpoint),
+            route=request.url_rule.rule,
             status_code=response.status_code,
             start_time=g.request_start_time,
             end_time=time.time(),

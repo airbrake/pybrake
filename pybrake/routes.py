@@ -3,9 +3,13 @@ import json
 from datetime import datetime
 from threading import Lock, Timer
 from tdigest import TDigest
-import requests
+import urllib.request
+import urllib.error
 
 from .tdigest import as_bytes
+from .utils import logger
+
+_FLUSH_PERIOD = 5
 
 
 class RouteStat:
@@ -28,7 +32,7 @@ class RouteStat:
 
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-    def __init__(self, *args, method="", route="", status_code=0, time=None):
+    def __init__(self, *, method="", route="", status_code=0, time=None):
         self.method = method
         self.route = route
         self.statusCode = status_code
@@ -36,7 +40,7 @@ class RouteStat:
         self.sum = 0
         self.sumsq = 0
         self.time = time_trunc_minute(time)
-        self.td = TDigest()
+        self.td = TDigest(K=20)
         self.tdigest = None
 
     def add(self, ms):
@@ -47,18 +51,18 @@ class RouteStat:
 
 
 class RouteStats:
-    def __init__(self, *args, project_id=0, project_key="", host="", **kwargs):
+    def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
         self._project_id = project_id
-        self._airbrake_headers = {
+        self._ab_headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._api_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
+        self._ab_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
         self._env = kwargs.get("environment")
 
         self._thread = None
         self._lock = Lock()
-        self._flush_period = 15.0
+        self._flush_period = _FLUSH_PERIOD
         self._stats = None
 
     def _init(self):
@@ -80,9 +84,46 @@ class RouteStats:
         if self._env:
             out["environment"] = self._env
 
-        requests.post(
-            self._api_url, data=json.dumps(out), headers=self._airbrake_headers
-        )
+        out = json.dumps(out).encode("utf8")
+        req = urllib.request.Request(self._ab_url, data=out, headers=self._ab_headers)
+
+        try:
+            resp = urllib.request.urlopen(req, timeout=5)
+        except urllib.error.HTTPError as err:
+            resp = err
+        except Exception as err:  # pylint: disable=broad-except
+            logger.error(err)
+            return
+
+        try:
+            body = resp.read()
+        except IOError as err:
+            logger.error(err)
+            return
+
+        if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
+            err = "airbrake: unexpected response status_code={}".format(resp.code)
+            logger.error(err)
+            return
+
+        if resp.code in (204, 429):
+            return
+
+        try:
+            body = body.decode("utf-8")
+        except UnicodeDecodeError as err:
+            logger.error(err)
+            return
+
+        try:
+            in_data = json.loads(body)
+        except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
+            logger.error(err)
+            return
+
+        if "message" in in_data:
+            logger.error(in_data["message"])
+            return
 
     def notify(
         self, method="", route="", status_code=0, start_time=None, end_time=None
