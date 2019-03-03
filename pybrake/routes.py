@@ -2,9 +2,9 @@ import base64
 import json
 from datetime import datetime
 from threading import Lock, Timer
-from tdigest import TDigest
 import urllib.request
 import urllib.error
+from tdigest import TDigest
 
 from .tdigest import as_bytes
 from .utils import logger
