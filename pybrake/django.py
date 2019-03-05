@@ -59,13 +59,11 @@ class AirbrakeMiddleware:
 
         if request.user.is_authenticated:
             user = request.user
-            user_info = dict(username=user.username, email=user.email)
-
-            names = [user.first_name, user.last_name]
-            names = [x for x in names if x]
-            if names:
-                user_info["name"] = " ".join(names)
-
+            user_info = dict(username=user.get_username(), name=user.get_full_name())
+            if hasattr(user, "get_email_field_name"):
+                user_info["email"] = getattr(user, user.get_email_field_name())
+            elif hasattr(user, "email"):
+                user_info["email"] = user.email
             ctx["user"] = user_info
 
         self._notifier.send_notice(notice)
