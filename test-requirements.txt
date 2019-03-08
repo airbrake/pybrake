@@ -3,7 +3,4 @@ pytest-benchmark>=3.2.2
 pylint
 django
 flask
-tdigest
-requests
-requests_mock
 aiohttp
