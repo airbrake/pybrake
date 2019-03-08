@@ -6,8 +6,11 @@ def content_of(file_name):
     return f.read()
 
 
+# Get version
+execfile('pybrake/version.py')
+
 setup(name='pybrake',
-      version=content_of('pybrake/version.py').strip(),
+      version=version,
       description='Python exception notifier for Airbrake',
       long_description=content_of('README.md'),
       long_description_content_type='text/markdown',
