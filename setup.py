@@ -1,8 +1,8 @@
 from setuptools import setup
 
 
-def content_of(file_name):
-  with open(file_name) as f:
+def readme():
+  with open('README.md') as f:
     return f.read()
 
 
@@ -12,7 +12,7 @@ execfile('pybrake/version.py')
 setup(name='pybrake',
       version=version,
       description='Python exception notifier for Airbrake',
-      long_description=content_of('README.md'),
+      long_description=readme(),
       long_description_content_type='text/markdown',
       classifiers=[
         'Development Status :: 3 - Alpha',
