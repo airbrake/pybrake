@@ -7,7 +7,8 @@ def readme():
 
 
 # Get version
-execfile('pybrake/version.py')
+exec(open('pybrake/version.py').read())
+
 
 setup(name='pybrake',
       version=version,
