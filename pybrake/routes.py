@@ -101,12 +101,15 @@ class RouteStats:
             logger.error(err)
             return
 
-        if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
+        if 200 <= resp.code < 300:
+            return
+
+        if not 400 <= resp.code < 500:
             err = "airbrake: unexpected response status_code={}".format(resp.code)
             logger.error(err)
             return
 
-        if resp.code in (204, 429):
+        if resp.code == 429:
             return
 
         try:
