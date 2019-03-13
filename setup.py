@@ -1,15 +1,17 @@
 from setuptools import setup
 
-import pybrake
-
 
 def readme():
   with open('README.md') as f:
     return f.read()
 
 
+# Get version
+exec(open('pybrake/version.py').read())
+
+
 setup(name='pybrake',
-      version=pybrake.__version__,
+      version=version,
       description='Python exception notifier for Airbrake',
       long_description=readme(),
       long_description_content_type='text/markdown',
@@ -27,8 +29,7 @@ setup(name='pybrake',
       author_email='vlad@airbrake.io',
       license='MIT',
       packages=['pybrake'],
-      install_requires=[],
-      setup_requires=[],
-      tests_require=[],
+      install_requires=['tdigest'],
+      tests_require=['tdigest'],
       include_package_data=True,
       zip_safe=False)
