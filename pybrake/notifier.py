@@ -295,7 +295,7 @@ class Notifier:
             needed = "/site-packages/"
             ind = s.find(needed)
             if ind > -1:
-                s = "[SITE_PACKAGES]/" + s[ind + len(needed) :]
+                s = "/SITE_PACKAGES/" + s[ind + len(needed) :]
                 return s
 
         s = s.replace(self._context["rootDirectory"], "/PROJECT_ROOT")
