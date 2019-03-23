@@ -205,3 +205,9 @@ def _test_rate_limited():
 
     notice = future.result()
     assert notice["error"] == "IP is rate limited"
+
+def test_clean_filename():
+    notifier = Notifier()
+
+    filename = notifier._clean_filename("home/lib/python3.6/site-packages/python.py")
+    assert filename == "/SITE_PACKAGES/python.py"
