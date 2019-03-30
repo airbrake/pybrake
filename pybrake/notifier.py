@@ -76,6 +76,9 @@ class Notifier:
         )
         self.add_filter(make_blacklist_filter(keys_blacklist))
 
+        if "filter" in kwargs:
+            self.add_filter(kwargs["filter"])
+
     def close(self):
         if self._thread_pool is not None:
             self._thread_pool.shutdown()
