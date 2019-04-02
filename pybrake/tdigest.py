@@ -1,6 +1,30 @@
+import base64
 import struct
 
 import tdigest
+
+
+class TDigestStat:
+    __slots__ = ["count", "sum", "sumsq", "td", "tdigest"]
+
+    def __init__(self):
+        self.count = 0
+        self.sum = 0
+        self.sumsq = 0
+        self.td = tdigest.TDigest(K=10)
+        self.tdigest = None
+
+    @property
+    def __dict__(self):
+        b = as_bytes(self.td)
+        self.tdigest = base64.b64encode(b).decode("ascii")
+        return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
+
+    def add(self, ms):
+        self.count += 1
+        self.sum += ms
+        self.sumsq += ms * ms
+        self.td.update(ms)
 
 
 SMALL_ENCODING = 2

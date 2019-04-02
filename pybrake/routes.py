@@ -3,51 +3,39 @@ import json
 from threading import Lock, Timer
 import urllib.request
 import urllib.error
-from tdigest import TDigest
 
-from .tdigest import as_bytes
+from .tdigest import as_bytes, TDigestStat
 from .utils import logger, time_trunc_minute
 
 
-_FLUSH_PERIOD = 5
+_FLUSH_PERIOD = 15
 
 
-class RouteStat:
+class RouteStat(TDigestStat):
     __slots__ = [
         "method",
         "route",
         "statusCode",
+        "time",
         "count",
         "sum",
         "sumsq",
-        "time",
         "td",
         "tdigest",
     ]
 
     @property
     def __dict__(self):
-        tdigest = as_bytes(self.td)
-        self.tdigest = base64.b64encode(tdigest).decode("ascii")
-
+        b = as_bytes(self.td)
+        self.tdigest = base64.b64encode(b).decode("ascii")
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
     def __init__(self, *, method="", route="", status_code=0, time=None):
+        super().__init__()
         self.method = method
         self.route = route
         self.statusCode = status_code
-        self.count = 0
-        self.sum = 0
-        self.sumsq = 0
         self.time = time_trunc_minute(time)
-        self.td = TDigest(K=10)
-        self.tdigest = None
-
-    def add(self, ms):
-        self.count += 1
-        self.sum += ms
-        self.sumsq += ms * ms
-        self.td.update(ms)
 
 
 class RouteStats:
@@ -64,27 +52,31 @@ class RouteStats:
         self._lock = Lock()
         self._stats = None
 
-    def notify(
-        self, *, method="", route="", status_code=0, start_time=None, end_time=None
-    ):
+    def notify(self, trace):
         if self._stats is None:
             self._stats = {}
             self._thread = Timer(_FLUSH_PERIOD, self._flush)
             self._thread.start()
 
         key = route_stat_key(
-            method=method, route=route, status_code=status_code, time=start_time
+            method=trace.method,
+            route=trace.route,
+            status_code=trace.status_code,
+            time=trace.start_time,
         )
         with self._lock:
             if key in self._stats:
                 stat = self._stats[key]
             else:
                 stat = RouteStat(
-                    method=method, route=route, status_code=status_code, time=start_time
+                    method=trace.method,
+                    route=trace.route,
+                    status_code=trace.status_code,
+                    time=trace.start_time,
                 )
                 self._stats[key] = stat
 
-            ms = (end_time - start_time) * 1000
+            ms = (trace.end_time - trace.start_time) * 1000
             stat.add(ms)
 
     def _flush(self):
@@ -147,4 +139,4 @@ class RouteStats:
 
 def route_stat_key(*, method="", route="", status_code=0, time=None):
     time = time // 60 * 60
-    return "{}:{}:{}:{}".format(method, route, status_code, time)
+    return (method, route, status_code, time)
