@@ -7,11 +7,12 @@ import urllib.request
 import urllib.error
 from concurrent import futures
 import json
-import time as tm
+import time
 
 from .notice import jsonify_notice
 from .git import find_git_dir
 from .routes import RouteStats
+from .route_trace import RouteBreakdowns
 from .queries import QueryStats
 from .blacklist_filter import make_blacklist_filter
 from .code_hunks import get_code_hunk
@@ -39,7 +40,7 @@ class Notifier:
     def __init__(
         self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):
-        self.routes = RouteStats(
+        self.routes = _Routes(
             project_id=project_id, project_key=project_key, host=host, **kwargs
         )
         self.queries = QueryStats(
@@ -126,7 +127,7 @@ class Notifier:
                 return notice
             notice = r
 
-        if tm.time() < self._rate_limit_reset:
+        if time.time() < self._rate_limit_reset:
             notice["error"] = _ERR_IP_RATE_LIMITED
             return notice
 
@@ -200,7 +201,7 @@ class Notifier:
             notice["error"] = err
             return notice
 
-        self._rate_limit_reset = tm.time() + delay
+        self._rate_limit_reset = time.time() + delay
 
         notice["error"] = _ERR_IP_RATE_LIMITED
         return notice
@@ -325,3 +326,16 @@ class Notifier:
             max_workers = (os.cpu_count() or 1) * 5
             self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
         return self._thread_pool
+
+
+class _Routes:
+    def __init__(self, **kwargs):
+        self.stats = RouteStats(**kwargs)
+        self.breakdowns = RouteBreakdowns(**kwargs)
+
+    def notify(self, trace):
+        if trace.end_time is None:
+            trace.end_time = time.time()
+
+        self.stats.notify(trace)
+        self.breakdowns.notify(trace)

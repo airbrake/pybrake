@@ -3,16 +3,16 @@ import json
 from threading import Lock, Timer
 import urllib.request
 import urllib.error
-from tdigest import TDigest
 
-from .tdigest import as_bytes
+from .route_trace import threadLocal
+from .tdigest import TDigestStat, as_bytes
 from .utils import logger, time_trunc_minute
 
 
-_FLUSH_PERIOD = 5
+_FLUSH_PERIOD = 15
 
 
-class QueryStat:
+class QueryStat(TDigestStat):
     __slots__ = [
         "query",
         "method",
@@ -33,21 +33,11 @@ class QueryStat:
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
     def __init__(self, *, query="", method="", route="", time=None):
+        super().__init__()
         self.query = query
         self.method = method
         self.route = route
-        self.count = 0
-        self.sum = 0
-        self.sumsq = 0
         self.time = time_trunc_minute(time)
-        self.td = TDigest(K=10)
-        self.tdigest = None
-
-    def add(self, ms):
-        self.count += 1
-        self.sum += ms
-        self.sumsq += ms * ms
-        self.td.update(ms)
 
 
 class QueryStats:
@@ -71,6 +61,8 @@ class QueryStats:
             self._thread.start()
 
         key = query_stat_key(query=query, method=method, route=route, time=start_time)
+        ms = (end_time - start_time) * 1000
+
         with self._lock:
             if key in self._stats:
                 stat = self._stats[key]
@@ -79,9 +71,10 @@ class QueryStats:
                     query=query, method=method, route=route, time=start_time
                 )
                 self._stats[key] = stat
-
-            ms = (end_time - start_time) * 1000
             stat.add(ms)
+
+        if hasattr(threadLocal, "_ab_trace"):
+            threadLocal._ab_trace.inc_group("sql", ms)
 
     def _flush(self):
         stats = None

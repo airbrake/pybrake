@@ -1,14 +1,15 @@
 import time
 import functools
-import threading
 
 from django.conf import settings
 from django.utils.module_loading import import_string
 from django.db import connections
 
 from .global_notifier import get_global_notifier
+from .route_trace import RouteTrace, threadLocal
 
-threadLocal = threading.local()
+
+_UNKNOWN_ROUTE = "UNKNOWN"
 
 
 class AirbrakeMiddleware:
@@ -17,30 +18,33 @@ class AirbrakeMiddleware:
         self._notifier = get_global_notifier()
 
     def __call__(self, request):
-        if request.resolver_match:
-            route = request.resolver_match.view_name
-        else:
-            route = "UNKNOWN"
-
-        threadLocal.method = request.method
-        threadLocal.route = route
-
         for conn in connections.all():
             wrap_cursor(conn, self._notifier)
 
-        start_time = time.time()
-        response = self.get_response(request)
-        end_time = time.time()
+        if request.resolver_match:
+            route = request.resolver_match.view_name
+        else:
+            route = _UNKNOWN_ROUTE
 
-        self._notifier.routes.notify(
-            method=request.method,
-            route=route,
-            status_code=response.status_code,
-            start_time=start_time,
-            end_time=end_time,
-        )
+        trace = RouteTrace(method=request.method, route=route)
+        threadLocal._ab_trace = trace
+
+        response = self.get_response(request)
+
+        trace.status_code = response.status_code
+        trace.content_type = response["Content-Type"]
+        trace.end_time = time.time()
+
+        self._notifier.routes.notify(trace)
 
         return response
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        if (
+            hasattr(threadLocal, "_ab_trace")
+            and threadLocal._ab_trace.route == _UNKNOWN_ROUTE
+        ):
+            threadLocal._ab_trace.route = view_func.__name__
 
     def process_exception(self, request, exception):
         if not self._notifier:
@@ -133,8 +137,8 @@ class CursorWrapper:
             end_time = time.time()
             self._notifier.queries.notify(
                 query=sql,
-                method=threadLocal.method,
-                route=threadLocal.route,
+                method=threadLocal._ab_trace.method,
+                route=threadLocal._ab_trace.route,
                 start_time=start_time,
                 end_time=end_time,
             )
