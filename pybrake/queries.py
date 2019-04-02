@@ -12,11 +12,11 @@ from .utils import logger, time_trunc_minute
 _FLUSH_PERIOD = 5
 
 
-class RouteStat:
+class QueryStat:
     __slots__ = [
+        "query",
         "method",
         "route",
-        "statusCode",
         "count",
         "sum",
         "sumsq",
@@ -32,10 +32,10 @@ class RouteStat:
 
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-    def __init__(self, *, method="", route="", status_code=0, time=None):
+    def __init__(self, *, query="", method="", route="", time=None):
+        self.query = query
         self.method = method
         self.route = route
-        self.statusCode = status_code
         self.count = 0
         self.sum = 0
         self.sumsq = 0
@@ -50,37 +50,33 @@ class RouteStat:
         self.td.update(ms)
 
 
-class RouteStats:
+class QueryStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
         self._project_id = project_id
         self._ab_headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._ab_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
+        self._ab_url = "{}/api/v5/projects/{}/query-stats".format(host, project_id)
         self._env = kwargs.get("environment")
 
         self._thread = None
         self._lock = Lock()
         self._stats = None
 
-    def notify(
-        self, *, method="", route="", status_code=0, start_time=None, end_time=None
-    ):
+    def notify(self, *, query="", method="", route="", start_time=None, end_time=None):
         if self._stats is None:
             self._stats = {}
             self._thread = Timer(_FLUSH_PERIOD, self._flush)
             self._thread.start()
 
-        key = route_stat_key(
-            method=method, route=route, status_code=status_code, time=start_time
-        )
+        key = query_stat_key(query=query, method=method, route=route, time=start_time)
         with self._lock:
             if key in self._stats:
                 stat = self._stats[key]
             else:
-                stat = RouteStat(
-                    method=method, route=route, status_code=status_code, time=start_time
+                stat = QueryStat(
+                    query=query, method=method, route=route, time=start_time
                 )
                 self._stats[key] = stat
 
@@ -145,6 +141,6 @@ class RouteStats:
             return
 
 
-def route_stat_key(*, method="", route="", status_code=0, time=None):
+def query_stat_key(*, query="", method="", route="", time=None):
     time = time // 60 * 60
-    return "{}:{}:{}:{}".format(method, route, status_code, time)
+    return (query, method, route, time)
