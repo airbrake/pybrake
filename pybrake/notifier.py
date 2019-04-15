@@ -288,8 +288,9 @@ class Notifier:
             filename, func, line, loader=loader, module_name=module_name
         )
 
-    # pylint: disable=too-many-arguments
-    def _frame_with_code(self, filename, func, line, loader=None, module_name=None):
+    def _frame_with_code(
+        self, filename, func, line, loader=None, module_name=None
+    ):  # pylint: disable=too-many-arguments
         frame = dict(file=self._clean_filename(filename), function=func, line=line)
 
         lines = get_code_hunk(filename, line, loader=loader, module_name=module_name)

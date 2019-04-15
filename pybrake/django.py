@@ -27,7 +27,7 @@ def template_render(self, context):
     return res
 
 
-if Template._render != template_render:
+if Template._render != template_render:  # pylint: disable=comparison-with-callable
     Template.original_render = Template._render
     Template._render = template_render
 
