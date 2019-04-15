@@ -4,12 +4,32 @@ import functools
 from django.conf import settings
 from django.utils.module_loading import import_string
 from django.db import connections
+from django.template import Template
 
 from .global_notifier import get_global_notifier
 from .route_trace import RouteTrace, threadLocal
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
+
+
+def template_render(self, context):
+    if not hasattr(threadLocal, "_ab_trace"):
+        return self.nodelist.render(context)
+
+    start_time = time.time()
+    res = self.nodelist.render(context)
+    end_time = time.time()
+
+    ms = (end_time - start_time) * 1000
+    threadLocal._ab_trace.inc_group("template", ms)
+
+    return res
+
+
+if Template._render != template_render:
+    Template.original_render = Template._render
+    Template._render = template_render
 
 
 class AirbrakeMiddleware:
@@ -44,7 +64,9 @@ class AirbrakeMiddleware:
             hasattr(threadLocal, "_ab_trace")
             and threadLocal._ab_trace.route == _UNKNOWN_ROUTE
         ):
-            threadLocal._ab_trace.route = view_func.__name__
+            route = view_func.__module__
+            route += "." + view_func.__name__
+            threadLocal._ab_trace.route = route
 
     def process_exception(self, request, exception):
         if not self._notifier:
