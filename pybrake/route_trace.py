@@ -13,7 +13,7 @@ _FLUSH_PERIOD = 15
 threadLocal = threading.local()
 
 
-class RouteBreakdown(TDigestStat):
+class _RouteBreakdown(TDigestStat):
     __slots__ = [
         "method",
         "route",
@@ -96,12 +96,12 @@ class RouteBreakdowns:
             self._thread = threading.Timer(_FLUSH_PERIOD, self._flush)
             self._thread.start()
 
-        key = trace.key()
+        key = trace._key()
         with self._lock:
             if key in self._stats:
                 stat = self._stats[key]
             else:
-                stat = RouteBreakdown(
+                stat = _RouteBreakdown(
                     method=trace.method,
                     route=trace.route,
                     responseType=trace.response_type,
@@ -110,7 +110,7 @@ class RouteBreakdowns:
                 self._stats[key] = stat
 
             total_ms = (trace.end_time - trace.start_time) * 1000
-            stat.add_groups(total_ms, trace.groups)
+            stat.add_groups(total_ms, trace._groups)
 
     def _flush(self):
         stats = None
@@ -125,8 +125,10 @@ class RouteBreakdowns:
         if self._env:
             out["environment"] = self._env
 
-        out = json.dumps(out).encode("utf8")
-        req = urllib.request.Request(self._ab_url, data=out, headers=self._ab_headers)
+        out_json = json.dumps(out).encode("utf8")
+        req = urllib.request.Request(
+            self._ab_url, data=out_json, headers=self._ab_headers, method="PUT"
+        )
 
         try:
             resp = urllib.request.urlopen(req, timeout=5)
@@ -176,12 +178,16 @@ class RouteTrace:
         self.route = route
         self.status_code = status_code
         self.content_type = content_type
+
         self.start_time = pytime.time()
         self.end_time = None
-        self.spans = {}
-        self.groups = {}
 
-    def key(self):
+        self._spans = {}
+        self._curr_span = None
+
+        self._groups = {}
+
+    def _key(self):
         time = self.start_time // 60 * 60
         return (self.method, self.route, self.response_type, time)
 
@@ -193,35 +199,105 @@ class RouteTrace:
             return "4xx"
         return self.content_type.split(";")[0].split("/")[-1]
 
-    def span(self, name):
-        return RouteSpan(trace=self, name=name)
+    def _new_span(self, name, **kwargs):
+        return RouteSpan(trace=self, name=name, **kwargs)
 
-    def start_span(self, name):
-        if name in self.spans:
-            raise ValueError("span={} is already started".format(name))
+    def start_span(self, name, *, start_time=None):
+        if self._curr_span is not None:
+            if self._curr_span.name == name:
+                self._curr_span._level += 1
+                return
+            self._curr_span._pause()
 
-        span = self.span(name)
-        self.spans[name] = span
+        span = self._spans.get(name)
+        if span is None:
+            span = self._new_span(name, start_time=start_time)
+            self._spans[name] = span
+        else:
+            span._resume()
 
-    def end_span(self, name):
-        if name not in self.spans:
-            raise ValueError("span={} does not exist".format(name))
+        span._parent = self._curr_span
+        self._curr_span = span
 
-        span = self.spans[name]
-        self.spans.pop(name)
-        span.end()
+    def end_span(self, name, *, end_time=None):
+        if self._curr_span is not None and self._curr_span.name == name:
+            if self._end_span(self._curr_span):
+                self._curr_span = self._curr_span._parent
+                if self._curr_span is not None:
+                    self._curr_span._resume()
+            return
+
+        span = self._spans.get(name)
+        if span is None:
+            logger.error("pybrake: span=%s does not exist", name)
+            return
+        self._end_span(span, end_time=end_time)
+
+    def _end_span(self, span, *, end_time=None):
+        if span._level > 0:
+            span._level -= 1
+            return False
+
+        span.end(end_time=end_time)
+        self._spans.pop(span.name)
+        return True
 
     def _inc_group(self, name, ms):
-        self.groups[name] = self.groups.get(name, 0) + ms
+        self._groups[name] = self._groups.get(name, 0) + ms
 
 
 class RouteSpan:
-    def __init__(self, *, trace=None, name=""):
-        self.trace = trace
+    def __init__(self, *, trace=None, name="", start_time=None):
+        self._trace = trace
+        self._parent = None
+
         self.name = name
+        if start_time is not None:
+            self.start_time = start_time
+        else:
+            self.start_time = pytime.time()
+        self.end_time = None
+
+        self._dur = 0
+        self._level = 0
+
+    def end(self, end_time=None):
+        if end_time is not None:
+            self.end_time = end_time
+        else:
+            self.end_time = pytime.time()
+        self._dur += (self.end_time - self.start_time) * 1000
+        self._trace._inc_group(self.name, self._dur)
+        self._trace = None
+
+    def _pause(self):
+        if self._paused():
+            return
+        self._dur += (pytime.time() - self.start_time) * 1000
+        self.start_time = 0
+
+    def _paused(self):
+        return self.start_time == 0
+
+    def _resume(self):
+        if not self._paused():
+            return
         self.start_time = pytime.time()
 
-    def end(self):
-        end_time = pytime.time()
-        ms = (end_time - self.start_time) * 1000
-        self.trace._inc_group(self.name, ms)
+
+def set_trace(trace):
+    threadLocal._ab_trace = trace
+
+
+def get_trace():
+    return getattr(threadLocal, "_ab_trace", None)
+
+
+def start_span(name, **kwargs):
+    if hasattr(threadLocal, "_ab_trace"):
+        threadLocal._ab_trace.start_span(name, **kwargs)
+
+
+def end_span(name, **kwargs):
+    if hasattr(threadLocal, "_ab_trace"):
+        threadLocal._ab_trace.end_span(name, **kwargs)

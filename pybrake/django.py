@@ -7,23 +7,16 @@ from django.db import connections
 from django.template import Template
 
 from .global_notifier import get_global_notifier
-from .route_trace import RouteTrace, threadLocal
+from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
 
 
 def template_render(self, context):
-    if not hasattr(threadLocal, "_ab_trace"):
-        return self.nodelist.render(context)
-
-    start_time = time.time()
+    start_span("template")
     res = self.nodelist.render(context)
-    end_time = time.time()
-
-    ms = (end_time - start_time) * 1000
-    threadLocal._ab_trace.inc_group("template", ms)
-
+    end_span("template")
     return res
 
 
@@ -47,7 +40,7 @@ class AirbrakeMiddleware:
             route = _UNKNOWN_ROUTE
 
         trace = RouteTrace(method=request.method, route=route)
-        threadLocal._ab_trace = trace
+        set_trace(trace)
 
         response = self.get_response(request)
 
@@ -60,13 +53,11 @@ class AirbrakeMiddleware:
         return response
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if (
-            hasattr(threadLocal, "_ab_trace")
-            and threadLocal._ab_trace.route == _UNKNOWN_ROUTE
-        ):
+        trace = get_trace()
+        if trace is not None and trace.route == _UNKNOWN_ROUTE:
             route = view_func.__module__
             route += "." + view_func.__name__
-            threadLocal._ab_trace.route = route
+            trace.route = route
 
     def process_exception(self, request, exception):
         if not self._notifier:
@@ -152,15 +143,19 @@ class CursorWrapper:
         return self._record(self.cursor.executemany, sql, param_list)
 
     def _record(self, method, sql, params):
+        trace = get_trace()
+
         start_time = time.time()
+        start_span("sql", start_time=start_time)
         try:
             return method(sql, params)
         finally:
             end_time = time.time()
+            end_span("sql", end_time=end_time)
             self._notifier.queries.notify(
                 query=sql,
-                method=threadLocal._ab_trace.method,
-                route=threadLocal._ab_trace.route,
+                method=getattr(trace, "method", ""),
+                route=getattr(trace, "route", ""),
                 start_time=start_time,
                 end_time=end_time,
             )

@@ -8,14 +8,16 @@ def time_trunc_minute(time):
 
 
 def _get_logger():
-    l = logging.getLogger("pybrake")
-    fmter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    _logger = logging.getLogger("pybrake")
+    fmter = logging.Formatter(
+        "%(asctime)s %(filename)s:%(lineno)d %(name)s %(levelname)s - %(message)s"
+    )
 
     sh = logging.StreamHandler()
     sh.setFormatter(fmter)
-    l.addHandler(sh)
+    _logger.addHandler(sh)
 
-    return l
+    return _logger
 
 
 logger = _get_logger()

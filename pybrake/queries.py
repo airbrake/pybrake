@@ -4,7 +4,6 @@ from threading import Lock, Timer
 import urllib.request
 import urllib.error
 
-from .route_trace import threadLocal
 from .tdigest import TDigestStat, as_bytes
 from .utils import logger, time_trunc_minute
 
@@ -47,7 +46,7 @@ class QueryStats:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._ab_url = "{}/api/v5/projects/{}/query-stats".format(host, project_id)
+        self._ab_url = "{}/api/v5/projects/{}/queries-stats".format(host, project_id)
         self._env = kwargs.get("environment")
 
         self._thread = None
@@ -73,9 +72,6 @@ class QueryStats:
                 self._stats[key] = stat
             stat.add(ms)
 
-        if hasattr(threadLocal, "_ab_trace"):
-            threadLocal._ab_trace.inc_group("sql", ms)
-
     def _flush(self):
         stats = None
         with self._lock:
@@ -90,7 +86,9 @@ class QueryStats:
             out["environment"] = self._env
 
         out = json.dumps(out).encode("utf8")
-        req = urllib.request.Request(self._ab_url, data=out, headers=self._ab_headers)
+        req = urllib.request.Request(
+            self._ab_url, data=out, headers=self._ab_headers, method="PUT"
+        )
 
         try:
             resp = urllib.request.urlopen(req, timeout=5)
