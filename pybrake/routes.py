@@ -93,7 +93,9 @@ class RouteStats:
             out["environment"] = self._env
 
         out = json.dumps(out).encode("utf8")
-        req = urllib.request.Request(self._ab_url, data=out, headers=self._ab_headers)
+        req = urllib.request.Request(
+            self._ab_url, data=out, headers=self._ab_headers, method="PUT"
+        )
 
         try:
             resp = urllib.request.urlopen(req, timeout=5)
