@@ -47,13 +47,26 @@ class RouteBreakdown(TDigestStat):
 
         return d
 
-    def add_groups(self, groups):
+    def add_groups(self, total_ms, groups):
+        self.add(total_ms)
+
+        sum_ms = 0
         for name, ms in groups.items():
-            stat = self.groups.get(name)
-            if stat is None:
-                stat = TDigestStat()
-                self.groups[name] = stat
-            stat.add(ms)
+            sum_ms += ms
+            self.add_group(name, ms)
+
+        if sum_ms > total_ms:
+            logger.error("sum=%d > total=%d", sum_ms, total_ms)
+            self.add_group("other", 0)
+        else:
+            self.add_group("other", total_ms - sum_ms)
+
+    def add_group(self, name, ms):
+        stat = self.groups.get(name)
+        if stat is None:
+            stat = TDigestStat()
+            self.groups[name] = stat
+        stat.add(ms)
 
 
 class RouteBreakdowns:
@@ -96,9 +109,8 @@ class RouteBreakdowns:
                 )
                 self._stats[key] = stat
 
-            ms = (trace.end_time - trace.start_time) * 1000
-            stat.add(ms)
-            stat.add_groups(trace.groups)
+            total_ms = (trace.end_time - trace.start_time) * 1000
+            stat.add_groups(total_ms, trace.groups)
 
     def _flush(self):
         stats = None
@@ -175,8 +187,10 @@ class RouteTrace:
 
     @property
     def response_type(self):
+        if self.status_code >= 500:
+            return "5xx"
         if self.status_code >= 400:
-            return "error"
+            return "4xx"
         return self.content_type.split(";")[0].split("/")[-1]
 
     def span(self, name):
@@ -197,7 +211,7 @@ class RouteTrace:
         self.spans.pop(name)
         span.end()
 
-    def inc_group(self, name, ms):
+    def _inc_group(self, name, ms):
         self.groups[name] = self.groups.get(name, 0) + ms
 
 
@@ -210,4 +224,4 @@ class RouteSpan:
     def end(self):
         end_time = pytime.time()
         ms = (end_time - self.start_time) * 1000
-        self.trace.inc_group(self.name, ms)
+        self.trace._inc_group(self.name, ms)
