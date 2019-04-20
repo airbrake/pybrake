@@ -7,7 +7,6 @@ from django.db import connections
 from django.template import Template
 from django.core import cache
 from django.core.cache import CacheHandler
-from django.core.cache.backends.base import BaseCache
 from django.middleware import cache as middleware_cache
 
 from .global_notifier import get_global_notifier
@@ -187,9 +186,9 @@ def cache_span(fn):
     return wrapped
 
 
-class CacheWrapper(BaseCache):
-    def __init__(self, cache):
-        self.cache = cache
+class CacheWrapper:
+    def __init__(self, actual_cache):
+        self.cache = actual_cache
 
     def __repr__(self):
         return str("<CacheWrapper for %s>") % repr(self.cache)
@@ -211,6 +210,10 @@ class CacheWrapper(BaseCache):
     @cache_span
     def set(self, *args, **kwargs):
         return self.cache.set(*args, **kwargs)
+
+    @cache_span
+    def touch(self, *args, **kwargs):
+        return self.cache.touch(*args, **kwargs)
 
     @cache_span
     def delete(self, *args, **kwargs):
