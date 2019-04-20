@@ -5,6 +5,10 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 from django.db import connections
 from django.template import Template
+from django.core import cache
+from django.core.cache import CacheHandler
+from django.core.cache.backends.base import BaseCache
+from django.middleware import cache as middleware_cache
 
 from .global_notifier import get_global_notifier
 from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
@@ -171,3 +175,92 @@ class CursorWrapper:
 
     def __exit__(self, typ, value, traceback):
         self._cursor.close()
+
+
+def cache_span(fn):
+    def wrapped(self, *args, **kwargs):
+        start_span("cache")
+        res = fn(self, *args, **kwargs)
+        end_span("cache")
+        return res
+
+    return wrapped
+
+
+class CacheWrapper(BaseCache):
+    def __init__(self, cache):
+        self.cache = cache
+
+    def __repr__(self):
+        return str("<CacheWrapper for %s>") % repr(self.cache)
+
+    def __contains__(self, key):
+        return self.cache.__contains__(key)
+
+    def __getattr__(self, name):
+        return getattr(self.cache, name)
+
+    @cache_span
+    def add(self, *args, **kwargs):
+        return self.cache.add(*args, **kwargs)
+
+    @cache_span
+    def get(self, *args, **kwargs):
+        return self.cache.get(*args, **kwargs)
+
+    @cache_span
+    def set(self, *args, **kwargs):
+        return self.cache.set(*args, **kwargs)
+
+    @cache_span
+    def delete(self, *args, **kwargs):
+        return self.cache.delete(*args, **kwargs)
+
+    @cache_span
+    def clear(self, *args, **kwargs):
+        return self.cache.clear(*args, **kwargs)
+
+    @cache_span
+    def has_key(self, *args, **kwargs):
+        # Ignore flake8 rules for has_key since we need to support caches
+        # that may be using has_key.
+        return self.cache.has_key(*args, **kwargs)  # noqa
+
+    @cache_span
+    def incr(self, *args, **kwargs):
+        return self.cache.incr(*args, **kwargs)
+
+    @cache_span
+    def decr(self, *args, **kwargs):
+        return self.cache.decr(*args, **kwargs)
+
+    @cache_span
+    def get_many(self, *args, **kwargs):
+        return self.cache.get_many(*args, **kwargs)
+
+    @cache_span
+    def set_many(self, *args, **kwargs):
+        self.cache.set_many(*args, **kwargs)
+
+    @cache_span
+    def delete_many(self, *args, **kwargs):
+        self.cache.delete_many(*args, **kwargs)
+
+    @cache_span
+    def incr_version(self, *args, **kwargs):
+        return self.cache.incr_version(*args, **kwargs)
+
+    @cache_span
+    def decr_version(self, *args, **kwargs):
+        return self.cache.decr_version(*args, **kwargs)
+
+
+class AirbrakeCacheHandler(CacheHandler):
+    def __getitem__(self, alias):
+        actual_cache = super().__getitem__(alias)
+        return CacheWrapper(actual_cache)
+
+
+cache_handler = AirbrakeCacheHandler()
+middleware_cache.caches = cache_handler
+cache.caches = cache_handler

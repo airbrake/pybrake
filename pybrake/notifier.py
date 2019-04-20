@@ -91,16 +91,16 @@ class Notifier:
     def add_filter(self, filter_fn):
         """Appends filter to the list.
 
-    Filter is a function that accepts notice. Filter can modify passed
-    notice or return None if notice must be ignored.
-    """
+        Filter is a function that accepts notice. Filter can modify passed
+        notice or return None if notice must be ignored.
+        """
         self._filters.append(filter_fn)
 
     def notify_sync(self, err):
         """Notifies Airbrake about exception.
 
-    Under the hood notify is a shortcut for build_notice and send_notice.
-    """
+        Under the hood notify is a shortcut for build_notice and send_notice.
+        """
         notice = self.build_notice(err)
         return self.send_notice_sync(notice)
 
@@ -116,10 +116,10 @@ class Notifier:
     def send_notice_sync(self, notice):
         """Sends notice to Airbrake.
 
-    It returns notice with 2 possible new keys:
-    - {'id' => str} - notice id on success.
-    - {'error' => str|Exception} - error on failure.
-    """
+        It returns notice with 2 possible new keys:
+        - {'id' => str} - notice id on success.
+        - {'error' => str|Exception} - error on failure.
+        """
         for fn in self._filters:
             r = fn(notice)
             if r is None:
@@ -209,16 +209,16 @@ class Notifier:
     def notify(self, err):
         """Asynchronously notifies Airbrake about exception from separate thread.
 
-    Returns concurrent.futures.Future.
-    """
+        Returns concurrent.futures.Future.
+        """
         notice = self.build_notice(err)
         return self.send_notice(notice)
 
     def send_notice(self, notice):
         """Asynchronously sends notice to Airbrake from separate thread.
 
-    Returns concurrent.futures.Future.
-    """
+        Returns concurrent.futures.Future.
+        """
         pool = self._get_thread_pool()
         if pool._work_queue.qsize() >= self._max_queue_size:
             notice["error"] = "queue is full"
