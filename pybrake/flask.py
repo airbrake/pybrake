@@ -15,7 +15,6 @@ else:
 
 from .notifier import Notifier
 from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
-from .utils import logger
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
