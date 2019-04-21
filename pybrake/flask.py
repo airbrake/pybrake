@@ -7,11 +7,18 @@ from flask import (
 )
 
 try:
+    import flask_sqlalchemy as _
+except ImportError:
+    _sqla_available = False
+else:
+    _sqla_available = True
+
+try:
     from flask_login import current_user
 except ImportError:
-    flask_login_imported = False
+    _flask_login_available = False
 else:
-    flask_login_imported = True
+    _flask_login_available = True
 
 from .notifier import Notifier
 from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
@@ -36,6 +43,9 @@ def init_app(app):
 
     app.before_request(_before_request(notifier))
     app.after_request(_after_request(notifier))
+
+    if _sqla_available:
+        _sqla_instrument(app)
 
     return app
 
@@ -91,7 +101,7 @@ def _handle_exception(sender, exception, **_):
     if user_addr:
         ctx["userAddr"] = user_addr
 
-    if flask_login_imported and current_user.is_authenticated:
+    if _flask_login_available and current_user.is_authenticated:
         user = dict(id=current_user.get_id())
         for s in ["username", "name"]:
             if hasattr(current_user, s):
@@ -111,3 +121,24 @@ def _handle_exception(sender, exception, **_):
     )
 
     notifier.send_notice(notice)
+
+
+def _sqla_instrument(app):
+    from sqlalchemy import event
+
+    sqla = app.extensions["sqlalchemy"]
+    engine = sqla.db.get_engine()
+    event.listen(engine, "before_cursor_execute", _sqla_before_cursor_execute)
+    event.listen(engine, "after_cursor_execute", _sqla_after_cursor_execute)
+
+
+def _sqla_before_cursor_execute(
+    conn, cursor, statement, parameters, context, executemany
+):
+    start_span("sql")
+
+
+def _sqla_after_cursor_execute(
+    conn, cursor, statement, parameters, context, executemany
+):
+    end_span("sql")
