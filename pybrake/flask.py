@@ -1,7 +1,10 @@
 import time
-from flask import g, request
-from flask.signals import got_request_exception
-from pybrake.utils import logger
+from flask import (
+    request,
+    got_request_exception,
+    before_render_template,
+    template_rendered,
+)
 
 try:
     from flask_login import current_user
@@ -11,6 +14,11 @@ else:
     flask_login_imported = True
 
 from .notifier import Notifier
+from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
+from .utils import logger
+
+
+_UNKNOWN_ROUTE = "UNKNOWN"
 
 
 def init_app(app):
@@ -24,36 +32,48 @@ def init_app(app):
     app.extensions["pybrake"] = notifier
     got_request_exception.connect(_handle_exception, sender=app)
 
-    app.before_request(_before_request())
+    before_render_template.connect(_before_render_template, sender=app)
+    template_rendered.connect(_template_rendered, sender=app)
+
+    app.before_request(_before_request(notifier))
     app.after_request(_after_request(notifier))
 
     return app
 
 
-def _before_request():
+def _before_request(notifier):
     def before_request_middleware():
-        g.request_start_time = time.time()
+        if request.url_rule:
+            route = request.url_rule.rule
+        else:
+            route = _UNKNOWN_ROUTE
+
+        trace = RouteTrace(method=request.method, route=route)
+        set_trace(trace)
 
     return before_request_middleware
 
 
 def _after_request(notifier):
     def after_request_middleware(response):
-        if not hasattr(g, "request_start_time"):
-            logger.error("request_start_time is empty")
-            return response
-
-        notifier.routes.notify(
-            method=request.method,
-            route=request.url_rule.rule,
-            status_code=response.status_code,
-            start_time=g.request_start_time,
-            end_time=time.time(),
-        )
+        trace = get_trace()
+        if trace is not None:
+            trace.status_code = response.status_code
+            trace.content_type = response.headers.get("Content-Type")
+            trace.end_time = time.time()
+            notifier.routes.notify(trace)
 
         return response
 
     return after_request_middleware
+
+
+def _before_render_template(sender, template, context, **extra):
+    start_span("template")
+
+
+def _template_rendered(sender, template, context, **extra):
+    end_span("template")
 
 
 def _handle_exception(sender, exception, **_):

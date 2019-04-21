@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from flask import Flask, request
+from flask import Flask, request, render_template
 from time import sleep
 from random import randrange
 from argparse import ArgumentParser
@@ -28,8 +26,7 @@ def ping():
 @app.route("/hello/<name>", methods=["GET"])
 def hello(name):
     sleep(randrange(0, 3))
-
-    return "Hello {}".format(name)
+    return render_template("hello.html", name=name)
 
 
 app.run(debug=True)
