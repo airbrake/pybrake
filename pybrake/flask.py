@@ -124,7 +124,7 @@ def _handle_exception(sender, exception, **_):
 
 
 def _sqla_instrument(app):
-    from sqlalchemy import event
+    from sqlalchemy import event  # # pylint: disable=import-error
 
     sqla = app.extensions["sqlalchemy"]
     engine = sqla.db.get_engine()
