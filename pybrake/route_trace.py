@@ -71,6 +71,10 @@ class _RouteBreakdown(TDigestStat):
 
 class RouteBreakdowns:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
+        self._apm_disabled = kwargs.get("apm_disabled", False)
+        if self._apm_disabled:
+            return
+
         self._project_id = project_id
         self._ab_headers = {
             "Content-Type": "application/json",
@@ -86,6 +90,9 @@ class RouteBreakdowns:
         self._stats = None
 
     def notify(self, trace):
+        if self._apm_disabled:
+            return
+
         if trace.status_code < 200 or (
             trace.status_code >= 300 and trace.status_code < 400
         ):

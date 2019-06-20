@@ -40,6 +40,8 @@ class Notifier:
     def __init__(
         self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):
+        self._apm_disabled = kwargs.get("apm_disabled", False)
+
         self.routes = _Routes(
             project_id=project_id, project_key=project_key, host=host, **kwargs
         )
@@ -331,10 +333,17 @@ class Notifier:
 
 class _Routes:
     def __init__(self, **kwargs):
+        self._apm_disabled = kwargs.get("apm_disabled", False)
+        if self._apm_disabled:
+            return
+
         self.stats = RouteStats(**kwargs)
         self.breakdowns = RouteBreakdowns(**kwargs)
 
     def notify(self, trace):
+        if self._apm_disabled:
+            return
+
         if trace.end_time is None:
             trace.end_time = time.time()
 

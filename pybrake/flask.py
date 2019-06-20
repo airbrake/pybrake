@@ -34,18 +34,20 @@ def init_app(app):
         raise ValueError("app.config['PYBRAKE'] is not defined")
 
     notifier = Notifier(**app.config["PYBRAKE"])
+    apm_disabled = notifier._apm_disabled
 
     app.extensions["pybrake"] = notifier
     got_request_exception.connect(_handle_exception, sender=app)
 
-    before_render_template.connect(_before_render_template, sender=app)
-    template_rendered.connect(_template_rendered, sender=app)
+    if not apm_disabled:
+        before_render_template.connect(_before_render_template, sender=app)
+        template_rendered.connect(_template_rendered, sender=app)
 
-    app.before_request(_before_request(notifier))
-    app.after_request(_after_request(notifier))
+        app.before_request(_before_request(notifier))
+        app.after_request(_after_request(notifier))
 
-    if _sqla_available:
-        _sqla_instrument(app)
+        if _sqla_available:
+            _sqla_instrument(app)
 
     return app
 
