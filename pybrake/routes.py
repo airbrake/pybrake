@@ -40,6 +40,10 @@ class RouteStat(TDigestStat):
 
 class RouteStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
+        self._apm_disabled = kwargs.get("apm_disabled", False)
+        if self._apm_disabled:
+            return
+
         self._project_id = project_id
         self._ab_headers = {
             "Content-Type": "application/json",
@@ -53,6 +57,9 @@ class RouteStats:
         self._stats = None
 
     def notify(self, trace):
+        if self._apm_disabled:
+            return
+
         if self._stats is None:
             self._stats = {}
             self._thread = Timer(_FLUSH_PERIOD, self._flush)

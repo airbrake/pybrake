@@ -32,25 +32,28 @@ class AirbrakeMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self._notifier = get_global_notifier()
+        self._apm_disabled = self._notifier._apm_disabled
 
     def __call__(self, request):
+        if self._apm_disabled:
+            return self.get_response(request)
+
         for conn in connections.all():
             wrap_cursor(conn, self._notifier)
 
-        if request.resolver_match:
-            route = request.resolver_match.view_name
-        else:
-            route = _UNKNOWN_ROUTE
+            if request.resolver_match:
+                route = request.resolver_match.view_name
+            else:
+                route = _UNKNOWN_ROUTE
 
-        trace = RouteTrace(method=request.method, route=route)
-        set_trace(trace)
+            trace = RouteTrace(method=request.method, route=route)
+            set_trace(trace)
 
         response = self.get_response(request)
 
         trace.status_code = response.status_code
         trace.content_type = response["Content-Type"]
         trace.end_time = time.time()
-
         self._notifier.routes.notify(trace)
 
         return response
