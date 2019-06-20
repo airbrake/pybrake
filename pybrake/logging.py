@@ -54,7 +54,7 @@ class LoggingHandler(logging.Handler):
 
         error = dict(
             type=record.name,
-            message=record.msg,
+            message=record.getMessage(),
             backtrace=self._build_backtrace(record),
         )
         return error
@@ -73,6 +73,7 @@ class LoggingHandler(logging.Handler):
         return backtrace
 
     def _update_context(self, context, record):
+        context["messagePattern"] = record.msg
         context["severity"] = record.levelname
         context["component"] = record.module
 
