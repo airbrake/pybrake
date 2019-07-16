@@ -1,7 +1,16 @@
 import base64
 import struct
 
-import tdigest
+try:
+    import tdigest
+
+    _tdigest_supported = True
+except ImportError:
+    _tdigest_supported = False
+
+
+def tdigest_supported():
+    return _tdigest_supported
 
 
 class TDigestStat:
@@ -27,12 +36,12 @@ class TDigestStat:
         self.td.update(ms)
 
 
-SMALL_ENCODING = 2
+_SMALL_ENCODING = 2
 
 
 def from_bytes(b):
     encoding = int.from_bytes(b[:4], byteorder="big")
-    if encoding != SMALL_ENCODING:
+    if encoding != _SMALL_ENCODING:
         raise ValueError("unsupported encoding version: %s" % encoding)
 
     compression = struct.unpack(">d", b[4:12])[0]
@@ -62,7 +71,7 @@ def from_bytes(b):
 def as_bytes(digest):
     b = bytearray()
 
-    b += SMALL_ENCODING.to_bytes(4, byteorder="big")
+    b += _SMALL_ENCODING.to_bytes(4, byteorder="big")
     b += struct.pack(">d", digest.K)
     b += len(digest).to_bytes(4, byteorder="big")
 

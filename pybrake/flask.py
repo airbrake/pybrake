@@ -21,7 +21,7 @@ else:
     _flask_login_available = True
 
 from .notifier import Notifier
-from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
+from .route_trace import RouteTrace, set_trace, get_trace, start_span, finish_span
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
@@ -84,7 +84,7 @@ def _before_render_template(sender, template, context, **extra):
 
 
 def _template_rendered(sender, template, context, **extra):
-    end_span("template")
+    finish_span("template")
 
 
 def _handle_exception(sender, exception, **_):
@@ -143,4 +143,4 @@ def _sqla_before_cursor_execute(
 def _sqla_after_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
-    end_span("sql")
+    finish_span("sql")

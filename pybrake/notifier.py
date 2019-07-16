@@ -11,8 +11,7 @@ import time
 
 from .notice import jsonify_notice
 from .git import find_git_dir
-from .routes import RouteStats
-from .route_trace import RouteBreakdowns
+from .routes import _Routes
 from .queries import QueryStats
 from .blacklist_filter import make_blacklist_filter
 from .code_hunks import get_code_hunk
@@ -329,23 +328,3 @@ class Notifier:
             max_workers = (os.cpu_count() or 1) * 5
             self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
         return self._thread_pool
-
-
-class _Routes:
-    def __init__(self, **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
-        if self._apm_disabled:
-            return
-
-        self.stats = RouteStats(**kwargs)
-        self.breakdowns = RouteBreakdowns(**kwargs)
-
-    def notify(self, trace):
-        if self._apm_disabled:
-            return
-
-        if trace.end_time is None:
-            trace.end_time = time.time()
-
-        self.stats.notify(trace)
-        self.breakdowns.notify(trace)
