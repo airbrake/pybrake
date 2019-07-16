@@ -5,7 +5,7 @@ import threading
 import urllib.request
 import urllib.error
 
-from .tdigest import as_bytes, TDigestStat
+from .tdigest import tdigest_supported, as_bytes, TDigestStat
 from .utils import logger, time_trunc_minute
 
 _FLUSH_PERIOD = 15
@@ -71,7 +71,9 @@ class _RouteBreakdown(TDigestStat):
 
 class RouteBreakdowns:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
+        self._apm_disabled = (
+            kwargs.get("apm_disabled", False) or not tdigest_supported()
+        )
         if self._apm_disabled:
             return
 
@@ -226,9 +228,9 @@ class RouteTrace:
         span._parent = self._curr_span
         self._curr_span = span
 
-    def end_span(self, name, *, end_time=None):
+    def finish_span(self, name, *, end_time=None):
         if self._curr_span is not None and self._curr_span.name == name:
-            if self._end_span(self._curr_span):
+            if self._finish_span(self._curr_span):
                 self._curr_span = self._curr_span._parent
                 if self._curr_span is not None:
                     self._curr_span._resume()
@@ -238,9 +240,9 @@ class RouteTrace:
         if span is None:
             logger.error("pybrake: span=%s does not exist", name)
             return
-        self._end_span(span, end_time=end_time)
+        self._finish_span(span, end_time=end_time)
 
-    def _end_span(self, span, *, end_time=None):
+    def _finish_span(self, span, *, end_time=None):
         if span._level > 0:
             span._level -= 1
             return False
@@ -305,6 +307,6 @@ def start_span(name, **kwargs):
         threadLocal._ab_trace.start_span(name, **kwargs)
 
 
-def end_span(name, **kwargs):
+def finish_span(name, **kwargs):
     if hasattr(threadLocal, "_ab_trace"):
-        threadLocal._ab_trace.end_span(name, **kwargs)
+        threadLocal._ab_trace.finish_span(name, **kwargs)

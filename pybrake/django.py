@@ -10,7 +10,7 @@ from django.core.cache import CacheHandler
 from django.middleware import cache as middleware_cache
 
 from .global_notifier import get_global_notifier
-from .route_trace import RouteTrace, set_trace, get_trace, start_span, end_span
+from .route_trace import RouteTrace, set_trace, get_trace, start_span, finish_span
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
@@ -19,7 +19,7 @@ _UNKNOWN_ROUTE = "UNKNOWN"
 def template_render(self, context):
     start_span("template")
     res = self.nodelist.render(context)
-    end_span("template")
+    finish_span("template")
     return res
 
 
@@ -157,7 +157,7 @@ class CursorWrapper:
             return method(sql, params)
         finally:
             end_time = time.time()
-            end_span("sql", end_time=end_time)
+            finish_span("sql", end_time=end_time)
             self._notifier.queries.notify(
                 query=sql,
                 method=getattr(trace, "method", ""),
@@ -183,7 +183,7 @@ def cache_span(fn):
     def wrapped(self, *args, **kwargs):
         start_span("cache")
         res = fn(self, *args, **kwargs)
-        end_span("cache")
+        finish_span("cache")
         return res
 
     return wrapped
