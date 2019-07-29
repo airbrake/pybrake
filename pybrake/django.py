@@ -52,7 +52,8 @@ class AirbrakeMiddleware:
         response = self.get_response(request)
 
         trace.status_code = response.status_code
-        trace.content_type = response["Content-Type"]
+        if "Content-Type" in response:
+            trace.content_type = response["Content-Type"]
         trace.end_time = time.time()
         self._notifier.routes.notify(trace)
 
