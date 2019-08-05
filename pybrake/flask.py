@@ -21,7 +21,8 @@ else:
     _flask_login_available = True
 
 from .notifier import Notifier
-from .route_trace import RouteTrace, set_trace, get_trace, start_span, finish_span
+from .route_metric import RouteMetric
+from . import metrics
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
@@ -59,20 +60,21 @@ def _before_request(notifier):
         else:
             route = _UNKNOWN_ROUTE
 
-        trace = RouteTrace(method=request.method, route=route)
-        set_trace(trace)
+        metric = RouteMetric(method=request.method, route=route)
+        metrics.set_active(metric)
 
     return before_request_middleware
 
 
 def _after_request(notifier):
     def after_request_middleware(response):
-        trace = get_trace()
-        if trace is not None:
-            trace.status_code = response.status_code
-            trace.content_type = response.headers.get("Content-Type")
-            trace.end_time = time.time()
-            notifier.routes.notify(trace)
+        metric = metrics.get_active()
+        if metric is not None:
+            metric.status_code = response.status_code
+            metric.content_type = response.headers.get("Content-Type")
+            metric.end_time = time.time()
+            notifier.routes.notify(metric)
+            metrics.set_active(None)
 
         return response
 
@@ -80,11 +82,11 @@ def _after_request(notifier):
 
 
 def _before_render_template(sender, template, context, **extra):
-    start_span("template")
+    metrics.start_span("template")
 
 
 def _template_rendered(sender, template, context, **extra):
-    finish_span("template")
+    metrics.end_span("template")
 
 
 def _handle_exception(sender, exception, **_):
@@ -137,10 +139,10 @@ def _sqla_instrument(app):
 def _sqla_before_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
-    start_span("sql")
+    metrics.start_span("sql")
 
 
 def _sqla_after_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
-    finish_span("sql")
+    metrics.end_span("sql")

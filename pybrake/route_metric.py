@@ -1,56 +1,43 @@
 import base64
 import json
-import time as pytime
-from threading import Lock, Timer
+import threading
 import urllib.request
 import urllib.error
 
 from . import metrics
-from .tdigest import tdigest_supported, as_bytes, TDigestStat
+from .tdigest import tdigest_supported, as_bytes, TDigestStatGroups
 from .utils import logger, time_trunc_minute
-from .route_metric import RouteBreakdowns
 
 
-class _Routes:
-    def __init__(self, **kwargs):
-        self._apm_disabled = (
-            kwargs.get("apm_disabled", False) or not tdigest_supported()
-        )
-        if self._apm_disabled:
-            return
+class _RouteBreakdown(TDigestStatGroups):
+    __slots__ = TDigestStatGroups.__slots__ + (
+        "method",
+        "route",
+        "responseType",
+        "time",
+    )
 
-        self.stats = RouteStats(**kwargs)
-        self.breakdowns = RouteBreakdowns(**kwargs)
-
-    def notify(self, metric):
-        if self._apm_disabled:
-            return
-
-        if metric.end_time is None:
-            metric.end_time = pytime.time()
-
-        self.stats.notify(metric)
-        self.breakdowns.notify(metric)
-
-
-class RouteStat(TDigestStat):
-    __slots__ = TDigestStat.__slots__ + ("method", "route", "statusCode", "time")
+    def __init__(self, *, method="", route="", responseType="", time=None):
+        super().__init__()
+        self.method = method
+        self.route = route
+        self.responseType = responseType
+        self.time = time_trunc_minute(time)
 
     @property
     def __dict__(self):
         b = as_bytes(self.td)
         self.tdigest = base64.b64encode(b).decode("ascii")
-        return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
+        d = {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-    def __init__(self, *, method="", route="", status_code=0, time=None):
-        super().__init__()
-        self.method = method
-        self.route = route
-        self.statusCode = status_code
-        self.time = time_trunc_minute(time)
+        groups = d["groups"]
+        for k, v in groups.items():
+            groups[k] = v.__dict__
+
+        return d
 
 
-class RouteStats:
+class RouteBreakdowns:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
         self._apm_disabled = (
             kwargs.get("apm_disabled", False) or not tdigest_supported()
@@ -63,42 +50,46 @@ class RouteStats:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._ab_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
+        self._ab_url = "{}/api/v5/projects/{}/routes-breakdowns".format(
+            host, project_id
+        )
         self._env = kwargs.get("environment")
 
         self._thread = None
-        self._lock = Lock()
+        self._lock = threading.Lock()
         self._stats = None
 
     def notify(self, metric):
         if self._apm_disabled:
             return
 
+        if metric.status_code < 200 or (
+            metric.status_code >= 300 and metric.status_code < 400
+        ):
+            return
+
+        metric._end()
+
         if self._stats is None:
             self._stats = {}
-            self._thread = Timer(metrics.FLUSH_PERIOD, self._flush)
+            self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
             self._thread.start()
 
-        key = route_stat_key(
-            method=metric.method,
-            route=metric.route,
-            status_code=metric.status_code,
-            time=metric.start_time,
-        )
+        key = metric._key()
         with self._lock:
             if key in self._stats:
                 stat = self._stats[key]
             else:
-                stat = RouteStat(
+                stat = _RouteBreakdown(
                     method=metric.method,
                     route=metric.route,
-                    status_code=metric.status_code,
+                    responseType=metric.response_type,
                     time=metric.start_time,
                 )
                 self._stats[key] = stat
 
-            ms = (metric.end_time - metric.start_time) * 1000
-            stat.add(ms)
+            total_ms = (metric.end_time - metric.start_time) * 1000
+            stat.add_groups(total_ms, metric._groups)
 
     def _flush(self):
         stats = None
@@ -113,9 +104,9 @@ class RouteStats:
         if self._env:
             out["environment"] = self._env
 
-        out = json.dumps(out).encode("utf8")
+        out_json = json.dumps(out).encode("utf8")
         req = urllib.request.Request(
-            self._ab_url, data=out, headers=self._ab_headers, method="POST"
+            self._ab_url, data=out_json, headers=self._ab_headers, method="POST"
         )
 
         try:
@@ -160,6 +151,22 @@ class RouteStats:
             return
 
 
-def route_stat_key(*, method="", route="", status_code=0, time=None):
-    time = time // 60 * 60
-    return (method, route, status_code, time)
+class RouteMetric(metrics.Metric):
+    def __init__(self, *, method="", route="", status_code=0, content_type=""):
+        super().__init__()
+        self.method = method
+        self.route = route
+        self.status_code = status_code
+        self.content_type = content_type
+
+    def _key(self):
+        time = self.start_time // 60 * 60
+        return (self.method, self.route, self.response_type, time)
+
+    @property
+    def response_type(self):
+        if self.status_code >= 500:
+            return "5xx"
+        if self.status_code >= 400:
+            return "4xx"
+        return self.content_type.split(";")[0].split("/")[-1]

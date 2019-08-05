@@ -14,7 +14,7 @@ def tdigest_supported():
 
 
 class TDigestStat:
-    __slots__ = ["count", "sum", "sumsq", "td", "tdigest"]
+    __slots__ = ("count", "sum", "sumsq", "td", "tdigest")
 
     def __init__(self):
         self.count = 0
@@ -34,6 +34,27 @@ class TDigestStat:
         self.sum += ms
         self.sumsq += ms * ms
         self.td.update(ms)
+
+
+class TDigestStatGroups(TDigestStat):
+    __slots__ = TDigestStat.__slots__ + ("groups",)
+
+    def __init__(self):
+        super().__init__()
+        self.groups = {}
+
+    def add_groups(self, total_ms, groups):
+        self.add(total_ms)
+
+        for name, ms in groups.items():
+            self.add_group(name, ms)
+
+    def add_group(self, name, ms):
+        stat = self.groups.get(name)
+        if stat is None:
+            stat = TDigestStat()
+            self.groups[name] = stat
+        stat.add(ms)
 
 
 _SMALL_ENCODING = 2

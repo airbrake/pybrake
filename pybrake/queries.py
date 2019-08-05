@@ -1,28 +1,16 @@
 import base64
 import json
-from threading import Lock, Timer
+import threading
 import urllib.request
 import urllib.error
 
+from . import metrics
 from .tdigest import tdigest_supported, TDigestStat, as_bytes
 from .utils import logger, time_trunc_minute
 
 
-_FLUSH_PERIOD = 15
-
-
 class QueryStat(TDigestStat):
-    __slots__ = [
-        "query",
-        "method",
-        "route",
-        "count",
-        "sum",
-        "sumsq",
-        "time",
-        "td",
-        "tdigest",
-    ]
+    __slots__ = TDigestStat.__slots__ + ("query", "method", "route", "time")
 
     @property
     def __dict__(self):
@@ -56,7 +44,7 @@ class QueryStats:
         self._env = kwargs.get("environment")
 
         self._thread = None
-        self._lock = Lock()
+        self._lock = threading.Lock()
         self._stats = None
 
     def notify(self, *, query="", method="", route="", start_time=None, end_time=None):
@@ -65,7 +53,7 @@ class QueryStats:
 
         if self._stats is None:
             self._stats = {}
-            self._thread = Timer(_FLUSH_PERIOD, self._flush)
+            self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
             self._thread.start()
 
         key = query_stat_key(query=query, method=method, route=route, time=start_time)
@@ -90,13 +78,13 @@ class QueryStats:
         if not stats:
             raise ValueError("stats is empty")
 
-        out = {"routes": [v.__dict__ for v in stats.values()]}
+        out = {"queries": [v.__dict__ for v in stats.values()]}
         if self._env:
             out["environment"] = self._env
 
         out = json.dumps(out).encode("utf8")
         req = urllib.request.Request(
-            self._ab_url, data=out, headers=self._ab_headers, method="PUT"
+            self._ab_url, data=out, headers=self._ab_headers, method="POST"
         )
 
         try:

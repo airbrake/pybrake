@@ -13,6 +13,7 @@ from .notice import jsonify_notice
 from .git import find_git_dir
 from .routes import _Routes
 from .queries import QueryStats
+from .queues import QueueStats
 from .blacklist_filter import make_blacklist_filter
 from .code_hunks import get_code_hunk
 from .git import get_git_revision
@@ -45,6 +46,9 @@ class Notifier:
             project_id=project_id, project_key=project_key, host=host, **kwargs
         )
         self.queries = QueryStats(
+            project_id=project_id, project_key=project_key, host=host, **kwargs
+        )
+        self.queues = QueueStats(
             project_id=project_id, project_key=project_key, host=host, **kwargs
         )
 

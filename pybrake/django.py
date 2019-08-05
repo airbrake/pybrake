@@ -10,16 +10,17 @@ from django.core.cache import CacheHandler
 from django.middleware import cache as middleware_cache
 
 from .global_notifier import get_global_notifier
-from .route_trace import RouteTrace, set_trace, get_trace, start_span, finish_span
+from .route_metric import RouteMetric
+from . import metrics
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
 
 
 def template_render(self, context):
-    start_span("template")
+    metrics.start_span("template")
     res = self.nodelist.render(context)
-    finish_span("template")
+    metrics.end_span("template")
     return res
 
 
@@ -46,25 +47,26 @@ class AirbrakeMiddleware:
             else:
                 route = _UNKNOWN_ROUTE
 
-            trace = RouteTrace(method=request.method, route=route)
-            set_trace(trace)
+        metric = RouteMetric(method=request.method, route=route)
+        metrics.set_active(metric)
 
         response = self.get_response(request)
 
-        trace.status_code = response.status_code
+        metric.status_code = response.status_code
         if "Content-Type" in response:
-            trace.content_type = response["Content-Type"]
-        trace.end_time = time.time()
-        self._notifier.routes.notify(trace)
+            metric.content_type = response["Content-Type"]
+        metric.end_time = time.time()
+        self._notifier.routes.notify(metric)
+        metrics.set_active(None)
 
         return response
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        trace = get_trace()
-        if trace is not None and trace.route == _UNKNOWN_ROUTE:
+        metric = metrics.get_active()
+        if metric is not None and metric.route == _UNKNOWN_ROUTE:
             route = view_func.__module__
             route += "." + view_func.__name__
-            trace.route = route
+            metric.route = route
 
     def process_exception(self, request, exception):
         if not self._notifier:
@@ -150,19 +152,19 @@ class CursorWrapper:
         return self._record(self.cursor.executemany, sql, param_list)
 
     def _record(self, method, sql, params):
-        trace = get_trace()
+        metric = metrics.get_active()
 
         start_time = time.time()
-        start_span("sql", start_time=start_time)
+        metrics.start_span("sql", start_time=start_time)
         try:
             return method(sql, params)
         finally:
             end_time = time.time()
-            finish_span("sql", end_time=end_time)
+            metrics.end_span("sql", end_time=end_time)
             self._notifier.queries.notify(
                 query=sql,
-                method=getattr(trace, "method", ""),
-                route=getattr(trace, "route", ""),
+                method=getattr(metric, "method", ""),
+                route=getattr(metric, "route", ""),
                 start_time=start_time,
                 end_time=end_time,
             )
@@ -181,10 +183,11 @@ class CursorWrapper:
 
 
 def cache_span(fn):
+    @functools.wraps(fn)
     def wrapped(self, *args, **kwargs):
-        start_span("cache")
+        metrics.start_span("cache")
         res = fn(self, *args, **kwargs)
-        finish_span("cache")
+        metrics.end_span("cache")
         return res
 
     return wrapped
