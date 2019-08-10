@@ -181,6 +181,7 @@ class CursorWrapper:
 
 
 def cache_span(fn):
+    @functools.wraps(fn)
     def wrapped(self, *args, **kwargs):
         start_span("cache")
         res = fn(self, *args, **kwargs)
