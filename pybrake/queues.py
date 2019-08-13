@@ -11,9 +11,9 @@ from .utils import logger, time_trunc_minute
 _FLUSH_PERIOD = 15
 
 
-class QueryStat(TDigestStat):
+class QueueStat(TDigestStat):
     __slots__ = [
-        "query",
+        "queue",
         "method",
         "route",
         "count",
@@ -31,15 +31,15 @@ class QueryStat(TDigestStat):
 
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-    def __init__(self, *, query="", method="", route="", time=None):
+    def __init__(self, *, queue="", method="", route="", time=None):
         super().__init__()
-        self.query = query
+        self.queue = queue
         self.method = method
         self.route = route
         self.time = time_trunc_minute(time)
 
 
-class QueryStats:
+class QueueStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
         self._apm_disabled = (
             kwargs.get("apm_disabled", False) or not tdigest_supported()
@@ -59,7 +59,7 @@ class QueryStats:
         self._lock = Lock()
         self._stats = None
 
-    def notify(self, *, query="", method="", route="", start_time=None, end_time=None):
+    def notify(self, *, queue="", method="", route="", start_time=None, end_time=None):
         if self._apm_disabled:
             return
 
@@ -68,15 +68,15 @@ class QueryStats:
             self._thread = Timer(_FLUSH_PERIOD, self._flush)
             self._thread.start()
 
-        key = query_stat_key(query=query, method=method, route=route, time=start_time)
+        key = queue_stat_key(queue=queue, method=method, route=route, time=start_time)
         ms = (end_time - start_time) * 1000
 
         with self._lock:
             if key in self._stats:
                 stat = self._stats[key]
             else:
-                stat = QueryStat(
-                    query=query, method=method, route=route, time=start_time
+                stat = QueueStat(
+                    queue=queue, method=method, route=route, time=start_time
                 )
                 self._stats[key] = stat
             stat.add(ms)
@@ -90,7 +90,7 @@ class QueryStats:
         if not stats:
             raise ValueError("stats is empty")
 
-        out = {"queries": [v.__dict__ for v in stats.values()]}
+        out = {"queues": [v.__dict__ for v in stats.values()]}
         if self._env:
             out["environment"] = self._env
 
@@ -141,6 +141,6 @@ class QueryStats:
             return
 
 
-def query_stat_key(*, query="", method="", route="", time=None):
+def queue_stat_key(*, queue="", method="", route="", time=None):
     time = time // 60 * 60
-    return (query, method, route, time)
+    return (queue, method, route, time)
