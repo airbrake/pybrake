@@ -1,6 +1,5 @@
 import base64
 import json
-import time as pytime
 from threading import Lock, Timer
 import urllib.request
 import urllib.error
@@ -26,9 +25,7 @@ class _Routes:
         if self._apm_disabled:
             return
 
-        if metric.end_time is None:
-            metric.end_time = pytime.time()
-
+        metric.end()
         self.stats.notify(metric)
         self.breakdowns.notify(metric)
 

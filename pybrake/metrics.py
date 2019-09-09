@@ -40,7 +40,7 @@ class Metric:
 
         self._groups = {}
 
-    def _end(self):
+    def end(self):
         if self.end_time is None:
             self.end_time = pytime.time()
 
