@@ -63,12 +63,13 @@ class RouteBreakdowns:
         if self._apm_disabled:
             return
 
-        if metric.status_code < 200 or (
-            metric.status_code >= 300 and metric.status_code < 400
+        if (
+            metric.status_code < 200
+            or (metric.status_code >= 300 and metric.status_code < 400)
+            or metric.status_code == 404
+            or len(metric._groups) <= 1
         ):
             return
-
-        metric._end()
 
         if self._stats is None:
             self._stats = {}
@@ -151,6 +152,9 @@ class RouteBreakdowns:
             return
 
 
+HTTP_HANDLER = "http.handler"
+
+
 class RouteMetric(metrics.Metric):
     def __init__(self, *, method="", route="", status_code=0, content_type=""):
         super().__init__()
@@ -158,6 +162,11 @@ class RouteMetric(metrics.Metric):
         self.route = route
         self.status_code = status_code
         self.content_type = content_type
+        self.start_span(HTTP_HANDLER, start_time=self.start_time)
+
+    def end(self):
+        super().end()
+        self.end_span(HTTP_HANDLER, end_time=self.end_time)
 
     def _key(self):
         time = self.start_time // 60 * 60

@@ -9,10 +9,18 @@ from .tdigest import tdigest_supported, as_bytes, TDigestStatGroups
 from .utils import logger, time_trunc_minute
 
 
+QUEUE_HANDLER = "queue.handler"
+
+
 class QueueMetric(metrics.Metric):
     def __init__(self, *, queue=""):
         super().__init__()
         self.queue = queue
+        self.start_span(QUEUE_HANDLER, start_time=self.start_time)
+
+    def end(self):
+        super().end()
+        self.end_span(QUEUE_HANDLER, end_time=self.end_time)
 
     def _key(self):
         time = self.start_time // 60 * 60
@@ -63,8 +71,10 @@ class QueueStats:
     def notify(self, metric):
         if self._apm_disabled:
             return
+        if len(metric._groups) <= 1:
+            return
 
-        metric._end()
+        metric.end()
 
         if self._stats is None:
             self._stats = {}
