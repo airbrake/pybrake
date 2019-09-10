@@ -2,7 +2,7 @@ import re
 from urllib.error import URLError
 
 from .notifier import Notifier
-from .test_helper import get_exception, build_notice_from_str
+from .test_helper import get_exception, get_nested_exception, build_notice_from_str
 
 
 def test_build_notice_from_exception():
@@ -40,6 +40,40 @@ def test_build_notice_from_exception():
 
     for k in ["os", "language", "hostname", "versions", "revision"]:
         assert context[k]
+
+
+def test_build_notice_from_nested_exception():
+    notifier = Notifier()
+
+    err = get_nested_exception()
+    notice = notifier.build_notice(err)
+
+    errors = notice["errors"]
+    assert len(errors) == 2
+
+    error = errors[0]
+    assert error["type"] == "ValueError"
+    assert error["message"] == "world"
+
+    backtrace = error["backtrace"]
+    assert len(backtrace) == 1
+
+    frame = backtrace[0]
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["function"] == "get_nested_exception"
+    assert frame["line"] == 50
+
+    error = errors[1]
+    assert error["type"] == "ValueError"
+    assert error["message"] == "hello"
+
+    backtrace = error["backtrace"]
+    assert len(backtrace) == 2
+
+    frame = backtrace[0]
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["function"] == "get_exception"
+    assert frame["line"] == 3
 
 
 def test_build_notice_from_str():
