@@ -40,3 +40,13 @@ def logger_dummy_handler():
     logger.addHandler(dh)
 
     return logger, dh
+
+
+def get_nested_exception():
+    try:
+        raise get_exception()
+    except ValueError as err:
+        try:
+            raise ValueError("world") from err
+        except ValueError as err:
+            return err
