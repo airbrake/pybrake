@@ -1,9 +1,12 @@
 import json
 import threading
+import time
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from .test_celery import raise_error
+
+notice = None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -11,7 +14,7 @@ class Handler(BaseHTTPRequestHandler):
         content_length = int(self.headers["Content-Length"])
         post_data = self.rfile.read(content_length).decode("utf-8")
 
-        global notice
+        global notice  # pylint: disable=global-statement
         notice = json.loads(post_data)
 
         self.send_response(200)
@@ -27,6 +30,12 @@ def test_celery_integration():
     httpd_thread.start()
 
     raise_error.apply()
+
+    for _ in range(10):
+        if notice is None:
+            time.sleep(1)
+        else:
+            break
 
     errors = notice["errors"]
     assert len(errors) == 1

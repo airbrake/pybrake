@@ -21,7 +21,7 @@ def create_airbrake_middleware(overrides=None):
                     return await override(request)
                 raise
 
-            except Exception as ex:
+            except Exception as ex:  # pylint: disable=broad-except
                 handle_exception(app, ex, request)
                 override = overrides.get(500)
                 return await override(request)
