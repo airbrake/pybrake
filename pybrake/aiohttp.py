@@ -10,18 +10,21 @@ def create_airbrake_middleware(overrides=None):
         async def middleware(request):
             try:
                 response = await handler(request)
-                await override_error_template(overrides, request, response.status)
+                override = overrides.get(response.status)
+                if override:
+                    return await override(request)
                 return response
 
             except web.HTTPException as ex:
-                handle_exception(app, ex, request)
-                await override_error_template(overrides, request, ex.status)
+                override = overrides.get(ex.status)
+                if override:
+                    return await override(request)
                 raise
 
             except Exception as ex:
                 handle_exception(app, ex, request)
-                await override_error_template(overrides, request, 500)
-                raise
+                override = overrides.get(500)
+                return await override(request)
 
         return middleware
 
@@ -36,13 +39,6 @@ def handle_exception(app, ex, request):
 def init_pybrake(app):
     if "pybrake" not in app:
         app["pybrake"] = Notifier(**app["airbrake_config"])
-
-
-async def override_error_template(overrides, request, status_code):
-    if overrides:
-        override = overrides.get(status_code)
-        if override:
-            return await override(request)
 
 
 def airbrake_send_notification(ex, notifier, request):
