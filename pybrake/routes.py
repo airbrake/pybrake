@@ -5,16 +5,14 @@ import urllib.request
 import urllib.error
 
 from . import metrics
-from .tdigest import tdigest_supported, as_bytes, TDigestStat
+from .tdigest import as_bytes, TDigestStat
 from .utils import logger, time_trunc_minute
 from .route_metric import RouteBreakdowns
 
 
 class _Routes:
     def __init__(self, **kwargs):
-        self._apm_disabled = (
-            kwargs.get("apm_disabled", False) or not tdigest_supported()
-        )
+        self._apm_disabled = kwargs.get("apm_disabled", False)
         if self._apm_disabled:
             return
 
@@ -49,9 +47,7 @@ class RouteStat(TDigestStat):
 
 class RouteStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = (
-            kwargs.get("apm_disabled", False) or not tdigest_supported()
-        )
+        self._apm_disabled = kwargs.get("apm_disabled", False)
         if self._apm_disabled:
             return
 

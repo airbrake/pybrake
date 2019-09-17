@@ -42,28 +42,29 @@ class AirbrakeMiddleware:
         for conn in connections.all():
             wrap_cursor(conn, self._notifier)
 
-            if request.resolver_match:
-                route = request.resolver_match.view_name
-            else:
-                route = _UNKNOWN_ROUTE
-
-        metric = RouteMetric(method=request.method, route=route)
+        metric = RouteMetric(method=request.method)
         metrics.set_active(metric)
 
         response = self.get_response(request)
+
+        metrics.set_active(None)
 
         metric.status_code = response.status_code
         if "Content-Type" in response:
             metric.content_type = response["Content-Type"]
         metric.end_time = time.time()
         self._notifier.routes.notify(metric)
-        metrics.set_active(None)
 
         return response
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         metric = metrics.get_active()
-        if metric is not None and metric.route == _UNKNOWN_ROUTE:
+        if metric is None:
+            return
+
+        if request.resolver_match.view_name:
+            metric.route = request.resolver_match.view_name
+        else:
             route = view_func.__module__
             route += "." + view_func.__name__
             metric.route = route
