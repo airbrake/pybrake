@@ -20,11 +20,14 @@ _REQUEST_KEY = "_django_request"
 
 threadLocal = threading.local()
 
+
 def set_request(request):
     setattr(threadLocal, _REQUEST_KEY, request)
 
+
 def get_request():
     return getattr(threadLocal, _REQUEST_KEY, None)
+
 
 def request_filter(notice):
     request = getattr(threadLocal, _REQUEST_KEY, None)
@@ -44,6 +47,7 @@ def request_filter(notice):
     )
 
     return notice
+
 
 def template_render(self, context):
     metrics.start_span("template")
@@ -126,6 +130,7 @@ class AirbrakeMiddleware:
             ctx["user"] = user_info
 
         self._notifier.send_notice(notice)
+
 
 def get_remote_addr(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")

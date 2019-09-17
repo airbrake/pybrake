@@ -240,6 +240,7 @@ def _test_rate_limited():
     notice = future.result()
     assert notice["error"] == "IP is rate limited"
 
+
 def test_clean_filename():
     notifier = Notifier()
 
