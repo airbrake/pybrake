@@ -5,7 +5,7 @@ import urllib.request
 import urllib.error
 
 from . import metrics
-from .tdigest import tdigest_supported, as_bytes, TDigestStatGroups
+from .tdigest import as_bytes, TDigestStatGroups
 from .utils import logger, time_trunc_minute
 
 
@@ -39,9 +39,7 @@ class _RouteBreakdown(TDigestStatGroups):
 
 class RouteBreakdowns:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = (
-            kwargs.get("apm_disabled", False) or not tdigest_supported()
-        )
+        self._apm_disabled = kwargs.get("apm_disabled", False)
         if self._apm_disabled:
             return
 

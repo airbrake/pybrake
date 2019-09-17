@@ -19,6 +19,7 @@ from .code_hunks import get_code_hunk
 from .git import get_git_revision
 from .utils import logger
 from .version import version
+from .tdigest import tdigest_supported
 
 
 _ERR_IP_RATE_LIMITED = "IP is rate limited"
@@ -40,7 +41,10 @@ class Notifier:
     def __init__(
         self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
+        self._apm_disabled = (
+            kwargs.get("apm_disabled", False) or not tdigest_supported()
+        )
+        kwargs["apm_disabled"] = self._apm_disabled
 
         self.routes = _Routes(
             project_id=project_id, project_key=project_key, host=host, **kwargs

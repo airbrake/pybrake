@@ -5,7 +5,7 @@ import urllib.request
 import urllib.error
 
 from . import metrics
-from .tdigest import tdigest_supported, TDigestStat, as_bytes
+from .tdigest import TDigestStat, as_bytes
 from .utils import logger, time_trunc_minute
 
 
@@ -29,9 +29,7 @@ class QueryStat(TDigestStat):
 
 class QueryStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = (
-            kwargs.get("apm_disabled", False) or not tdigest_supported()
-        )
+        self._apm_disabled = kwargs.get("apm_disabled", False)
         if self._apm_disabled:
             return
 
