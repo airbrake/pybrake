@@ -1,5 +1,6 @@
 import time
 import functools
+import threading
 
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -15,7 +16,34 @@ from . import metrics
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
+_REQUEST_KEY = "_django_request"
 
+threadLocal = threading.local()
+
+def set_request(request):
+    setattr(threadLocal, _REQUEST_KEY, request)
+
+def get_request():
+    return getattr(threadLocal, _REQUEST_KEY, None)
+
+def request_filter(notice):
+    request = getattr(threadLocal, _REQUEST_KEY, None)
+    if request is None:
+        return notice
+
+    req_filter = get_exception_reporter_filter(request)
+    notice["params"]["request"] = dict(
+        scheme=request.scheme,
+        method=request.method,
+        GET=request.GET,
+        POST=req_filter.get_post_parameters(request),
+        META=dict(request.META),
+        FILES=request.FILES,
+        COOKIES=request.COOKIES,
+        session=dict(request.session),
+    )
+
+    return notice
 
 def template_render(self, context):
     metrics.start_span("template")
@@ -31,13 +59,17 @@ if Template._render != template_render:  # pylint: disable=comparison-with-calla
 
 class AirbrakeMiddleware:
     def __init__(self, get_response):
-        self.get_response = get_response
         self._notifier = get_global_notifier()
         self._apm_disabled = self._notifier._apm_disabled
+        self.get_response = get_response
+
+        self._notifier.add_filter(request_filter)
 
     def __call__(self, request):
         if self._apm_disabled:
             return self.get_response(request)
+
+        set_request(request)
 
         for conn in connections.all():
             wrap_cursor(conn, self._notifier)
@@ -68,6 +100,8 @@ class AirbrakeMiddleware:
             route += "." + view_func.__name__
             metric.route = route
 
+        set_request(None)
+
     def process_exception(self, request, exception):
         if not self._notifier:
             return
@@ -82,18 +116,6 @@ class AirbrakeMiddleware:
         if user_addr:
             ctx["userAddr"] = user_addr
 
-        req_filter = get_exception_reporter_filter(request)
-        notice["params"]["request"] = dict(
-            scheme=request.scheme,
-            method=request.method,
-            GET=request.GET,
-            POST=req_filter.get_post_parameters(request),
-            META=dict(request.META),
-            FILES=request.FILES,
-            COOKIES=request.COOKIES,
-            session=dict(request.session),
-        )
-
         if request.user.is_authenticated:
             user = request.user
             user_info = dict(username=user.get_username(), name=user.get_full_name())
@@ -104,7 +126,6 @@ class AirbrakeMiddleware:
             ctx["user"] = user_info
 
         self._notifier.send_notice(notice)
-
 
 def get_remote_addr(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
