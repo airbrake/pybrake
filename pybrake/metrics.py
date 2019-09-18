@@ -1,4 +1,5 @@
 import threading
+from contextlib import contextmanager
 import time as pytime
 
 from .utils import logger
@@ -9,6 +10,11 @@ threadLocal = threading.local()
 FLUSH_PERIOD = 15
 _METRIC_KEY = "_ab_metric"
 
+@contextmanager
+def activated_metric(metric):
+    set_active(metric)
+    yield
+    set_active(None)
 
 def set_active(metric):
     setattr(threadLocal, _METRIC_KEY, metric)
