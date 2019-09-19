@@ -79,11 +79,8 @@ class AirbrakeMiddleware:
             wrap_cursor(conn, self._notifier)
 
         metric = RouteMetric(method=request.method)
-        metrics.set_active(metric)
-
-        response = self.get_response(request)
-
-        metrics.set_active(None)
+        with metrics.activated_metric(metric):
+            response = self.get_response(request)
 
         metric.status_code = response.status_code
         if "Content-Type" in response:
