@@ -1,3 +1,5 @@
+import logging
+
 def get_exception():
     try:
         raise ValueError("hello")
@@ -25,8 +27,6 @@ def build_logging_record_exception():
 
 
 def logger_dummy_handler():
-    import logging
-
     class DummyHandler(logging.Handler):
         def __init__(self):
             super().__init__()

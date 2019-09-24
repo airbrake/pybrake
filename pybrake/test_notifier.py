@@ -24,13 +24,13 @@ def test_build_notice_from_exception():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
     assert frame["function"] == "get_exception"
-    assert frame["line"] == 3
+    assert frame["line"] == 5
     assert frame["code"] == {
-        1: "def get_exception():",
-        2: "    try:",
-        3: '        raise ValueError("hello")',
-        4: "    except ValueError as err:",
-        5: "        return err",
+        3: "def get_exception():",
+        4: "    try:",
+        5: '        raise ValueError("hello")',
+        6: "    except ValueError as err:",
+        7: "        return err",
     }
 
     context = notice["context"]
@@ -73,7 +73,7 @@ def test_build_notice_from_nested_exception():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
     assert frame["function"] == "get_exception"
-    assert frame["line"] == 3
+    assert frame["line"] == 5
 
 
 def test_build_notice_from_str():
@@ -93,13 +93,13 @@ def test_build_notice_from_str():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
     assert frame["function"] == "build_notice_from_str"
-    assert frame["line"] == 9
+    assert frame["line"] == 11
     assert frame["code"] == {
-        7: "",
-        8: "def build_notice_from_str(notifier, s):",
-        9: "    return notifier.build_notice(s)",
-        10: "",
-        11: "",
+        9: "",
+        10: "def build_notice_from_str(notifier, s):",
+        11: "    return notifier.build_notice(s)",
+        12: "",
+        13: "",
     }
 
 

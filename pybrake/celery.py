@@ -1,6 +1,7 @@
 import functools
 
 import celery.exceptions as excs
+import celery.app.trace as trace
 
 from . import metrics
 from .queues import QueueMetric
@@ -10,8 +11,6 @@ _CELERY_EXCEPTIONS = (excs.Retry, excs.Ignore, excs.Reject)
 
 
 def patch_celery(notifier):
-    import celery.app.trace as trace
-
     old_build_tracer = trace.build_tracer
 
     def build_tracer(name, task, *args, **kwargs):
