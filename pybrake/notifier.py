@@ -122,6 +122,16 @@ class Notifier:
         )
         return notice
 
+    def _filter_notice(self, notice):
+        for fn in self._filters:
+            r = fn(notice)
+            if r is None:
+                notice["error"] = "notice is filtered out"
+                return notice, False
+            notice = r
+
+        return notice, True
+
     def send_notice_sync(self, notice):
         """Sends notice to Airbrake.
 
@@ -129,13 +139,13 @@ class Notifier:
         - {'id' => str} - notice id on success.
         - {'error' => str|Exception} - error on failure.
         """
-        for fn in self._filters:
-            r = fn(notice)
-            if r is None:
-                notice["error"] = "notice is filtered out"
-                return notice
-            notice = r
+        notice, ok = self._filter_notice(notice)
+        if not ok:
+            return notice
 
+        return self._send_notice_sync(notice)
+
+    def _send_notice_sync(self, notice):
         if time.time() < self._rate_limit_reset:
             notice["error"] = _ERR_IP_RATE_LIMITED
             return notice
@@ -228,13 +238,20 @@ class Notifier:
 
         Returns concurrent.futures.Future.
         """
+        notice, ok = self._filter_notice(notice)
+        if not ok:
+            f = futures.Future()
+            f.set_result(notice)
+            return f
+
         pool = self._get_thread_pool()
         if pool._work_queue.qsize() >= self._max_queue_size:
             notice["error"] = "queue is full"
             f = futures.Future()
             f.set_result(notice)
             return f
-        return pool.submit(self.send_notice_sync, notice)
+
+        return pool.submit(self._send_notice_sync, notice)
 
     def _build_errors(self, err):
         if err is None:
