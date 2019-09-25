@@ -1,5 +1,6 @@
 import logging
 
+
 def get_exception():
     try:
         raise ValueError("hello")
