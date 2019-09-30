@@ -241,7 +241,14 @@ class Notifier:
             return []
 
         if isinstance(err, str):
-            backtrace = self._build_backtrace_frame(sys._getframe())
+            frame = sys._getframe()
+            while frame is not None:
+                if frame.f_code.co_filename.endswith("pybrake/notifier.py"):
+                    frame = frame.f_back
+                else:
+                    break
+
+            backtrace = self._build_backtrace_frame(frame)
             return [{"message": err, "backtrace": backtrace}]
 
         errors = []
@@ -287,9 +294,6 @@ class Notifier:
 
         filename = f.f_code.co_filename
         func = f.f_code.co_name
-
-        if filename.endswith("pybrake/notifier.py"):
-            return None
 
         loader = f.f_globals.get("__loader__")
         module_name = f.f_globals.get("__name__")
