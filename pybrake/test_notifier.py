@@ -2,6 +2,7 @@ import re
 from urllib.error import URLError
 
 from .notifier import Notifier
+from .utils import time_trunc_minute
 from .test_helper import get_exception, get_nested_exception, build_notice_from_str
 
 
@@ -157,6 +158,16 @@ def test_filter_ignore_async():
     notice = future.result()
 
     assert notice["error"] == "notice is filtered out"
+
+
+def test_pybrake_error_filter():
+    notifier = Notifier()
+
+    try:
+        time_trunc_minute(None)
+    except Exception as err:  # pylint: disable=broad-except
+        notice = notifier.notify_sync(err)
+        assert notice["error"] == "notice is filtered out"
 
 
 def test_unauthorized():

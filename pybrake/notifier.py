@@ -85,6 +85,7 @@ class Notifier:
         if "environment" in kwargs:
             self._context["environment"] = kwargs["environment"]
 
+        self.add_filter(pybrake_error_filter)
         keys_blacklist = kwargs.get(
             "keys_blacklist", [re.compile("password"), re.compile("secret")]
         )
@@ -357,3 +358,17 @@ class Notifier:
             max_workers = (os.cpu_count() or 1) * 5
             self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
         return self._thread_pool
+
+
+def pybrake_error_filter(notice):
+    backtrace = notice["errors"][0]["backtrace"]
+    for frame in backtrace:
+        dirname = os.path.dirname(frame["file"])
+        file_name = os.path.basename(dirname)
+        if file_name == "pybrake":
+            if os.path.basename(frame["file"]).startswith("test_"):
+                break
+
+            return None
+
+    return notice
