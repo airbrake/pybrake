@@ -74,13 +74,13 @@ class QueueStats:
 
         metric.end()
 
-        if self._stats is None:
-            self._stats = {}
-            self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
-            self._thread.start()
-
         key = metric._key()
         with self._lock:
+            if self._stats is None:
+                self._stats = {}
+                self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
+                self._thread.start()
+
             if key in self._stats:
                 stat = self._stats[key]
             else:

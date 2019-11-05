@@ -49,15 +49,15 @@ class QueryStats:
         if self._apm_disabled:
             return
 
-        if self._stats is None:
-            self._stats = {}
-            self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
-            self._thread.start()
-
         key = query_stat_key(query=query, method=method, route=route, time=start_time)
         ms = (end_time - start_time) * 1000
 
         with self._lock:
+            if self._stats is None:
+                self._stats = {}
+                self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
+                self._thread.start()
+
             if key in self._stats:
                 stat = self._stats[key]
             else:
