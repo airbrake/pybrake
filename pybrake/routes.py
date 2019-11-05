@@ -67,11 +67,6 @@ class RouteStats:
         if self._apm_disabled:
             return
 
-        if self._stats is None:
-            self._stats = {}
-            self._thread = Timer(metrics.FLUSH_PERIOD, self._flush)
-            self._thread.start()
-
         key = route_stat_key(
             method=metric.method,
             route=metric.route,
@@ -79,6 +74,11 @@ class RouteStats:
             time=metric.start_time,
         )
         with self._lock:
+            if self._stats is None:
+                self._stats = {}
+                self._thread = Timer(metrics.FLUSH_PERIOD, self._flush)
+                self._thread.start()
+
             if key in self._stats:
                 stat = self._stats[key]
             else:

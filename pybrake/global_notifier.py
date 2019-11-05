@@ -21,6 +21,6 @@ def get_global_notifier():
             logger.info("pybrake is not configured - set settings.AIRBRAKE")
             return None
 
-    from .notifier import Notifier
+    from .notifier import Notifier  # pylint: disable=import-outside-toplevel
 
     return Notifier(**settings.AIRBRAKE)

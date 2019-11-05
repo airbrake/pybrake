@@ -6,3 +6,4 @@ flask
 aiohttp
 redis
 celery
+sqlalchemy
