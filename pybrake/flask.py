@@ -137,9 +137,13 @@ def _handle_exception(sender, exception, **_):
 
 
 def _sqla_instrument(app):
+    try:
+        sqla = app.extensions["sqlalchemy"]
+    except Exception:  # pylint: disable=broad-except
+        return
+
     from sqlalchemy import event  # pylint: disable=import-outside-toplevel
 
-    sqla = app.extensions["sqlalchemy"]
     engine = sqla.db.get_engine()
     event.listen(engine, "before_cursor_execute", _sqla_before_cursor_execute)
     event.listen(engine, "after_cursor_execute", _sqla_after_cursor_execute)
