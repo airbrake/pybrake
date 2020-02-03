@@ -60,6 +60,7 @@ class Notifier:
         self._rate_limit_reset = 0
         self._max_queue_size = kwargs.get("max_queue_size", 1000)
         self._thread_pool = None
+        self._max_workers = kwargs.get('max_workers')
 
         self._ab_url = _AB_URL_FORMAT.format(host, project_id)
         self._ab_headers = {
@@ -355,8 +356,9 @@ class Notifier:
 
     def _get_thread_pool(self):
         if self._thread_pool is None:
-            max_workers = (os.cpu_count() or 1) * 5
-            self._thread_pool = futures.ThreadPoolExecutor(max_workers=max_workers)
+            if self._max_workers is None:
+                self._max_workers = (os.cpu_count() or 1) * 5
+            self._thread_pool = futures.ThreadPoolExecutor(max_workers=self._max_workers)
         return self._thread_pool
 
 
