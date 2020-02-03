@@ -26,7 +26,8 @@ def _get_lines_from_file(filename, loader=None, module_name=None):
         except ImportError:
             pass
         else:
-            return source.splitlines()
+            if source:
+                return source.splitlines()
 
     try:
         with open(filename, "rb") as f:

@@ -51,3 +51,14 @@ def get_nested_exception():
             raise ValueError("world") from err
         except ValueError as err:
             return err
+
+
+def get_exception_in_cython():
+    # accumulation_tree is required by tdigest
+    from accumulation_tree import AccumulationTree  # pylint: disable=import-outside-toplevel
+    t = AccumulationTree(lambda x: x)
+    t.insert(1, '1')
+    try:
+        return t.insert('1', '1')
+    except TypeError as err:
+        return err

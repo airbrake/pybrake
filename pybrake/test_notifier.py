@@ -3,7 +3,8 @@ from urllib.error import URLError
 
 from .notifier import Notifier
 from .utils import time_trunc_minute
-from .test_helper import get_exception, get_nested_exception, build_notice_from_str
+from .test_helper import (get_exception, get_nested_exception,
+                          get_exception_in_cython, build_notice_from_str)
 
 
 def test_build_notice_from_exception():
@@ -41,6 +42,27 @@ def test_build_notice_from_exception():
 
     for k in ["os", "language", "hostname", "versions", "revision"]:
         assert context[k]
+
+
+def test_build_notice_from_exception_cython():
+    notifier = Notifier()
+
+    err = get_exception_in_cython()
+    notice = notifier.build_notice(err)
+
+    errors = notice["errors"]
+    assert len(errors) == 1
+
+    error = errors[0]
+    assert error["type"] == "TypeError"
+
+    message = error["message"]
+    if message.startswith('unorderable'):
+        # python 3.5
+        assert error["message"] == 'unorderable types: str() < int()'
+    else:
+        # python 3.6 and above
+        assert error["message"] == "'<' not supported between instances of 'str' and 'int'"
 
 
 def test_build_notice_from_nested_exception():
