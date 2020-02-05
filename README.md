@@ -239,6 +239,70 @@ import logging
 logging.getLogger("pybrake").setLevel(logging.CRITICAL)
 ```
 
+## Sending route stats
+
+`notifier.routes.notify` allows sending route stats to Airbrake. The library
+provides integrations with Django and Flask. (your routes are tracked
+automatically). You can also use this API manually:
+
+```py
+import pybrake.RouteMetric as RouteMetric
+
+metric = RouteMetric(method=request.method, route=route)
+metric.status_code = response.status_code
+metric.content_type = response.headers.get("Content-Type")
+metric.end_time = time.time()
+
+notifier.routes.notify(metric)
+```
+
+## Sending route breakdowns
+
+`notifier.routes.breakdowns.notify` allows sending performance breakdown stats
+to Airbrake. You can use this API manually:
+
+```py
+import pybrake.RouteBreakdowns as RouteBreakdowns
+
+metric = RouteBreakdowns(method=request.method, route=route)
+metric.response_type = response.headers.get("Content-Type")
+metric.end_time = time.time()
+
+notifier.routes.notify(metric)
+```
+
+## Sending query stats
+
+`notifier.queries.notify` allows sending SQL query stats to Airbrake. The
+library provides integration with Django (your queries are tracked
+automatically). You can also use this API manually:
+
+```py
+import pybrake.QueryStat as QueryStat
+
+metric = QueryStat(
+  method=request.method,
+  route=route,
+  query="SELECT * FROM foos"
+)
+metric.end_time = time.time()
+
+notifier.queries.notify(metric)
+```
+
+## Sending queue stats
+
+`notifier.queues.notify` allows sending queue (job) stats to Airbrake. The
+library provides integration with Celery (your queues are tracked
+automatically). You can also use this API manually:
+
+```py
+import pybrake.QueueMetric as QueueMetric
+
+metric = QueryMetric(queue="foo_queue")
+notifier.queues.notify(metric)
+```
+
 ## Development
 
 ### Running the tests
