@@ -346,7 +346,7 @@ class Notifier:
         ctx = self._context.copy()
 
         versions = ctx["versions"]
-        for name, mod in sys.modules.items():
+        for name, mod in sys.modules.copy().items():
             if name.startswith("_"):
                 continue
             if hasattr(mod, "__version__"):
