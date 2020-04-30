@@ -11,6 +11,9 @@ install:
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
 
+env:
+  - AIRBRAKE_API_KEY=9512213c3d475e9d96b60fd5e4a4aea3
+
 script:
   - pytest
   - pylint pybrake
