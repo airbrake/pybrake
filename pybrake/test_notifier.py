@@ -193,11 +193,11 @@ def test_pybrake_error_filter():
 
 
 def test_unauthorized():
-    notifier = Notifier()
+    notifier = Notifier(project_key=None)
 
     notice = notifier.notify_sync("hello")
 
-    assert notice["error"] == "Project API key is required"
+    assert notice["error"] == "Project not found or access denied"
 
 
 def test_unknown_host():
