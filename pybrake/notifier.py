@@ -41,6 +41,27 @@ class Notifier:
     def __init__(
         self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):
+
+        if not project_id:
+            project_id = os.getenv('AIRBRAKE_PROJECT_ID', '')
+        self.project_id = str(project_id)
+
+        if not project_key:
+            project_key = os.getenv('AIRBRAKE_API_KEY', '')
+        self.project_key = str(project_key)
+
+        if not self.project_key:
+            raise ValueError(
+                "Airbrake API Key (project_key) must be set. "
+                "It may be set using the AIRBRAKE_API_KEY "
+                "environment variable or by passing in "
+                "the arguments explicitly."
+            )
+
+        if not host:
+            host = os.getenv('AIRBRAKE_HOST', '')
+        self.host = str(host)
+
         self._apm_disabled = (
             kwargs.get("apm_disabled", False) or not tdigest_supported()
         )
