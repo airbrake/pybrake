@@ -193,11 +193,11 @@ def test_pybrake_error_filter():
 
 
 def test_unauthorized():
-    notifier = Notifier(project_key=None)
+    notifier = Notifier()
 
     notice = notifier.notify_sync("hello")
 
-    assert notice["error"] == "Project not found or access denied"
+    assert "Project not found or access denied" in str(notice["error"])
 
 
 def test_unknown_host():
