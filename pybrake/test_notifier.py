@@ -230,7 +230,21 @@ def test_revision_from_git(monkeypatch):
     assert notifier._context["revision"] == "4321"
 
 
-def _test_keys_blacklist(keys_blacklist):
+def _test_keys_blocklist(keys_blocklist):
+    notifier = Notifier(keys_blocklist=keys_blocklist)
+
+    notice = notifier.build_notice("hello")
+    notice["params"] = dict(key1="value1", key2="value2", key3=dict(key1="value1"))
+    notice = notifier.send_notice_sync(notice)
+
+    assert notice["params"] == {
+        "key1": "[Filtered]",
+        "key2": "value2",
+        "key3": {"key1": "[Filtered]"},
+    }
+
+
+def _test_deprecated_filter_keys(keys_blacklist):
     notifier = Notifier(keys_blacklist=keys_blacklist)
 
     notice = notifier.build_notice("hello")
@@ -244,12 +258,14 @@ def _test_keys_blacklist(keys_blacklist):
     }
 
 
-def test_keys_blacklist_exact():
-    _test_keys_blacklist(["key1"])
+def test_keys_blocklist_exact():
+    _test_keys_blocklist(["key1"])
+    _test_deprecated_filter_keys(["key1"])
 
 
-def test_keys_blacklist_regexp():
-    _test_keys_blacklist([re.compile("key1")])
+def test_keys_blocklist_regexp():
+    _test_keys_blocklist([re.compile("key1")])
+    _test_deprecated_filter_keys([re.compile("key1")])
 
 
 def _test_full_queue():

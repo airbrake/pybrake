@@ -14,7 +14,7 @@ from .git import find_git_dir
 from .routes import _Routes
 from .queries import QueryStats
 from .queues import QueueStats
-from .blacklist_filter import make_blacklist_filter
+from .blocklist_filter import make_blocklist_filter
 from .code_hunks import get_code_hunk
 from .git import get_git_revision
 from .utils import logger
@@ -87,10 +87,14 @@ class Notifier:
             self._context["environment"] = kwargs["environment"]
 
         self.add_filter(pybrake_error_filter)
-        keys_blacklist = kwargs.get(
-            "keys_blacklist", [re.compile("password"), re.compile("secret")]
+        keys_blocklist = kwargs.get(
+            "keys_blocklist",
+            kwargs.get(
+                "keys_blacklist",
+                [re.compile("password"), re.compile("secret")]
+            )
         )
-        self.add_filter(make_blacklist_filter(keys_blacklist))
+        self.add_filter(make_blocklist_filter(keys_blocklist))
 
         if "filter" in kwargs:
             self.add_filter(kwargs["filter"])

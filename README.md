@@ -86,12 +86,12 @@ notifier.add_filter(my_filter)
 
 ## Filtering keys
 
-With `keys_blacklist` option you can specify list of keys containing sensitive information that must be filtered out, e.g.:
+With `keys_blocklist` option you can specify list of keys containing sensitive information that must be filtered out, e.g.:
 
 ```python
 notifier = pybrake.Notifier(
     ...
-    keys_blacklist=[
+    keys_blocklist=[
         'password',           # exact match
         re.compile('secret'), # regexp match
     ],
