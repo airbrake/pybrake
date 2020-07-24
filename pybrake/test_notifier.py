@@ -1,4 +1,5 @@
 import re
+import warnings
 from urllib.error import URLError
 
 from .notifier import Notifier
@@ -245,7 +246,14 @@ def _test_keys_blocklist(keys_blocklist):
 
 
 def _test_deprecated_filter_keys(keys_blacklist):
-    notifier = Notifier(keys_blacklist=keys_blacklist)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        notifier = Notifier(keys_blacklist=keys_blacklist)
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+        deprecation_message = "keys_blacklist is a deprecated option. "\
+                              "Use keys_blocklist instead."
+        assert deprecation_message in str(w[-1].message)
 
     notice = notifier.build_notice("hello")
     notice["params"] = dict(key1="value1", key2="value2", key3=dict(key1="value1"))

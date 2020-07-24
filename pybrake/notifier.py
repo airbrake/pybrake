@@ -8,6 +8,7 @@ import urllib.error
 from concurrent import futures
 import json
 import time
+import warnings
 
 from .notice import jsonify_notice
 from .git import find_git_dir
@@ -87,13 +88,21 @@ class Notifier:
             self._context["environment"] = kwargs["environment"]
 
         self.add_filter(pybrake_error_filter)
-        keys_blocklist = kwargs.get(
-            "keys_blocklist",
-            kwargs.get(
-                "keys_blacklist",
-                [re.compile("password"), re.compile("secret")]
-            )
-        )
+
+        keys_blacklist = kwargs.get("keys_blacklist")
+        keys_blocklist = kwargs.get("keys_blocklist")
+
+        if keys_blacklist is not None:
+            keys_blocklist = keys_blacklist
+            warnings.warn(
+                    "keys_blacklist is a deprecated option. "
+                    "Use keys_blocklist instead.",
+                    DeprecationWarning
+                )
+
+        if keys_blocklist is None:
+            keys_blocklist = [re.compile("password"), re.compile("secret")]
+
         self.add_filter(make_blocklist_filter(keys_blocklist))
 
         if "filter" in kwargs:
