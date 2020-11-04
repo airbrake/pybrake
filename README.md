@@ -12,12 +12,15 @@ pip install -U pybrake
 
 ## Configuration
 
-To configure the pybrake notifier you will need your Airbrake project's `id` and
-`api_key`, these are available from your project's settings page.
+You **must** set both `project_id` & `project_key`.
+
+To find your `project_id` and `project_key` navigate to your project's
+_Settings_ and copy the values from the right sidebar.
+
+![][project-idkey]
 
 ```python
 import pybrake
-
 
 notifier = pybrake.Notifier(project_id=123,
                             project_key='FIXME',
@@ -317,3 +320,5 @@ pytest
 ```shell
 python setup.py sdist upload
 ```
+
+[project-idkey]: https://s3.amazonaws.com/airbrake-github-assets/pybrake/project-id-key.png
