@@ -121,8 +121,7 @@ logger.error('something bad happened')
 
 ## Django integration
 
-First you need to add your pybrake config to your Django `settings.py` file
-using your project's `id` and `api_key`.
+First, configure `project_id` and `project_key`  in `settings.py`:
 
 ```python
 AIRBRAKE = dict(
@@ -131,7 +130,7 @@ AIRBRAKE = dict(
 )
 ```
 
-The next step is activating the Airbrake middleware.
+Next, activate the Airbrake middleware:
 
 ```python
 MIDDLEWARE = [
@@ -140,8 +139,7 @@ MIDDLEWARE = [
 ]
 ```
 
-The last step is configuring the airbrake logging handler. After that you are
-ready to start reporting errors to Airbrake from your Django app.
+Finally, configure the airbrake logging handler:
 
 ```python
 LOGGING = {
@@ -162,6 +160,8 @@ LOGGING = {
     },
 }
 ```
+
+Now you are ready to start reporting errors to Airbrake from your Django app.
 
 ## Flask integration
 
