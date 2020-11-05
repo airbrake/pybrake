@@ -165,14 +165,12 @@ Now you are ready to start reporting errors to Airbrake from your Django app.
 
 ## Flask integration
 
-The Flask integration leverages Flask signals and therefore requires the blinker
-library.
+The Flask integration leverages Flask signals and therefore requires the
+[blinker](https://pythonhosted.org/blinker/) library.
 
 ```python
 from flask import Flask
 import pybrake.flask
-
-
 
 app = Flask(__name__)
 
