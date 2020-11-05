@@ -121,7 +121,7 @@ logger.error('something bad happened')
 
 ## Django integration
 
-First, configure `project_id` and `project_key`  in `settings.py`:
+First, configure `project_id` and `project_key` in `settings.py`:
 
 ```python
 AIRBRAKE = dict(
