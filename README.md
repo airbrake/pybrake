@@ -309,6 +309,7 @@ notifier.queues.notify(metric)
 ### Running the tests
 
 ```shell
+pip install -r requirements.txt
 pip install -r test-requirements.txt
 pytest
 ```
