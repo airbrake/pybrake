@@ -20,7 +20,9 @@ from .code_hunks import get_code_hunk
 from .git import get_git_revision
 from .utils import logger
 from .version import version
+from .notifier_name import notifier_name
 from .tdigest import tdigest_supported
+from .remote_settings import RemoteSettings
 
 
 _ERR_IP_RATE_LIMITED = "IP is rate limited"
@@ -29,7 +31,7 @@ _AB_URL_FORMAT = "{}/api/v3/projects/{}/notices"
 
 _CONTEXT = dict(
     notifier=dict(
-        name="pybrake", version=version, url="https://github.com/airbrake/pybrake"
+        name=notifier_name, version=version, url="https://github.com/airbrake/pybrake"
     ),
     os=platform.platform(),
     language="Python/%s" % platform.python_version(),
@@ -108,6 +110,16 @@ class Notifier:
         if "filter" in kwargs:
             self.add_filter(kwargs["filter"])
 
+
+        self.config = {
+            "error_notifications": True,
+        }
+
+        RemoteSettings(
+            project_id,
+            "https://notifier-configs.airbrake.io",
+        ).poll(self.config)
+
     def close(self):
         if self._thread_pool is not None:
             self._thread_pool.shutdown()
@@ -126,6 +138,8 @@ class Notifier:
         Under the hood notify is a shortcut for build_notice and send_notice.
         """
         notice = self.build_notice(err)
+        if not self.config.get("error_notifications"):
+            return notice
         return self.send_notice_sync(notice)
 
     def build_notice(self, err):
@@ -156,6 +170,9 @@ class Notifier:
         """
         notice, ok = self._filter_notice(notice)
         if not ok:
+            return notice
+
+        if not self.config.get("error_notifications"):
             return notice
 
         return self._send_notice_sync(notice)
@@ -246,6 +263,8 @@ class Notifier:
         Returns concurrent.futures.Future.
         """
         notice = self.build_notice(err)
+        if not self.config.get("error_notifications"):
+            return notice
         return self.send_notice(notice)
 
     def send_notice(self, notice):
