@@ -64,13 +64,13 @@ if Template._render != template_render:  # pylint: disable=comparison-with-calla
 class AirbrakeMiddleware:
     def __init__(self, get_response):
         self._notifier = get_global_notifier()
-        self._apm_disabled = self._notifier._apm_disabled
+        self._config = self._notifier.config
         self.get_response = get_response
 
         self._notifier.add_filter(request_filter)
 
     def __call__(self, request):
-        if self._apm_disabled:
+        if not self._config.get("performance_stats"):
             return self.get_response(request)
 
         set_request(request)

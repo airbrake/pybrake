@@ -134,8 +134,6 @@ class Notifier:
         Under the hood notify is a shortcut for build_notice and send_notice.
         """
         notice = self.build_notice(err)
-        if not self.config.get("error_notifications"):
-            return notice
         return self.send_notice_sync(notice)
 
     def build_notice(self, err):
@@ -259,8 +257,6 @@ class Notifier:
         Returns concurrent.futures.Future.
         """
         notice = self.build_notice(err)
-        if not self.config.get("error_notifications"):
-            return notice
         return self.send_notice(notice)
 
     def send_notice(self, notice):
@@ -268,6 +264,12 @@ class Notifier:
 
         Returns concurrent.futures.Future.
         """
+        if not self.config.get("error_notifications"):
+            notice["error"] = "error notifications are disabled"
+            f = futures.Future()
+            f.set_result(notice)
+            return f
+
         notice, ok = self._filter_notice(notice)
         if not ok:
             f = futures.Future()

@@ -303,3 +303,13 @@ def test_clean_filename():
 
     filename = notifier._clean_filename("home/lib/python3.6/site-packages/python.py")
     assert filename == "/SITE_PACKAGES/python.py"
+
+def test_error_notifications_disabled():
+    notifier = Notifier()
+    notifier.config["error_notifications"] = False
+
+    future = notifier.notify("hello")
+    notifier.close()
+
+    notice = future.result()
+    assert notice["error"] == "error notifications are disabled"
