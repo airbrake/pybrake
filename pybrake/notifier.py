@@ -47,11 +47,13 @@ class Notifier:
         self.config = {
             "error_notifications": True,
             "performance_stats": (not kwargs.get("apm_disabled", False)) or tdigest_supported(),
+            "error_host": host,
+            "apm_host": host,
         }
         kwargs["config"] = self.config
 
         self.routes = _Routes(
-            project_id=project_id, project_key=project_key, host=host, **kwargs
+            project_id=project_id, project_key=project_key, **kwargs
         )
         self.queries = QueryStats(
             project_id=project_id, project_key=project_key, host=host, **kwargs

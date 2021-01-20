@@ -43,7 +43,7 @@ class RouteStat(TDigestStat):
 
 
 class RouteStats:
-    def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
+    def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 
         self._project_id = project_id
@@ -51,7 +51,6 @@ class RouteStats:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._ab_url = "{}/api/v5/projects/{}/routes-stats".format(host, project_id)
         self._env = kwargs.get("environment")
 
         self._thread = None
@@ -103,7 +102,7 @@ class RouteStats:
 
         out = json.dumps(out).encode("utf8")
         req = urllib.request.Request(
-            self._ab_url, data=out, headers=self._ab_headers, method="POST"
+            self._ab_url(), data=out, headers=self._ab_headers, method="POST"
         )
 
         try:
@@ -147,6 +146,10 @@ class RouteStats:
             logger.error(in_data["message"])
             return
 
+    def _ab_url(self):
+        return "{}/api/v5/projects/{}/routes-stats".format(
+            self._config.get("apm_host"), self._project_id
+        )
 
 def route_stat_key(*, method="", route="", status_code=0, time=None):
     time = time // 60 * 60

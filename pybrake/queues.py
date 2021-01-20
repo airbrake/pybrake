@@ -49,7 +49,7 @@ class _QueueStat(TDigestStatGroups):
 
 
 class QueueStats:
-    def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
+    def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 
         self._project_id = project_id
@@ -57,7 +57,6 @@ class QueueStats:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._ab_url = "{}/api/v5/projects/{}/queues-stats".format(host, project_id)
         self._env = kwargs.get("environment")
 
         self._thread = None
@@ -103,7 +102,7 @@ class QueueStats:
 
         out_json = json.dumps(out).encode("utf8")
         req = urllib.request.Request(
-            self._ab_url, data=out_json, headers=self._ab_headers, method="POST"
+            self._ab_url(), data=out_json, headers=self._ab_headers, method="POST"
         )
 
         try:
@@ -146,3 +145,8 @@ class QueueStats:
         if "message" in in_data:
             logger.error(in_data["message"])
             return
+
+    def _ab_url(self):
+        return "{}/api/v5/projects/{}/queues-stats".format(
+            self._config.get("apm_host"), self._project_id
+        )

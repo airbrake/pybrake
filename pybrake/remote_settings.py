@@ -37,7 +37,9 @@ class RemoteSettings:
 
             kwargs["config"]["error_notifications"] = remote_config.error_notifications()
             kwargs["config"]["performance_stats"] = remote_config.performance_stats()
-            print(json_data)
+
+            kwargs["config"]["error_host"] = remote_config.error_host()
+            kwargs["config"]["apm_host"] = remote_config.apm_host()
 
             time.sleep(remote_config.interval())
 
