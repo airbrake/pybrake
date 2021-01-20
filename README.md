@@ -300,7 +300,7 @@ automatically). You can also use this API manually:
 ```py
 from pybrake import QueueMetric
 
-metric = QueryMetric(queue="foo_queue")
+metric = QueueMetric(queue="foo_queue")
 notifier.queues.notify(metric)
 ```
 
