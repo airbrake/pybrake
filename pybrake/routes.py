@@ -12,15 +12,12 @@ from .route_metric import RouteBreakdowns
 
 class _Routes:
     def __init__(self, **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
-        if self._apm_disabled:
-            return
-
+        self.config = kwargs["config"]
         self.stats = RouteStats(**kwargs)
         self.breakdowns = RouteBreakdowns(**kwargs)
 
     def notify(self, metric):
-        if self._apm_disabled:
+        if not self.config.get("performance_stats"):
             return
 
         metric.end()
@@ -47,9 +44,7 @@ class RouteStat(TDigestStat):
 
 class RouteStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
-        if self._apm_disabled:
-            return
+        self._config = kwargs["config"]
 
         self._project_id = project_id
         self._ab_headers = {
@@ -64,7 +59,7 @@ class RouteStats:
         self._stats = None
 
     def notify(self, metric):
-        if self._apm_disabled:
+        if not self._config.get("performance_stats"):
             return
 
         key = route_stat_key(

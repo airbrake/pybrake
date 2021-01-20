@@ -29,9 +29,7 @@ class QueryStat(TDigestStat):
 
 class QueryStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
-        if self._apm_disabled:
-            return
+        self._config = kwargs["config"]
 
         self._project_id = project_id
         self._ab_headers = {
@@ -46,7 +44,7 @@ class QueryStats:
         self._stats = None
 
     def notify(self, *, query="", method="", route="", start_time=None, end_time=None):
-        if self._apm_disabled:
+        if not self._config.get("performance_stats"):
             return
 
         key = query_stat_key(query=query, method=method, route=route, time=start_time)

@@ -36,6 +36,8 @@ class RemoteSettings:
             remote_config = SettingsData(self.project_id, json_data)
 
             kwargs["config"]["error_notifications"] = remote_config.error_notifications()
+            kwargs["config"]["performance_stats"] = remote_config.performance_stats()
+            print(json_data)
 
             time.sleep(remote_config.interval())
 

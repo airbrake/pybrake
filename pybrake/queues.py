@@ -50,9 +50,7 @@ class _QueueStat(TDigestStatGroups):
 
 class QueueStats:
     def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
-        if self._apm_disabled:
-            return
+        self._config = kwargs["config"]
 
         self._project_id = project_id
         self._ab_headers = {
@@ -67,7 +65,7 @@ class QueueStats:
         self._stats = None
 
     def notify(self, metric):
-        if self._apm_disabled:
+        if not self._config.get("performance_stats"):
             return
         if len(metric._groups) <= 1:
             return

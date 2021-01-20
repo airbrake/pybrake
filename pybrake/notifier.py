@@ -44,10 +44,11 @@ class Notifier:
     def __init__(
         self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):
-        self._apm_disabled = (
-            kwargs.get("apm_disabled", False) or not tdigest_supported()
-        )
-        kwargs["apm_disabled"] = self._apm_disabled
+        self.config = {
+            "error_notifications": True,
+            "performance_stats": (not kwargs.get("apm_disabled", False)) or tdigest_supported(),
+        }
+        kwargs["config"] = self.config
 
         self.routes = _Routes(
             project_id=project_id, project_key=project_key, host=host, **kwargs
@@ -109,11 +110,6 @@ class Notifier:
 
         if "filter" in kwargs:
             self.add_filter(kwargs["filter"])
-
-
-        self.config = {
-            "error_notifications": True,
-        }
 
         RemoteSettings(
             project_id,
