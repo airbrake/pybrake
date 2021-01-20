@@ -247,7 +247,7 @@ provides integrations with Django and Flask. (your routes are tracked
 automatically). You can also use this API manually:
 
 ```py
-import pybrake.RouteMetric as RouteMetric
+from pybrake import RouteMetric
 
 metric = RouteMetric(method=request.method, route=route)
 metric.status_code = response.status_code
@@ -263,7 +263,7 @@ notifier.routes.notify(metric)
 to Airbrake. You can use this API manually:
 
 ```py
-import pybrake.RouteBreakdowns as RouteBreakdowns
+import pybrake import RouteBreakdowns
 
 metric = RouteBreakdowns(method=request.method, route=route)
 metric.response_type = response.headers.get("Content-Type")
@@ -279,7 +279,7 @@ library provides integration with Django (your queries are tracked
 automatically). You can also use this API manually:
 
 ```py
-import pybrake.QueryStat as QueryStat
+from pybrake import QueryStat
 
 metric = QueryStat(
   method=request.method,
@@ -298,7 +298,7 @@ library provides integration with Celery (your queues are tracked
 automatically). You can also use this API manually:
 
 ```py
-import pybrake.QueueMetric as QueueMetric
+from pybrake import QueueMetric
 
 metric = QueryMetric(queue="foo_queue")
 notifier.queues.notify(metric)
