@@ -320,4 +320,10 @@ pytest
 python setup.py sdist upload
 ```
 
+### Remote configuration
+
+Every 10 minutes the notifier issues an HTTP GET request to fetch remote
+configuration. This might be undesirable while running tests. To suppress this
+HTTP call, you need to pass `remote_config=False` to the notifier.
+
 [project-idkey]: https://s3.amazonaws.com/airbrake-github-assets/pybrake/project-id-key.png

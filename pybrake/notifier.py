@@ -113,10 +113,11 @@ class Notifier:
         if "filter" in kwargs:
             self.add_filter(kwargs["filter"])
 
-        RemoteSettings(
-            project_id,
-            "https://notifier-configs.airbrake.io",
-        ).poll(self.config)
+        if kwargs.get("remote_config"):
+            RemoteSettings(
+                project_id,
+                "https://notifier-configs.airbrake.io",
+            ).poll(self.config)
 
     def close(self):
         if self._thread_pool is not None:
