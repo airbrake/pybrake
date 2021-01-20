@@ -38,19 +38,14 @@ class _RouteBreakdown(TDigestStatGroups):
 
 
 class RouteBreakdowns:
-    def __init__(self, *, project_id=0, project_key="", host="", **kwargs):
-        self._apm_disabled = kwargs.get("apm_disabled", False)
-        if self._apm_disabled:
-            return
+    def __init__(self, *, project_id=0, project_key="", **kwargs):
+        self._config = kwargs["config"]
 
         self._project_id = project_id
         self._ab_headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + project_key,
         }
-        self._ab_url = "{}/api/v5/projects/{}/routes-breakdowns".format(
-            host, project_id
-        )
         self._env = kwargs.get("environment")
 
         self._thread = None
@@ -58,7 +53,7 @@ class RouteBreakdowns:
         self._stats = None
 
     def notify(self, metric):
-        if self._apm_disabled:
+        if not self._config.get("performance_stats"):
             return
 
         if (
@@ -105,7 +100,7 @@ class RouteBreakdowns:
 
         out_json = json.dumps(out).encode("utf8")
         req = urllib.request.Request(
-            self._ab_url, data=out_json, headers=self._ab_headers, method="POST"
+            self._ab_url(), data=out_json, headers=self._ab_headers, method="POST"
         )
 
         try:
@@ -149,6 +144,10 @@ class RouteBreakdowns:
             logger.error(in_data["message"])
             return
 
+    def _ab_url(self):
+        return "{}/api/v5/projects/{}/routes-breakdowns".format(
+            self._config.get("apm_host"), self._project_id
+        )
 
 HTTP_HANDLER = "http.handler"
 
