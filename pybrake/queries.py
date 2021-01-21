@@ -45,6 +45,8 @@ class QueryStats:
     def notify(self, *, query="", method="", route="", start_time=None, end_time=None):
         if not self._config.get("performance_stats"):
             return
+        if not self._config.get("query_stats"):
+            return
 
         key = query_stat_key(query=query, method=method, route=route, time=start_time)
         ms = (end_time - start_time) * 1000

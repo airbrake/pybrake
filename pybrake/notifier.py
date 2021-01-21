@@ -21,7 +21,6 @@ from .git import get_git_revision
 from .utils import logger
 from .version import version
 from .notifier_name import notifier_name
-from .tdigest import tdigest_supported
 from .remote_settings import RemoteSettings
 
 
@@ -46,7 +45,9 @@ class Notifier:
     ):
         self.config = {
             "error_notifications": True,
-            "performance_stats": (not kwargs.get("apm_disabled", False)) or tdigest_supported(),
+            "performance_stats": kwargs.get("performance_stats", False),
+            "query_stats": kwargs.get("query_stats", True),
+            "queue_stats": kwargs.get("queue_stats", True),
             "error_host": host,
             "apm_host": host,
         }
@@ -117,7 +118,8 @@ class Notifier:
             RemoteSettings(
                 project_id,
                 "https://notifier-configs.airbrake.io",
-            ).poll(self.config)
+                self.config,
+            ).poll()
 
     def close(self):
         if self._thread_pool is not None:
