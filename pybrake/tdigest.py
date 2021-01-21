@@ -1,16 +1,6 @@
 import base64
 import struct
-
-try:
-    import tdigest
-
-    _tdigest_supported = True
-except ImportError:
-    _tdigest_supported = False
-
-
-def tdigest_supported():
-    return _tdigest_supported
+import tdigest
 
 
 class TDigestStat:

@@ -20,12 +20,16 @@ _NOTIFIER_INFO = {
 
 
 class RemoteSettings:
-    def __init__(self, project_id, host):
+    def __init__(self, project_id, host, config):
         self.project_id = project_id
         self.host = host
+        self.config = config
 
-    def poll(self, config):
-        thread = threading.Thread(target=self._run, kwargs={"config": config})
+        self.orig_error_notifications = config["error_notifications"]
+        self.orig_performance_stats = config["performance_stats"]
+
+    def poll(self):
+        thread = threading.Thread(target=self._run, kwargs={"config": self.config})
         thread.daemon = True
         thread.start()
 
@@ -33,16 +37,29 @@ class RemoteSettings:
         while True:
             resp = urllib.request.urlopen(self._poll_url())
             json_data = json.loads(resp.read().decode('utf-8'))
-            remote_config = SettingsData(self.project_id, json_data)
+            data = SettingsData(self.project_id, json_data)
 
-            kwargs["config"]["error_notifications"] = remote_config.error_notifications()
-            kwargs["config"]["performance_stats"] = remote_config.performance_stats()
+            self.config["error_host"] = data.error_host()
+            self.config["apm_host"] = data.apm_host()
 
-            kwargs["config"]["error_host"] = remote_config.error_host()
-            kwargs["config"]["apm_host"] = remote_config.apm_host()
+            self._process_error_notifications(data)
+            self._process_performance_stats(data)
 
-            time.sleep(remote_config.interval())
+            time.sleep(data.interval())
 
     def _poll_url(self):
         url = _CONFIG_ROUTE_PATTERN % (self.host, _API_VER, self.project_id)
         return url + '?' + urlencode(_NOTIFIER_INFO)
+
+    def _process_error_notifications(self, data):
+        if not self.orig_error_notifications:
+            return
+
+        self.config["error_notifications"] = data.error_notifications()
+
+
+    def _process_performance_stats(self, data):
+        if not self.orig_performance_stats:
+            return
+
+        self.config["performance_stats"] = data.performance_stats()

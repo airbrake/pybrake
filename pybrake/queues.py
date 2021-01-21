@@ -66,6 +66,8 @@ class QueueStats:
     def notify(self, metric):
         if not self._config.get("performance_stats"):
             return
+        if not self._config.get("queue_stats"):
+            return
         if len(metric._groups) <= 1:
             return
 
