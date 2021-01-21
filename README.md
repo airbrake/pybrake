@@ -1,6 +1,6 @@
 # Python exception notifier for Airbrake
 
-[![Build Status](https://travis-ci.org/airbrake/pybrake.svg?branch=master)](https://travis-ci.org/airbrake/pybrake)
+![Build Status](https://github.com/airbrake/pybrake/workflows/pybrake/badge.svg)
 
 ## Installation
 
