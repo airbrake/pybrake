@@ -279,16 +279,13 @@ library provides integration with Django (your queries are tracked
 automatically). You can also use this API manually:
 
 ```py
-from pybrake import QueryStat
-
-metric = QueryStat(
-  method=request.method,
-  route=route,
-  query="SELECT * FROM foos"
+notifier.queries.notify(
+    query="SELECT * FROM foos",
+    method=request.method,
+    route=route,
+    start_time=time.time(),
+    end_time=time.time(),
 )
-metric.end_time = time.time()
-
-notifier.queries.notify(metric)
 ```
 
 ## Sending queue stats
