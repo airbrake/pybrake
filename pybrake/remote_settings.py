@@ -21,15 +21,15 @@ _NOTIFIER_INFO = {
 
 class RemoteSettings:
     def __init__(self, project_id, host, config):
-        self.project_id = project_id
-        self.host = host
-        self.config = config
+        self._project_id = project_id
+        self._host = host
+        self._config = config
 
-        self.orig_error_notifications = config["error_notifications"]
-        self.orig_performance_stats = config["performance_stats"]
+        self._orig_error_notifications = config["error_notifications"]
+        self._orig_performance_stats = config["performance_stats"]
 
     def poll(self):
-        thread = threading.Thread(target=self._run, kwargs={"config": self.config})
+        thread = threading.Thread(target=self._run, kwargs={"config": self._config})
         thread.daemon = True
         thread.start()
 
@@ -37,10 +37,10 @@ class RemoteSettings:
         while True:
             resp = urllib.request.urlopen(self._poll_url())
             json_data = json.loads(resp.read().decode('utf-8'))
-            data = SettingsData(self.project_id, json_data)
+            data = SettingsData(self._project_id, json_data)
 
-            self.config["error_host"] = data.error_host()
-            self.config["apm_host"] = data.apm_host()
+            self._config["error_host"] = data.error_host()
+            self._config["apm_host"] = data.apm_host()
 
             self._process_error_notifications(data)
             self._process_performance_stats(data)
@@ -48,18 +48,18 @@ class RemoteSettings:
             time.sleep(data.interval())
 
     def _poll_url(self):
-        url = _CONFIG_ROUTE_PATTERN % (self.host, _API_VER, self.project_id)
+        url = _CONFIG_ROUTE_PATTERN % (self._host, _API_VER, self._project_id)
         return url + '?' + urlencode(_NOTIFIER_INFO)
 
     def _process_error_notifications(self, data):
-        if not self.orig_error_notifications:
+        if not self._orig_error_notifications:
             return
 
-        self.config["error_notifications"] = data.error_notifications()
+        self._config["error_notifications"] = data.error_notifications()
 
 
     def _process_performance_stats(self, data):
-        if not self.orig_performance_stats:
+        if not self._orig_performance_stats:
             return
 
-        self.config["performance_stats"] = data.performance_stats()
+        self._config["performance_stats"] = data.performance_stats()
