@@ -156,3 +156,12 @@ def test_apm_host_when_the_apm_setting_is_missing():
         "settings": [],
     })
     assert s.apm_host() is None
+
+def test_merge():
+    s = SettingsData(1, {
+        "settings": [{"foo": 1}],
+    })
+    s.merge({"settings": [{"foo": 2}]})
+    assert s._data, {
+        "settings": [{"foo": 2}]
+    }

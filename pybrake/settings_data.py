@@ -17,6 +17,9 @@ class SettingsData:
         self._project_id = project_id
         self._data = data
 
+    def merge(self, other_data):
+        self._data = {**self._data, **other_data}
+
     def interval(self):
         poll_sec = self._data.get("poll_sec")
         if poll_sec is None:
