@@ -14,11 +14,11 @@ _APM_SETTING = "apm"
 
 class SettingsData:
     def __init__(self, project_id, data):
-        self.project_id = project_id
-        self.data = data
+        self._project_id = project_id
+        self._data = data
 
     def interval(self):
-        poll_sec = self.data.get("poll_sec")
+        poll_sec = self._data.get("poll_sec")
         if poll_sec is None:
             return _DEFAULT_INTERVAL
 
@@ -30,11 +30,11 @@ class SettingsData:
     def config_route(self, remote_config_host):
         host = remote_config_host.rstrip("/")
 
-        config_route = self.data.get("config_route")
+        config_route = self._data.get("config_route")
         if config_route:
             return host + "/" + config_route
 
-        return _CONFIG_ROUTE_PATTERN % (host, _API_VER, self.project_id)
+        return _CONFIG_ROUTE_PATTERN % (host, _API_VER, self._project_id)
 
     def error_notifications(self):
         s = self._find_setting(_ERROR_SETTING)
@@ -65,7 +65,7 @@ class SettingsData:
         return s.get("endpoint")
 
     def _find_setting(self, name):
-        settings = self.data.get("settings")
+        settings = self._data.get("settings")
         if settings is None:
             return None
 
