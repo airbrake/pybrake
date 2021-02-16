@@ -52,7 +52,6 @@ class RemoteSettings:
 
             json_data = json.loads(resp.read().decode('utf-8'))
             self._data.merge(json_data)
-            print(json_data)
 
             self._config["error_host"] = self._data.error_host()
             self._config["apm_host"] = self._data.apm_host()
