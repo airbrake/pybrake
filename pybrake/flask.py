@@ -111,7 +111,7 @@ def _before_request(config, notifier):
 def _after_request(config, notifier):
     def after_request_middleware(response):
         if not config.get("performance_stats"):
-            return None
+            return response
 
         metric = metrics.get_active()
         if metric is not None:
