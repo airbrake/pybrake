@@ -132,4 +132,4 @@ class QueryStats:
 
 def query_stat_key(*, query="", method="", route="", time=None):
     time = time // 60 * 60
-    return (query, method, route, time)
+    return (str(query), method, route, time)
