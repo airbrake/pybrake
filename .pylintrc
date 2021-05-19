@@ -10,4 +10,5 @@ disable=bad-continuation,
     too-many-arguments,
     too-many-instance-attributes,
     unused-argument,
-    global-variable-undefined
+    global-variable-undefined,
+    consider-using-with

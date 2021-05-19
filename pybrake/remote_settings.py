@@ -53,8 +53,13 @@ class RemoteSettings:
             json_data = json.loads(resp.read().decode('utf-8'))
             self._data.merge(json_data)
 
-            self._config["error_host"] = self._data.error_host()
-            self._config["apm_host"] = self._data.apm_host()
+            error_host = self._data.error_host()
+            if error_host is not None:
+                self._config["error_host"] = self._data.error_host()
+
+            apm_host = self._data.apm_host()
+            if apm_host is not None:
+                self._config["apm_host"] = self._data.apm_host()
 
             self._process_error_notifications(self._data)
             self._process_performance_stats(self._data)
