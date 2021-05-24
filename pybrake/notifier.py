@@ -45,7 +45,7 @@ class Notifier:
     ):
         self.config = {
             "error_notifications": True,
-            "performance_stats": kwargs.get("performance_stats", False),
+            "performance_stats": kwargs.get("performance_stats", True),
             "query_stats": kwargs.get("query_stats", True),
             "queue_stats": kwargs.get("queue_stats", True),
             "error_host": host,
