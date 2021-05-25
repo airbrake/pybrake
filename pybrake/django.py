@@ -185,6 +185,8 @@ class CursorWrapper:
         finally:
             end_time = time.time()
             metrics.end_span("sql", end_time=end_time)
+            if hasattr(sql, "as_string"):
+                sql = sql.as_string(self._cursor.cursor)
             self._notifier.queries.notify(
                 query=sql,
                 method=getattr(metric, "method", ""),
