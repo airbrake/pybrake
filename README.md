@@ -263,13 +263,18 @@ notifier.routes.notify(metric)
 to Airbrake. You can use this API manually:
 
 ```py
-import pybrake import RouteBreakdowns
+from pybrake import RouteMetric
 
-metric = RouteBreakdowns(method=request.method, route=route)
-metric.response_type = response.headers.get("Content-Type")
-metric.end_time = time.time()
+metric = RouteMetric(
+  method=request.method,
+  route='/things/1',
+  status_code=200,
+  content_type=response.headers.get('Content-Type')
+)
+metric._groups = {'db': 12.34, 'view': 56.78}
+metric.end_time=time.time()
 
-notifier.routes.notify(metric)
+notifier.routes.breakdowns.notify(metric)
 ```
 
 ## Sending query stats
