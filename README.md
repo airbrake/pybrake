@@ -266,11 +266,10 @@ to Airbrake. You can use this API manually:
 from pybrake import RouteMetric
 
 metric = RouteMetric(
-  method=request.method,
-  route='/things/1',
-  status_code=200,
-  content_type=response.headers.get('Content-Type')
-)
+    method=request.method,
+    route='/things/1',
+    status_code=200,
+    content_type=response.headers.get('Content-Type'))
 metric._groups = {'db': 12.34, 'view': 56.78}
 metric.end_time=time.time()
 
