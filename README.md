@@ -303,6 +303,7 @@ automatically). You can also use this API manually:
 from pybrake import QueueMetric
 
 metric = QueueMetric(queue="foo_queue")
+metric._groups = {'redis': 24.0, 'sql': 0.4}
 notifier.queues.notify(metric)
 ```
 
