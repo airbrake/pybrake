@@ -52,3 +52,5 @@ def test_celery_integration():
     assert frame["function"] == "raise_error"
     assert frame["line"] == 16
     server.socket.close()
+    
+    server.shutdown()
