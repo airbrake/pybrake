@@ -106,11 +106,6 @@ class Notifier:
                     DeprecationWarning
                 )
 
-        if keys_blocklist is None:
-            keys_blocklist = [re.compile("password"), re.compile("secret")]
-
-        self.add_filter(make_blocklist_filter(keys_blocklist))
-
         if "filter" in kwargs:
             self.add_filter(kwargs["filter"])
 

@@ -1,3 +1,4 @@
+import re
 import time
 from flask import (
     request,
@@ -5,6 +6,7 @@ from flask import (
     before_render_template,
     template_rendered,
 )
+from .blocklist_filter import make_blocklist_filter
 
 try:
     import flask_sqlalchemy as _
@@ -76,6 +78,11 @@ def init_app(app):
     config = notifier.config
 
     notifier.add_filter(request_filter)
+
+    keys_blocklist = app.config["PYBRAKE"].get(
+        "keys_blocklist", [re.compile("password"), re.compile("secret")]
+    )
+    notifier.add_filter(make_blocklist_filter(keys_blocklist))
 
     app.extensions["pybrake"] = notifier
     got_request_exception.connect(_handle_exception, sender=app)
