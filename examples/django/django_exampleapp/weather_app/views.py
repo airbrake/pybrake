@@ -1,14 +1,12 @@
 import json
-import os
 from datetime import *
 import simplejson
-from django.conf.global_settings import STATIC_ROOT
-from django.http import HttpResponse, JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse, Http404, HttpResponseNotFound
 from rest_framework import status
 from rest_framework.utils import json
 
 # Create your views here.
-city_list = ["austin", "pune", "santabarbara"]
+city_list = ["pune", "austin", "santabarbara"]
 
 
 # API for current server date
@@ -23,16 +21,11 @@ def get_location_details(request):
 
 
 def get_weather_details(request, location_name):
-    result = []
-    for city in city_list:
-        print(city)
-        location_name = city + ".json"
-        print(location_name)
+    file_name = location_name + ".json"
+    if location_name in city_list:
         try:
-            with open('static/' + location_name) as f:
-                result.append(json.load(f))
+            with open('static/' + file_name) as f:
+                data = json.load(f)
         except IOError:
-            raise Http404()
-        return JsonResponse(result, status=status.HTTP_200_OK,safe=False)
-
-
+            return HttpResponseNotFound("No Response")
+        return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
