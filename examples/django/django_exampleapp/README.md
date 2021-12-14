@@ -4,9 +4,9 @@
 
 The example application provides three GET endpoints:
 
-/date - gets the system date from the server
-/locations - gets the supported locations for use with the /weather endpoint
-/weather/{locationName} - gets the weather for a location; valid values for locationName can be found using the /locations endpoint
+/date - return server date and time.
+/locations - returns list of available locations.
+/weather/{locationName} - returns the weather details for the locations.
 
 **Steps to run the API:**
 
