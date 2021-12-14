@@ -37,7 +37,4 @@ curl "http://localhost:3000/weather/" -H 'api-key: b761be830f7c23ebe1c3250d42c43
 ```
 
   
-The last curl command will raise 404 Not Found error.
-
-
-
+The last curl command will raise `404 Not Found` error.
