@@ -14,7 +14,7 @@ The example application provides three GET endpoints:
 1. Install the dependencies for the application
 
 ```bash
-pip3 install -r requirements.txt"
+pip3 install -r requirements.txt
 ```
 
 2.  Run the localhost server
