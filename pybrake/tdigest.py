@@ -53,7 +53,7 @@ _SMALL_ENCODING = 2
 def from_bytes(b):
     encoding = int.from_bytes(b[:4], byteorder="big")
     if encoding != _SMALL_ENCODING:
-        raise ValueError("unsupported encoding version: %s" % encoding)
+        raise ValueError(f"unsupported encoding version: {encoding}")
 
     compression = struct.unpack(">d", b[4:12])[0]
     num_centroids = int.from_bytes(b[12:16], byteorder="big")

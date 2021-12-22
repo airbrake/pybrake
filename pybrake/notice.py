@@ -52,7 +52,7 @@ class Truncator:
         self._max_str_len = _scale(1024, level)
 
     def truncate_dict(self, d):
-        res = dict()
+        res = {}
         i = 0
         for k, v in d.items():
             res[k] = self.truncate(v)
@@ -62,7 +62,7 @@ class Truncator:
         return res
 
     def truncate_list(self, l):
-        res = list()
+        res = []
         for i, v in enumerate(l):
             res.append(self.truncate(v))
             if i >= self._max_list_len:

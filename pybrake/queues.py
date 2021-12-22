@@ -125,7 +125,7 @@ class QueueStats:
             return
 
         if not 400 <= resp.code < 500:
-            err = "airbrake: unexpected response status_code={}".format(resp.code)
+            err = f"airbrake: unexpected response status_code={resp.code}"
             logger.error(err)
             return
 
@@ -149,6 +149,4 @@ class QueueStats:
             return
 
     def _ab_url(self):
-        return "{}/api/v5/projects/{}/queues-stats".format(
-            self._config.get("apm_host"), self._project_id
-        )
+        return f"{self._config.get('apm_host')}/api/v5/projects/{self._project_id}/queues-stats"

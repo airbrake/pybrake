@@ -46,7 +46,7 @@ class RemoteSettings:
                     if self._prev_data is None:
                         raise err
                     resp = urllib.request.urlopen(self._poll_url(self._prev_data))
-                except urllib.error.HTTPError as err:
+                except urllib.error.HTTPError:
                     time.sleep(self._data.interval())
                     continue
 

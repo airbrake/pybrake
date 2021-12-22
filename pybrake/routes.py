@@ -123,7 +123,7 @@ class RouteStats:
             return
 
         if not 400 <= resp.code < 500:
-            err = "airbrake: unexpected response status_code={}".format(resp.code)
+            err = f"airbrake: unexpected response status_code={resp.code}"
             logger.error(err)
             return
 
@@ -147,9 +147,8 @@ class RouteStats:
             return
 
     def _ab_url(self):
-        return "{}/api/v5/projects/{}/routes-stats".format(
-            self._config.get("apm_host"), self._project_id
-        )
+        return f"{self._config.get('apm_host')}/api/v5/projects/{self._project_id}/routes-stats"
+
 
 def route_stat_key(*, method="", route="", status_code=0, time=None):
     time = time // 60 * 60
