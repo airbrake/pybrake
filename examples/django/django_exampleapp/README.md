@@ -8,7 +8,6 @@ The example application provides three GET endpoints:
 2. `/locations` - returns list of available locations. 
 3. `/weather/{locationName}` - returns the weather details for the locations.
 
-
 ## Steps to run the API:
 
 1. Install the dependencies for the application
