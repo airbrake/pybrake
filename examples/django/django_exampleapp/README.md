@@ -24,7 +24,7 @@ python manage.py runserver 3000 or
 python manage.py runserver 127.10.10.10:3000
 ```
 
-3. To retrieve the responses, append the endpoints to the localhost URL with a '/'.
+3. To retrieve the responses, append the endpoints to the localhost URL with a `/`.
 
 
 Use the below curl commands to interact with the endpoints. The endpoints require an api-key HTTP header.
