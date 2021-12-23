@@ -121,7 +121,7 @@ class RouteBreakdowns:
             return
 
         if not 400 <= resp.code < 500:
-            err = "airbrake: unexpected response status_code={}".format(resp.code)
+            err = f"airbrake: unexpected response status_code={resp.code}"
             logger.error(err)
             return
 
@@ -145,9 +145,9 @@ class RouteBreakdowns:
             return
 
     def _ab_url(self):
-        return "{}/api/v5/projects/{}/routes-breakdowns".format(
-            self._config.get("apm_host"), self._project_id
-        )
+        return f"{self._config.get('apm_host')}/api/v5/projects/" \
+               f"{self._project_id}/routes-breakdowns"
+
 
 HTTP_HANDLER = "http.handler"
 

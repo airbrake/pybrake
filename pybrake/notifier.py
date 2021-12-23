@@ -33,7 +33,7 @@ _CONTEXT = dict(
         name=notifier_name, version=version, url="https://github.com/airbrake/pybrake"
     ),
     os=platform.platform(),
-    language="Python/%s" % platform.python_version(),
+    language=f"Python/{platform.python_version()}",
     hostname=socket.gethostname(),
     versions=dict(python=platform.python_version()),
 )
@@ -201,9 +201,7 @@ class Notifier:
             return notice
 
         if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
-            notice["error"] = "airbrake: unexpected response status_code={}".format(
-                resp.code
-            )
+            notice["error"] = f"airbrake: unexpected response status_code={resp.code}"
             notice["error_info"] = dict(code=resp.code, body=body)
             logger.error(notice["error"])
             return notice

@@ -23,13 +23,13 @@ def _get_git_revision(dirpath):
 
     ref_file = os.path.join(dirpath, ".git", head)
     try:
-        with open(ref_file) as f:
+        with open(ref_file, "r", encoding="utf8") as f:
             return f.read().rstrip()
     except (OSError, IOError):
         pass
 
     refs_file = os.path.join(dirpath, ".git", "packed-refs")
-    with open(refs_file) as f:
+    with open(refs_file, "r", encoding="utf8") as f:
         for line in f:
             if not line or line[0] in ("#", "^"):
                 continue
@@ -46,7 +46,7 @@ def _get_git_revision(dirpath):
 
 def get_git_head(dirpath):
     head_file = os.path.join(dirpath, ".git", "HEAD")
-    with open(head_file) as f:
+    with open(head_file, "r", encoding="utf8") as f:
         return f.read().rstrip()
 
 

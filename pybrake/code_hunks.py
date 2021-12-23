@@ -9,7 +9,7 @@ def get_code_hunk(filename, lineno, nlines=2, loader=None, module_name=None):
 
     start = max(0, lineno - 1 - nlines)
     end = min(lineno + nlines, len(lines))
-    hunk = dict()
+    hunk = {}
     for i, line in enumerate(lines[start:end], start + 1):
         if isinstance(line, bytes):
             line = line.decode("utf8", "replace")

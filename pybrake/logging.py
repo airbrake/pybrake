@@ -88,7 +88,7 @@ class LoggingHandler(logging.Handler):
                 params[attr] = v
 
     def _build_extra(self, record):
-        extra = None
+        extra = {}
         for k, v in vars(record).items():
             if k not in _LOG_RECORD_ATTRS:
                 if extra is None:
