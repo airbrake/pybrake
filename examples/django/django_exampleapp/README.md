@@ -20,7 +20,7 @@ pip3 install -r requirements.txt
 2.  Run the localhost server
 
 ```bash
-python manage.py runserver 3000 or
+python manage.py runserver 3000
 python manage.py runserver 127.10.10.10:3000
 ```
 
