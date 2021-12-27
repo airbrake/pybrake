@@ -27,9 +27,9 @@ python manage.py runserver 3000
 Use the below curl commands to interact with the endpoints. The endpoints require an api-key HTTP header.
 
 ```bash
-curl "http://localhost:3000/date" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:3000/locations" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:3000/weather/<austin/pune/santabarbara>" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
+curl "http://localhost:3000/date/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
+curl "http://localhost:3000/locations/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
+curl "http://localhost:3000/weather/<austin/pune/santabarbara>/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
 curl "http://localhost:3000/weather/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673'
 ```
   
