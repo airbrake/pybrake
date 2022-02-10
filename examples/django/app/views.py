@@ -34,6 +34,6 @@ def get_weather_details(request, location_name):
         try:
             with open('static/' + file_name) as f:
                 data = json.load(f)
-                return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
         except IOError:
-            return HttpResponseNotFound("No Response", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
