@@ -151,7 +151,7 @@ class Notifier:
         return notice
 
     def _filter_notice(self, notice):
-        for fn in self._filters:
+        for fn in self._filters[::-1]:
             r = fn(notice)
             if r is None:
                 notice["error"] = "notice is filtered out"
