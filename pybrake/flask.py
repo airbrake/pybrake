@@ -52,10 +52,10 @@ def request_filter(notice):
         ctx["user"] = user
 
     notice["params"]["request"] = dict(
-        form=request.form,
-        json=request.json,
-        files=request.files,
-        cookies=request.cookies,
+        form=dict(request.form),
+        json=dict(request.json),
+        files=dict(request.files),
+        cookies=dict(request.cookies),
         headers=dict(request.headers),
         environ=request.environ,
         blueprint=request.blueprint,

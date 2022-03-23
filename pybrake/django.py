@@ -38,11 +38,11 @@ def request_filter(notice):
     notice["params"]["request"] = dict(
         scheme=request.scheme,
         method=request.method,
-        GET=request.GET,
-        POST=req_filter.get_post_parameters(request),
+        GET=dict(request.GET),
+        POST=dict(req_filter.get_post_parameters(request)),
         META=dict(request.META),
-        FILES=request.FILES,
-        COOKIES=request.COOKIES,
+        FILES=dict(request.FILES),
+        COOKIES=dict(request.COOKIES),
         session=dict(request.session),
     )
 
