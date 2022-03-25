@@ -29,11 +29,12 @@ def get_location_details(request):
 
 # API for weather details for a location
 def get_weather_details(request, location_name):
+    if location_name not in city_list:
+        return HttpResponseNotFound(reason="Location not found!", status=status.HTTP_404_NOT_FOUND)
     file_name = location_name + ".json"
-    if location_name in city_list:
-        try:
-            with open('static/' + file_name) as f:
-                data = json.load(f)
-        except IOError:
-            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    try:
+        with open('static/' + file_name) as f:
+            data = json.load(f)
+    except IOError:
+        return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
