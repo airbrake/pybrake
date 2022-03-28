@@ -49,8 +49,8 @@ def get_nested_exception():
     except ValueError as err:
         try:
             raise ValueError("world") from err
-        except ValueError as err:
-            return err
+        except ValueError as subErr:
+            return subErr
 
 
 def get_exception_in_cython():

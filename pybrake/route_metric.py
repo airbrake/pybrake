@@ -10,12 +10,13 @@ from .utils import logger, time_trunc_minute
 
 
 class _RouteBreakdown(TDigestStatGroups):
-    __slots__ = TDigestStatGroups.__slots__ + (
-        "method",
-        "route",
-        "responseType",
-        "time",
-    )
+
+    def __new__(cls, *, method, route, responseType, time):
+        instance = super(_RouteBreakdown, cls).__new__(cls)
+        instance.__slots__ = instance.__slots__ + (
+            "method", "route", "responseType", "time"
+        )
+        return instance
 
     def __init__(self, *, method="", route="", responseType="", time=None):
         super().__init__()
