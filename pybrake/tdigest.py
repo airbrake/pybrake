@@ -27,7 +27,13 @@ class TDigestStat:
 
 
 class TDigestStatGroups(TDigestStat):
-    __slots__ = TDigestStat.__slots__ + ("groups",)
+
+    def __new__(cls):
+        instance = super(TDigestStatGroups, cls).__new__(cls)
+        instance.__slots__ = instance.__slots__ + (
+            "groups",
+        )
+        return instance
 
     def __init__(self):
         super().__init__()

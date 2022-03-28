@@ -26,7 +26,7 @@ def test_celery_integration():
     server = HTTPServer(server_address, Handler)
 
     httpd_thread = threading.Thread(target=server.serve_forever)
-    httpd_thread.setDaemon(True)
+    httpd_thread.daemon = True
     httpd_thread.start()
 
     raise_error.apply()
