@@ -8,11 +8,8 @@ def test_tdigest_from_bytes():
     _test_digest(digest)
 
 
-def test_tdigest_benchmark_from_bytes(benchmark):
-    def fn():
-        from_bytes(java_bytes)
-
-    benchmark(fn)
+def test_tdigest_benchmark_from_bytes():
+    from_bytes(java_bytes)
 
 
 def _test_digest(digest):
