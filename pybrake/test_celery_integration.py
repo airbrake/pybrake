@@ -4,7 +4,7 @@ import time
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from .test_celery import raise_error
+from .test_celery import raise_error, raise_error_patched
 
 notice = None
 
@@ -19,6 +19,27 @@ class Handler(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.wfile.write('{"id":"1"}'.encode("utf-8"))
+
+
+def test_celery_integration_patched():
+    server_address = ("", 8080)
+    server = HTTPServer(server_address, Handler)
+
+    httpd_thread = threading.Thread(target=server.serve_forever)
+    httpd_thread.daemon = True
+    httpd_thread.start()
+
+    raise_error_patched.apply()
+
+    for _ in range(10):
+        if notice is None:
+            time.sleep(1)
+        else:
+            break
+
+    assert notice is None
+
+    server.socket.close()
 
 
 def test_celery_integration():
@@ -50,5 +71,5 @@ def test_celery_integration():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/pybrake/test_celery.py"
     assert frame["function"] == "raise_error"
-    assert frame["line"] == 16
+    assert frame["line"] == 21
     server.socket.close()

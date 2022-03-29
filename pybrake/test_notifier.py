@@ -1,5 +1,6 @@
 import re
 import warnings
+from datetime import datetime
 from urllib.error import URLError
 
 from .notifier import Notifier
@@ -193,6 +194,18 @@ def test_pybrake_error_filter():
         assert notice["error"] == "notice is filtered out"
 
 
+def test_time_trunc_minute():
+    notifier = Notifier()
+
+    try:
+        d = 1648551580.0367732
+        date = time_trunc_minute(d)
+        assert date == '2022-03-29T10:59:00Z'
+    except Exception as err:  # pylint: disable=broad-except
+        notice = notifier.notify_sync(err)
+        assert notice["error"] == "notice is filtered out"
+
+
 def test_unauthorized():
     notifier = Notifier()
 
@@ -303,6 +316,7 @@ def test_clean_filename():
 
     filename = notifier._clean_filename("home/lib/python3.6/site-packages/python.py")
     assert filename == "/SITE_PACKAGES/python.py"
+
 
 def test_error_notifications_disabled():
     notifier = Notifier()
