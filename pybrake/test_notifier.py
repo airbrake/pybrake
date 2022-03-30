@@ -195,15 +195,9 @@ def test_pybrake_error_filter():
 
 
 def test_time_trunc_minute():
-    notifier = Notifier()
-
-    try:
-        d = 1648551580.0367732
-        date = time_trunc_minute(d)
-        assert date == '2022-03-29T10:59:00Z'
-    except Exception as err:  # pylint: disable=broad-except
-        notice = notifier.notify_sync(err)
-        assert notice["error"] == "notice is filtered out"
+    d = 1648551580.0367732
+    date = time_trunc_minute(d)
+    assert date == '2022-03-29T10:59:00Z'
 
 
 def test_unauthorized():
@@ -289,7 +283,7 @@ def test_keys_blocklist_regexp():
     _test_deprecated_filter_keys([re.compile("key1")])
 
 
-def _test_full_queue():
+def test_full_queue():
     notifier = Notifier(max_queue_size=10)
 
     for _ in range(100):
