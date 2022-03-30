@@ -11,7 +11,7 @@ from .utils import logger, time_trunc_minute
 
 class _RouteBreakdown(TDigestStatGroups):
 
-    def __new__(cls, *, method, route, responseType, time):
+    def __new__(cls, *, method="", route="", responseType="", time=None):
         instance = super(_RouteBreakdown, cls).__new__(cls)
         instance.__slots__ = instance.__slots__ + (
             "method", "route", "responseType", "time"

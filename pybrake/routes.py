@@ -27,7 +27,7 @@ class _Routes:
 
 class RouteStat(TDigestStat):
 
-    def __new__(cls, *, method, route, status_code, time):
+    def __new__(cls, *, method="", route="", status_code=0, time):
         instance = super(RouteStat, cls).__new__(cls)
         instance.__slots__ = instance.__slots__ + (
             "method", "route", "statusCode", "time"

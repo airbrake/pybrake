@@ -31,12 +31,6 @@ def test_celery_integration_patched():
 
     raise_error_patched.apply()
 
-    for _ in range(10):
-        if notice is None:
-            time.sleep(1)
-        else:
-            break
-
     assert notice is None
 
     server.socket.close()

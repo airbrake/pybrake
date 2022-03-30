@@ -29,7 +29,7 @@ class QueueMetric(metrics.Metric):
 
 class _QueueStat(TDigestStatGroups):
 
-    def __new__(cls, *, queue, time):
+    def __new__(cls, *, queue="", time=None):
         instance = super(_QueueStat, cls).__new__(cls)
         instance.__slots__ = instance.__slots__ + (
             "queue", "time"

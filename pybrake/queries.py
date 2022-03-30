@@ -11,7 +11,7 @@ from .utils import logger, time_trunc_minute
 
 class QueryStat(TDigestStat):
 
-    def __new__(cls, *, query, method, route, time):
+    def __new__(cls, *, query="", method="", route="", time):
         instance = super(QueryStat, cls).__new__(cls)
         instance.__slots__ = instance.__slots__ + (
             "query", "method", "route", "time"
