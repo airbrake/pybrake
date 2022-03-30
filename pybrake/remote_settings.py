@@ -76,7 +76,6 @@ class RemoteSettings:
 
         self._config["error_notifications"] = data.error_notifications()
 
-
     def _process_performance_stats(self, data):
         if not self._orig_performance_stats:
             return

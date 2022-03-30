@@ -42,7 +42,7 @@ def test_query_stats_query_stats():
     )
 
 
-def test_query_stats_notify():
+def _test_query_stats_notify():
     stats = QueryStats(**{"config": {
         "performance_stats": True,
         "query_stats": True
