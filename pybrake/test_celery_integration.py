@@ -34,6 +34,7 @@ def test_celery_integration_patched():
     assert notice is None
 
     server.socket.close()
+    server.shutdown()
 
 
 def test_celery_integration():
@@ -67,3 +68,4 @@ def test_celery_integration():
     assert frame["function"] == "raise_error"
     assert frame["line"] == 21
     server.socket.close()
+    server.shutdown()

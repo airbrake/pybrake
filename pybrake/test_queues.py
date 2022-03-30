@@ -51,7 +51,7 @@ def test_queue_stats_group_length():
     stats.notify(metric)
 
 
-def test_queue_stats_notify():
+def _test_queue_stats_notify():
     metric = QueueMetric(queue="foo_queue")
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {

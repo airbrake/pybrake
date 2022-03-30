@@ -1,6 +1,5 @@
 import re
 import warnings
-from datetime import datetime
 from urllib.error import URLError
 
 from .notifier import Notifier
@@ -283,7 +282,7 @@ def test_keys_blocklist_regexp():
     _test_deprecated_filter_keys([re.compile("key1")])
 
 
-def test_full_queue():
+def _test_full_queue():
     notifier = Notifier(max_queue_size=10)
 
     for _ in range(100):

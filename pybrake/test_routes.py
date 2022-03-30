@@ -19,7 +19,7 @@ def test_routes_performance_stats():
     routes.notify(metric)
 
 
-def test_routes_notify():
+def _test_routes_notify():
     routes = _Routes(**{"config": {
         "performance_stats": True,
         "error_host": "https://api.airbrake.io",
@@ -35,12 +35,6 @@ def test_routes_notify():
 
 
 def test_route_stat():
-    routes = _Routes(**{"config": {
-        "performance_stats": True,
-        "error_host": "https://api.airbrake.io",
-        "apm_host": "https://api.airbrake.io",
-    }})
-
     metric = RouteMetric(method="GET", route="/test")
     metric.status_code = 200
     metric.content_type = "application/json"
