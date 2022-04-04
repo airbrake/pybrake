@@ -15,8 +15,18 @@ The example application provides three GET endpoints:
 ```bash
 pip3 install -r requirements.txt
 ```
+2. You must get both project_id & project_key.
 
-2.  Run the localhost server
+To find your project_id and project_key from Airbrake account and replace it in below code in your project's `main.py` file.
+
+```python
+AIRBRAKE = dict(
+    project_id=999999,  # Insert your Project ID here
+    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxx', # Insert your Project Key here
+)
+```
+
+3. Run the localhost server
 
 ```bash
 python main.py
@@ -24,13 +34,13 @@ python main.py
 
 3. To retrieve the responses, append the endpoints to the localhost URL with a `/`.
 
-Use the below curl commands to interact with the endpoints. The endpoints require an api-key HTTP header.
+Use the below curl commands to interact with the endpoints.
 
 ```bash
-curl "http://localhost:3000/date/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:3000/locations/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:3000/weather/<austin/pune/santabarbara>/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:3000/weather/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673'
+curl "http://localhost:3000/date" 
+curl "http://localhost:3000/locations"
+curl "http://localhost:3000/weather/<austin/pune/santabarbara>"
+curl "http://localhost:3000/weather"
 ```
   
 The last curl command will raise `404 Not Found` error.
