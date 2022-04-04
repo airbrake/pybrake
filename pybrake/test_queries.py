@@ -18,34 +18,42 @@ def test_query_metric_start_end():
 
 
 def test_query_stats_performance_stats():
-    stats = QueryStats(**{"config": {"performance_stats": False}})
-    stats.notify(
+    stats = QueryStats(**{"config": {
+        "performance_stats": False,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
+    }})
+    assert stats.notify(
         query="SELECT * FROM foos",
         method="GET",
         route='test',
         start_time=time.time(),
         end_time=time.time(),
-    )
+    ) is None
 
 
 def test_query_stats_query_stats():
     stats = QueryStats(**{"config": {
         "performance_stats": True,
-        "query_stats": False
+        "query_stats": False,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
-    stats.notify(
+    assert stats.notify(
         query="SELECT * FROM foos",
         method="GET",
         route='test',
         start_time=time.time(),
         end_time=time.time(),
-    )
+    ) is None
 
 
 def _test_query_stats_notify():
     stats = QueryStats(**{"config": {
         "performance_stats": True,
-        "query_stats": True
+        "query_stats": True,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
     stats.notify(
         query="SELECT * FROM foos",
@@ -59,6 +67,9 @@ def _test_query_stats_notify():
 def test_queue_ab_url():
     stats = QueryStats(**{"config": {
         "performance_stats": True,
-        "query_stats": True
+        "query_stats": True,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
-    stats._ab_url()
+    res = stats._ab_url()
+    assert res == "https://api.airbrake.io/api/v5/projects/0/queries-stats"
