@@ -16,7 +16,7 @@ def test_routes_performance_stats():
     metric.content_type = "application/json"
     metric.end_time = time.time()
 
-    routes.notify(metric)
+    assert routes.notify(metric) is None
 
 
 def _test_routes_notify():
@@ -65,4 +65,5 @@ def test_routes_ab_url():
         "error_host": "https://api.airbrake.io",
         "apm_host": "https://api.airbrake.io",
     }})
-    stats._ab_url()
+    assert stats._ab_url() == \
+           'https://api.airbrake.io/api/v5/projects/0/routes-stats'

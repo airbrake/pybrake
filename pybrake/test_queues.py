@@ -6,6 +6,7 @@ from .queues import QueueMetric, QueueStats, _QueueStat
 def test_queue_metric_start_end():
     metric = QueueMetric(queue="test")
     metric.end()
+    assert metric.end_time is not None
 
 
 def test_queue_metric_key():
@@ -18,37 +19,37 @@ def test_queue_stats_performance_stats():
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {"performance_stats": False}})
     metric.end()
-    stats.notify(metric)
+    assert stats.notify(metric) is None
 
 
 def test_queue_stats_queue_stat_value():
     metric = QueueMetric(queue="foo_queue")
-    metric._groups = {'redis': 24.0, 'sql': 0.4}
-    metric.end()
     stat = _QueueStat(queue=metric.queue, time=metric.start_time)
-    print(stat.__dict__)
+    assert stat.__dict__.get('queue') == 'foo_queue'
 
 
 def test_queue_stats_queue_stats():
     metric = QueueMetric(queue="foo_queue")
-    metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {
         "performance_stats": True,
-        "queue_stats": False
+        "queue_stats": False,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
     metric.end()
-    stats.notify(metric)
+    assert stats.notify(metric) is None
 
 
 def test_queue_stats_group_length():
     metric = QueueMetric(queue="foo_queue")
-    metric._groups = {'redis': 24.0}
     stats = QueueStats(**{"config": {
         "performance_stats": True,
-        "queue_stats": False
+        "queue_stats": False,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
     metric.end()
-    stats.notify(metric)
+    assert stats.notify(metric) is None
 
 
 def _test_queue_stats_notify():
@@ -56,7 +57,9 @@ def _test_queue_stats_notify():
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {
         "performance_stats": True,
-        "queue_stats": True
+        "queue_stats": True,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
     metric.end()
     stats.notify(metric)
@@ -65,9 +68,12 @@ def _test_queue_stats_notify():
 def test_queue_ab_url():
     stats = QueueStats(**{"config": {
         "performance_stats": True,
-        "queue_stats": True
+        "queue_stats": True,
+        "error_host": "https://api.airbrake.io",
+        "apm_host": "https://api.airbrake.io",
     }})
-    stats._ab_url()
+    assert stats._ab_url() == \
+           'https://api.airbrake.io/api/v5/projects/0/queues-stats'
 
 
 def test_queue_flush_blank_stet():
