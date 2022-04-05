@@ -5,10 +5,12 @@ from .routes import _Routes, RouteStats, RouteStat
 
 
 def test_routes_performance_stats():
+    """
+    To see what happens if performance_stats is set to false, run this test.
+    :return:
+    """
     routes = _Routes(**{"config": {
         "performance_stats": False,
-        "error_host": "https://api.airbrake.io",
-        "apm_host": "https://api.airbrake.io",
     }})
 
     metric = RouteMetric(method="GET", route="/test")
@@ -31,7 +33,7 @@ def _test_routes_notify():
     metric.content_type = "application/json"
     metric.end_time = time.time()
 
-    routes.notify(metric)
+    assert routes.notify(metric) is None
 
 
 def test_route_stat():
