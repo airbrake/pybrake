@@ -19,6 +19,10 @@ def test_build_remote_setting_poll_url():
 
 
 def test_build_remote_setting_error_notifications():
+    """
+    To see what happens if error_notifications is set to false, run this test.
+    :return:
+    """
     config = {
         "error_notifications": False,
         "performance_stats": True,
@@ -34,6 +38,10 @@ def test_build_remote_setting_error_notifications():
 
 
 def test_build_remote_setting_performance_stats():
+    """
+    To see what happens if performance_stats is set to false, run this test.
+    :return:
+    """
     config = {
         "error_notifications": True,
         "performance_stats": False,

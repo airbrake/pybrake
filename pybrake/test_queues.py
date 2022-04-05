@@ -29,24 +29,27 @@ def test_queue_stats_queue_stat_value():
 
 
 def test_queue_stats_queue_stats():
+    """
+    To see what happens if performance_stats is set to false, run this test.
+    :return:
+    """
     metric = QueueMetric(queue="foo_queue")
     stats = QueueStats(**{"config": {
-        "performance_stats": True,
-        "queue_stats": False,
-        "error_host": "https://api.airbrake.io",
-        "apm_host": "https://api.airbrake.io",
+        "performance_stats": False,
     }})
     metric.end()
     assert stats.notify(metric) is None
 
 
-def test_queue_stats_group_length():
+def test_queue_stats_false():
+    """
+    To see what happens if queue_stats is set to false, run this test.
+    :return:
+    """
     metric = QueueMetric(queue="foo_queue")
     stats = QueueStats(**{"config": {
         "performance_stats": True,
         "queue_stats": False,
-        "error_host": "https://api.airbrake.io",
-        "apm_host": "https://api.airbrake.io",
     }})
     metric.end()
     assert stats.notify(metric) is None
@@ -62,7 +65,7 @@ def _test_queue_stats_notify():
         "apm_host": "https://api.airbrake.io",
     }})
     metric.end()
-    stats.notify(metric)
+    assert stats.notify(metric) is None
 
 
 def test_queue_ab_url():
