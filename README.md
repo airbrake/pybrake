@@ -1,6 +1,8 @@
 # Python exception notifier for Airbrake
 
 ![Build Status](https://github.com/airbrake/pybrake/workflows/pybrake/badge.svg)
+[![Preview in vscode.dev](https://img.shields.io/badge/preview%20in-vscode.dev-blue)](https://vscode.dev/github/airbrake/pybrake)
+[![Preview in github.dev](https://img.shields.io/badge/preview%20in-github.dev-green)](https://github.dev/airbrake/pybrake)
 
 ## Installation
 
