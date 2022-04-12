@@ -53,7 +53,7 @@ def request_filter(notice):
 
     notice["params"]["request"] = dict(
         form=dict(request.form),
-        json=dict(request.json),
+        json=request.is_json and dict(request.json) or {},
         files=dict(request.files),
         cookies=dict(request.cookies),
         headers=dict(request.headers),
