@@ -20,9 +20,9 @@ except ImportError:
 else:
     _flask_login_available = True
 
-from .notifier import Notifier
-from .route_metric import RouteMetric
-from . import metrics
+from .. import Notifier
+from .. import RouteMetric
+from .. import metrics
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
@@ -153,6 +153,7 @@ def _sqla_instrument(config, app):
     event.listen(engine, "before_cursor_execute", _before_cursor(config))
     event.listen(engine, "after_cursor_execute", _after_cursor(config))
 
+
 def _before_cursor(config):
     def _sqla_before_cursor_execute(
         conn, cursor, statement, parameters, context, executemany
@@ -162,6 +163,7 @@ def _before_cursor(config):
         metrics.start_span("sql")
 
     return _sqla_before_cursor_execute
+
 
 def _after_cursor(config):
     def _sqla_after_cursor_execute(

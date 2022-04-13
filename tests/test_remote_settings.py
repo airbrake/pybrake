@@ -1,4 +1,4 @@
-from .remote_settings import RemoteSettings
+from pybrake.remote_settings import RemoteSettings
 
 
 def test_build_remote_setting_poll_url():

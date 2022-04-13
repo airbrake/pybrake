@@ -2,8 +2,8 @@ import re
 import warnings
 from urllib.error import URLError
 
-from .notifier import Notifier
-from .utils import time_trunc_minute
+from pybrake.notifier import Notifier
+from pybrake.utils import time_trunc_minute
 from .test_helper import (get_exception, get_nested_exception,
                           get_exception_in_cython, build_notice_from_str)
 
@@ -25,7 +25,7 @@ def test_build_notice_from_exception():
     assert len(backtrace) == 1
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/tests/test_helper.py"
     assert frame["function"] == "get_exception"
     assert frame["line"] == 6
     assert frame["code"] == {
@@ -83,7 +83,7 @@ def test_build_notice_from_nested_exception():
     assert len(backtrace) == 1
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/tests/test_helper.py"
     assert frame["function"] == "get_nested_exception"
     assert frame["line"] == 51
 
@@ -95,7 +95,7 @@ def test_build_notice_from_nested_exception():
     assert len(backtrace) == 2
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/tests/test_helper.py"
     assert frame["function"] == "get_exception"
     assert frame["line"] == 6
 
@@ -115,7 +115,7 @@ def test_build_notice_from_str():
     assert len(backtrace) >= 1
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/tests/test_helper.py"
     assert frame["function"] == "build_notice_from_str"
     assert frame["line"] == 12
     assert frame["code"] == {

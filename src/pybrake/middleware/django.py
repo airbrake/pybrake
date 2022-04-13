@@ -10,9 +10,9 @@ from django.core import cache
 from django.core.cache import CacheHandler
 from django.middleware import cache as middleware_cache
 
-from .global_notifier import get_global_notifier
-from .route_metric import RouteMetric
-from . import metrics
+from ..global_notifier import get_global_notifier
+from .. import RouteMetric
+from .. import metrics
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"

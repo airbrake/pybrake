@@ -1,7 +1,8 @@
 import base64
 import pytest
 
-from .tdigest import from_bytes, as_bytes, TDigestStat, TDigestStatGroups
+from pybrake.tdigest import from_bytes, as_bytes, TDigestStat, \
+    TDigestStatGroups
 
 
 def test_tdigest_from_bytes():

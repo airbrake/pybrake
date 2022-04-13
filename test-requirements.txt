@@ -3,6 +3,7 @@ pytest-benchmark>=3.2.2
 pylint
 django
 flask
+blinker
 aiohttp
 redis
 celery

@@ -49,7 +49,7 @@ def test_celery_integration():
 
     for _ in range(10):
         if notice is None:
-            time.sleep(1)
+            time.sleep(5)
         else:
             break
 

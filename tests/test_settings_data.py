@@ -1,4 +1,4 @@
-from .settings_data import SettingsData
+from pybrake.settings_data import SettingsData
 
 
 def test_interval_when_no_poll_sec():
