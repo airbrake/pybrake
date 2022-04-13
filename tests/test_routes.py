@@ -1,7 +1,7 @@
 import time
 
-from .route_metric import RouteMetric
-from .routes import _Routes, RouteStats, RouteStat
+from pybrake.route_metric import RouteMetric
+from pybrake.routes import _Routes, RouteStats, RouteStat
 
 
 def test_routes_performance_stats():

@@ -1,5 +1,5 @@
-from .notifier import Notifier
-from .logging import LoggingHandler, _LOG_RECORD_ATTRS_TO_COPY
+from pybrake.notifier import Notifier
+from pybrake.logging import LoggingHandler, _LOG_RECORD_ATTRS_TO_COPY
 from .test_helper import build_logging_record_error, build_logging_record_exception
 
 
@@ -20,7 +20,7 @@ def test_logging_handler_record_error():
     assert len(backtrace) == 1
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/tests/test_helper.py"
     assert frame["function"] == "build_logging_record_error"
     assert frame["line"] == 17
     assert frame["code"] == {
@@ -58,7 +58,7 @@ def test_logging_handler_record_exception():
     assert len(backtrace) == 1
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_helper.py"
+    assert frame["file"] == "/PROJECT_ROOT/pybrake/tests/test_helper.py"
     assert frame["function"] == "build_logging_record_exception"
     assert frame["line"] == 24
     assert frame["code"] == {

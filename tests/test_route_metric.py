@@ -1,4 +1,4 @@
-from .route_metric import _RouteBreakdown
+from pybrake.route_metric import _RouteBreakdown
 
 
 def test_initiate_route_breakdown():

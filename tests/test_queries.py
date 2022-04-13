@@ -1,6 +1,6 @@
 import time
 
-from .queries import QueryStat, QueryStats
+from pybrake.queries import QueryStat, QueryStats
 
 
 def test_query_metric_start_end():

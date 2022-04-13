@@ -1,6 +1,6 @@
 import pytest
 
-from .queues import QueueMetric, QueueStats, _QueueStat
+from pybrake.queues import QueueMetric, QueueStats, _QueueStat
 
 
 def test_queue_metric_start_end():

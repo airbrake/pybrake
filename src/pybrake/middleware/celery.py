@@ -3,8 +3,8 @@ import functools
 import celery.exceptions as excs
 import celery.app.trace as trace
 
-from . import metrics
-from .queues import QueueMetric
+from .. import metrics
+from .. import QueueMetric
 
 
 _CELERY_EXCEPTIONS = (excs.Retry, excs.Ignore, excs.Reject)

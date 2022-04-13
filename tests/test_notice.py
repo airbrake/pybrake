@@ -1,7 +1,7 @@
 import collections
 import pytest
 
-from .notice import jsonify_notice
+from pybrake.notice import jsonify_notice
 
 
 def make_defaultdict():
