@@ -22,6 +22,7 @@ def test_routes_performance_stats():
 
 
 def _test_routes_notify():
+    # TODO: refactor RouteMetric class before enable this test case
     routes = _Routes(**{"config": {
         "performance_stats": True,
         "error_host": "https://api.airbrake.io",

@@ -53,6 +53,7 @@ def test_query_stats_query_stats():
 
 
 def _test_query_stats_notify():
+    # TODO: refactor QueryStats class code before enable this test case
     stats = QueryStats(**{"config": {
         "performance_stats": True,
         "query_stats": True,
