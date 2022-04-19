@@ -1,2 +1,3 @@
+import os
 import sys
-sys.path.append("../src/")
+sys.path.append(os.path.abspath('../pybrake/src/'))

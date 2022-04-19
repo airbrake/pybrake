@@ -3,7 +3,7 @@ from celery import Celery
 # from pybrake.middleware.celery import patch_celery
 from pybrake.notifier import Notifier
 
-from pybrake.celery import patch_celery
+from pybrake.middleware.celery import patch_celery
 
 app = Celery("test_celery", broker="redis://localhost", backend="redis://localhost")
 

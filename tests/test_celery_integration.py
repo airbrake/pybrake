@@ -64,8 +64,8 @@ def test_celery_integration():
     assert len(backtrace) == 2
 
     frame = backtrace[0]
-    assert frame["file"] == "/PROJECT_ROOT/pybrake/test_celery.py"
+    assert frame["file"] == "/PROJECT_ROOT/tests/test_celery.py"
     assert frame["function"] == "raise_error"
-    assert frame["line"] == 21
+    assert frame["line"] == 23
     server.socket.close()
     server.shutdown()

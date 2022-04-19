@@ -56,6 +56,7 @@ def test_queue_stats_false():
 
 
 def _test_queue_stats_notify():
+    # TODO: refactor QueueMetric class code before enable this test case
     metric = QueueMetric(queue="foo_queue")
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {

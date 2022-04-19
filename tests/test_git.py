@@ -1,6 +1,6 @@
 import os
 
-from pybrake.src.pybrake.git import find_git_dir
+from src.pybrake.git import find_git_dir
 
 
 def test_find_git_dir():
