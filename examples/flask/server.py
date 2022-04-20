@@ -1,16 +1,22 @@
-from time import sleep
-from random import randrange
 from argparse import ArgumentParser
+from random import randrange
+from time import sleep
 
-from flask import Flask, request, render_template
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-
-import pybrake
-from pybrake.flask import init_app
+from pybrake.middleware.flask import init_app
 
 parser = ArgumentParser()
-parser.add_argument("-project_id", dest="project_id", help="airbrake project ID")
-parser.add_argument("-project_key", dest="project_key", help="airbrake project key")
+parser.add_argument(
+    "-project_id",
+    dest="project_id",
+    help="airbrake project ID"
+)
+parser.add_argument(
+    "-project_key",
+    dest="project_key",
+    help="airbrake project key"
+)
 args = parser.parse_args()
 
 app = Flask(__name__)
@@ -19,7 +25,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
 db = SQLAlchemy(app)
 
 app.config["PYBRAKE"] = dict(
-    project_id=args.project_id, project_key=args.project_key, environment="test"
+    project_id=args.project_id, project_key=args.project_key,
+    environment="test"
 )
 
 app = init_app(app)
