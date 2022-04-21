@@ -135,7 +135,7 @@ Next, activate the Airbrake middleware:
 ```python
 MIDDLEWARE = [
     ...
-    'pybrake.django.AirbrakeMiddleware',
+    'pybrake.middleware.django.AirbrakeMiddleware',
 ]
 ```
 
@@ -170,7 +170,7 @@ The Flask integration leverages Flask signals and therefore requires the
 
 ```python
 from flask import Flask
-import pybrake.flask
+from pybrake.middleware.flask import init_app
 
 app = Flask(__name__)
 
@@ -178,7 +178,7 @@ app.config['PYBRAKE'] = dict(
     project_id=123,
     project_key='FIXME',
 )
-app = pybrake.flask.init_app(app)
+app = init_app(app)
 ```
 
 ## aiohttp integration (python 3.5+)
@@ -189,7 +189,7 @@ Setup airbrake's middleware and config for your web application:
 # app.py
 
 from aiohttp import web
-from pybrake.aiohttp import create_airbrake_middleware
+from pybrake.middleware.aiohttp import create_airbrake_middleware
 
 airbrake_middleware = create_airbrake_middleware()
 
@@ -208,7 +208,7 @@ Also, you can pass custom handlers to `create_airbrake_middleware`:
 # middlewares.py
 
 import aiohttp_jinja2
-from pybrake.aiohttp import create_airbrake_middleware
+from pybrake.middleware.aiohttp import create_airbrake_middleware
 
 
 async def handle_404(request):
