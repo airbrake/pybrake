@@ -1,10 +1,11 @@
 import time
 
 import pytest
+import pybrake.metrics as metrics
 from pybrake.route_metric import RouteMetric, _RouteBreakdown, RouteBreakdowns
 from pybrake.routes import _Routes, RouteStats, RouteStat, route_stat_key
 
-
+metrics.FLUSH_PERIOD = 0
 CONFIG = {
     "config": {
         "performance_stats": False,
@@ -84,6 +85,7 @@ def test_routes_breakdowns_notify_200():
     metric.FLUSH_PERIOD = 5
     metric.end_time = time.time()
     metric._groups = {'route': 24.0, 'test': 0.4}
+    routes._stats = {}
     assert routes.notify(metric) is None
 
 

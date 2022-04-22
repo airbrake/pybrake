@@ -1,5 +1,6 @@
 pytest>=4.3.0
 pytest-benchmark>=3.2.2
+pytest-mock-server
 pylint
 django
 flask
@@ -8,3 +9,4 @@ aiohttp
 redis
 celery
 sqlalchemy
+werkzeug

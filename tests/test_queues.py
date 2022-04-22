@@ -1,6 +1,9 @@
 import pytest
 
+import pybrake.metrics as metrics
 from pybrake.queues import QueueMetric, QueueStats, _QueueStat
+
+metrics.FLUSH_PERIOD = 0
 
 
 def test_queue_metric_start_end():
@@ -55,8 +58,7 @@ def test_queue_stats_false():
     assert stats.notify(metric) is None
 
 
-def _test_queue_stats_notify():
-    # TODO: refactor QueueMetric class code before enable this test case
+def test_queue_stats_notify():
     metric = QueueMetric(queue="foo_queue")
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {
