@@ -226,6 +226,17 @@ def test_truncation():
     assert len(notice["params"]["param"]) == 1024
 
 
+def test_config_error_notifications():
+    notifier = Notifier()
+    notifier.config.update({'error_notifications': False})
+    print(notifier.config)
+    notice = notifier.build_notice("hello")
+    notice["params"]["param"] = "x" * 64000
+    notice = notifier.send_notice_sync(notice)
+
+    assert len(notice["params"]["param"]) == 64000
+
+
 def test_revision_override():
     notifier = Notifier(revision="1234")
     assert notifier._context["revision"] == "1234"
