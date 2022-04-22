@@ -2,8 +2,10 @@ import time
 
 import pytest
 from pybrake.route_metric import RouteMetric
+import pybrake.metrics as metrics
 from pybrake.routes import _Routes, RouteStats, RouteStat, route_stat_key
 
+metrics.FLUSH_PERIOD = 0
 CONFIG = {
     "config": {
         "performance_stats": True,
