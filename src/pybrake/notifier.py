@@ -19,6 +19,7 @@ from .blocklist_filter import make_blocklist_filter
 from .code_hunks import get_code_hunk
 from .git import get_git_revision
 from .utils import logger
+from .singleton import Singleton
 from .version import version
 from .notifier_name import notifier_name
 from .remote_settings import RemoteSettings
@@ -30,7 +31,8 @@ _AB_URL_FORMAT = "{}/api/v3/projects/{}/notices"
 
 _CONTEXT = dict(
     notifier=dict(
-        name=notifier_name, version=version, url="https://github.com/airbrake/pybrake"
+        name=notifier_name, version=version,
+        url="https://github.com/airbrake/pybrake"
     ),
     os=platform.platform(),
     language=f"Python/{platform.python_version()}",
@@ -39,7 +41,7 @@ _CONTEXT = dict(
 )
 
 
-class Notifier:
+class Notifier(metaclass=Singleton):
     def __init__(
         self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
     ):

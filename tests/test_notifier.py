@@ -4,6 +4,7 @@ from urllib.error import URLError
 
 from pybrake.notifier import Notifier
 from pybrake.utils import time_trunc_minute
+
 from .test_helper import (get_exception, get_nested_exception,
                           get_exception_in_cython, build_notice_from_str)
 
@@ -63,7 +64,8 @@ def test_build_notice_from_exception_cython():
         assert error["message"] == 'unorderable types: str() < int()'
     else:
         # python 3.6 and above
-        assert error["message"] == "'<' not supported between instances of 'str' and 'int'"
+        assert error[
+                   "message"] == "'<' not supported between instances of 'str' and 'int'"
 
 
 def test_build_notice_from_nested_exception():
@@ -252,7 +254,8 @@ def _test_keys_blocklist(keys_blocklist):
     notifier = Notifier(keys_blocklist=keys_blocklist)
 
     notice = notifier.build_notice("hello")
-    notice["params"] = dict(key1="value1", key2="value2", key3=dict(key1="value1"))
+    notice["params"] = dict(key1="value1", key2="value2",
+                            key3=dict(key1="value1"))
     notice = notifier.send_notice_sync(notice)
 
     assert notice["params"] == {
@@ -268,12 +271,13 @@ def _test_deprecated_filter_keys(keys_blacklist):
         notifier = Notifier(keys_blacklist=keys_blacklist)
         assert len(w) == 1
         assert issubclass(w[-1].category, DeprecationWarning)
-        deprecation_message = "keys_blacklist is a deprecated option. "\
+        deprecation_message = "keys_blacklist is a deprecated option. " \
                               "Use keys_blocklist instead."
         assert deprecation_message in str(w[-1].message)
 
     notice = notifier.build_notice("hello")
-    notice["params"] = dict(key1="value1", key2="value2", key3=dict(key1="value1"))
+    notice["params"] = dict(key1="value1", key2="value2",
+                            key3=dict(key1="value1"))
     notice = notifier.send_notice_sync(notice)
 
     assert notice["params"] == {
@@ -318,7 +322,8 @@ def _test_rate_limited():
 def test_clean_filename():
     notifier = Notifier()
 
-    filename = notifier._clean_filename("home/lib/python3.6/site-packages/python.py")
+    filename = notifier._clean_filename(
+        "home/lib/python3.6/site-packages/python.py")
     assert filename == "/SITE_PACKAGES/python.py"
 
 
@@ -331,3 +336,13 @@ def test_error_notifications_disabled():
 
     notice = future.result()
     assert notice["error"] == "error notifications are disabled"
+
+
+def test_error_notifications_notify_without_key():
+    notifier = Notifier()
+
+    future = notifier.notify("hello")
+    notifier.close()
+
+    notice = future.result()
+    assert notice.get('error') == "Project API key is required"
