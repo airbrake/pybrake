@@ -1,10 +1,16 @@
 import time
+
 from flask import (
     request,
     got_request_exception,
     before_render_template,
     template_rendered,
+    current_app
 )
+
+from .. import Notifier
+from .. import RouteMetric
+from .. import metrics
 
 try:
     import flask_sqlalchemy as _
@@ -19,11 +25,6 @@ except ImportError:
     _flask_login_available = False
 else:
     _flask_login_available = True
-
-from .. import Notifier
-from .. import RouteMetric
-from .. import metrics
-
 
 _UNKNOWN_ROUTE = "UNKNOWN"
 
@@ -172,5 +173,14 @@ def _after_cursor(config):
         if not config.get("performance_stats"):
             return
         metrics.end_span("sql")
+        metric = metrics.get_active()
+        if metric is not None:
+            current_app.extensions["pybrake"].queries.notify(
+                query=statement,
+                method=getattr(metric, "method", ""),
+                route=getattr(metric, "route", ""),
+                start_time=metric.start_time,
+                end_time=time.time(),
+            )
 
     return _sqla_after_cursor_execute
