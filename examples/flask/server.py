@@ -1,35 +1,31 @@
-from argparse import ArgumentParser
+import json
+from datetime import datetime
 from random import randrange
 from time import sleep
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from pybrake.middleware.flask import init_app
-
-parser = ArgumentParser()
-parser.add_argument(
-    "-project_id",
-    dest="project_id",
-    help="airbrake project ID"
-)
-parser.add_argument(
-    "-project_key",
-    dest="project_key",
-    help="airbrake project key"
-)
-args = parser.parse_args()
 
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 app.config["PYBRAKE"] = dict(
-    project_id=args.project_id, project_key=args.project_key,
-    environment="test"
+    project_id="XXXXXXXXXXXX",
+    project_key="XXXXXXXXXXXX",
+    environment="test",
+    error_notifications=True,  # False to disable error notification
+    performance_stats=True,  # False to disable APM
+    query_stats=True,  # False to disable query monitoring
+    queue_stats=True  # False to disable queue monitoring
 )
 
 app = init_app(app)
+
+city_list = ["austin", "pune", "santabarbara"]
 
 
 class User(db.Model):
@@ -56,4 +52,55 @@ def hello(name):
     return render_template("hello.html", name=name)
 
 
-app.run(debug=True)
+@app.route('/')
+def index():
+    return "Hello, Welcome to the Weather App!"
+
+
+@app.route('/date')
+def getdate():
+    return jsonify({
+        "date": "Current date and time is: %s" % datetime.now()
+    })
+
+
+@app.route('/locations')
+def get_location_details():
+    return jsonify({
+        'cities': city_list
+    })
+
+
+# API for weather details for a location
+@app.route('/weather/<location_name>')
+def get_weather_details(location_name):
+    file_name = location_name + ".json"
+    if location_name not in city_list:
+        return app.response_class(
+            status=400,
+            response=json.dumps({
+                'error': 'Not found: Location not found!'
+            }),
+            mimetype='application/json'
+        )
+    try:
+        with open('static/' + file_name) as f:
+            data = json.load(f)
+            return app.response_class(
+                status=200,
+                response=json.dumps(data),
+                mimetype='application/json'
+            )
+    except Exception as e:
+        return app.response_class(
+            status=500,
+            response=json.dumps({
+                'error': str(e)
+            }),
+            mimetype='application/json'
+        )
+
+
+if __name__ == '__main__':
+    app.debug = True
+    app.run()
