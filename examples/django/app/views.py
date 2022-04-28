@@ -1,10 +1,8 @@
-import json
-from datetime import *
-import simplejson
-from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
-from rest_framework import status
-from rest_framework.utils import json
+from datetime import datetime
 
+import requests
+from django.http import HttpResponse, JsonResponse
+from rest_framework import status
 
 # Create your views here.
 city_list = ["pune", "austin", "santabarbara"]
@@ -17,24 +15,42 @@ def hello(request):
 
 # API for current server date
 def getdate(request):
-    current_datetime = datetime.now()
-    html = "Current Date and Time is: %s" % current_datetime
-    return HttpResponse(html, {"status": "success"}, status=status.HTTP_200_OK)
+    return JsonResponse(
+        data={
+            "date": "Current Date and Time is: %s" % datetime.now()
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 # API for location details
 def get_location_details(request):
-    return HttpResponse(simplejson.dumps(city_list), content_type='application/json', status=status.HTTP_200_OK)
+    return JsonResponse(
+        data={
+            "locations": city_list
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 # API for weather details for a location
 def get_weather_details(request, location_name):
     if location_name not in city_list:
-        return HttpResponseNotFound(reason="Location not found!", status=status.HTTP_404_NOT_FOUND)
-    file_name = location_name + ".json"
+        return JsonResponse(
+            status=status.HTTP_404_NOT_FOUND,
+            data={
+                "error": "Location not found!"
+            }
+        )
     try:
-        with open('static/' + file_name) as f:
-            data = json.load(f)
-    except IOError:
-        return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        with requests.get("https://airbrake.github.io/weatherapi/weather/" +
+                          location_name) as f:
+            data = f.json()
+    except Exception as e:
+        return JsonResponse(
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            data={
+                "error": str(e)
+            }
+        )
     return JsonResponse(data, status=status.HTTP_200_OK, safe=False)

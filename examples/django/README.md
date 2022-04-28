@@ -22,8 +22,13 @@ To find your project_id and project_key from Airbrake account and replace it in 
 
 ```python
 AIRBRAKE = dict(
-    project_id=999999,  # Insert your Project ID here
-    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxx', # Insert your Project Key here
+    project_id=999999,                               # Insert your Project Id here
+    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',  # Insert your Project Key here
+    environment="test",
+    error_notifications=True,                        # False to disable error notification
+    performance_stats=True,                          # False to disable APM
+    query_stats=True,                                # False to disable query monitoring
+    queue_stats=True                                 # False to disable queue monitoring
 )
 ```
 
