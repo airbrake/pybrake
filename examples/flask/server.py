@@ -3,6 +3,7 @@ from datetime import datetime
 from random import randrange
 from time import sleep
 
+import requests
 from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from pybrake.middleware.flask import init_app
@@ -74,7 +75,6 @@ def get_location_details():
 # API for weather details for a location
 @app.route('/weather/<location_name>')
 def get_weather_details(location_name):
-    file_name = location_name + ".json"
     if location_name not in city_list:
         return app.response_class(
             status=400,
@@ -84,8 +84,8 @@ def get_weather_details(location_name):
             mimetype='application/json'
         )
     try:
-        with open('static/' + file_name) as f:
-            data = json.load(f)
+        with requests.get('https://airbrake.github.io/weatherapi/weather/' + location_name) as f:
+            data = f.json()
             return app.response_class(
                 status=200,
                 response=json.dumps(data),
