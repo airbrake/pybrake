@@ -2,7 +2,7 @@ import inspect
 
 from aiohttp import web
 
-from .. import Notifier
+from ..notifier import Notifier
 
 
 def create_airbrake_middleware(overrides=None):

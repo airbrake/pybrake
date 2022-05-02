@@ -11,8 +11,8 @@ from django.core.cache import CacheHandler
 from django.middleware import cache as middleware_cache
 
 from ..global_notifier import get_global_notifier
-from .. import RouteMetric
-from .. import metrics
+from ..route_metric import RouteMetric
+from ..metrics import get_active, start_span, end_span, activated_metric
 
 
 _UNKNOWN_ROUTE = "UNKNOWN"
@@ -50,9 +50,9 @@ def request_filter(notice):
 
 
 def template_render(self, context):
-    metrics.start_span("template")
+    start_span("template")
     res = self.nodelist.render(context)
-    metrics.end_span("template")
+    end_span("template")
     return res
 
 
@@ -79,7 +79,7 @@ class AirbrakeMiddleware:
             wrap_cursor(conn, self._notifier)
 
         metric = RouteMetric(method=request.method)
-        with metrics.activated_metric(metric):
+        with activated_metric(metric):
             response = self.get_response(request)
 
         metric.status_code = response.status_code
@@ -91,7 +91,7 @@ class AirbrakeMiddleware:
         return response
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        metric = metrics.get_active()
+        metric = get_active()
         if metric is None:
             return
 
@@ -176,15 +176,15 @@ class CursorWrapper:
         return self._record(self.cursor.executemany, sql, param_list)
 
     def _record(self, method, sql, params):
-        metric = metrics.get_active()
+        metric = get_active()
 
         start_time = time.time()
-        metrics.start_span("sql", start_time=start_time)
+        start_span("sql", start_time=start_time)
         try:
             return method(sql, params)
         finally:
             end_time = time.time()
-            metrics.end_span("sql", end_time=end_time)
+            end_span("sql", end_time=end_time)
             if hasattr(sql, "as_string"):
                 sql = sql.as_string(self._cursor.cursor)
             self._notifier.queries.notify(
@@ -211,9 +211,9 @@ class CursorWrapper:
 def cache_span(fn):
     @functools.wraps(fn)
     def wrapped(self, *args, **kwargs):
-        metrics.start_span("cache")
+        start_span("cache")
         res = fn(self, *args, **kwargs)
-        metrics.end_span("cache")
+        end_span("cache")
         return res
 
     return wrapped
