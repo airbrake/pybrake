@@ -3,8 +3,8 @@ import functools
 import celery.exceptions as excs
 import celery.app.trace as trace
 
-from .. import metrics
-from .. import QueueMetric
+from ..metrics import set_active
+from ..queues import QueueMetric
 
 
 _CELERY_EXCEPTIONS = (excs.Retry, excs.Ignore, excs.Reject)
@@ -30,7 +30,7 @@ def _wrap_task_call(task, fn, *, notifier=None):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         metric = QueueMetric(queue=task.name)
-        metrics.set_active(metric)
+        set_active(metric)
 
         try:
             return fn(*args, **kwargs)
@@ -40,6 +40,6 @@ def _wrap_task_call(task, fn, *, notifier=None):
             raise exc
         finally:
             notifier.queues.notify(metric)
-            metrics.set_active(None)
+            set_active(None)
 
     return wrapper

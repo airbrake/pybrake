@@ -8,9 +8,9 @@ from flask import (
     current_app
 )
 
-from .. import Notifier
-from .. import RouteMetric
-from .. import metrics
+from ..notifier import Notifier
+from ..route_metric import RouteMetric
+from ..metrics import set_active, get_active, start_span, end_span
 
 try:
     import flask_sqlalchemy as _
@@ -104,7 +104,7 @@ def _before_request(config, notifier):
             route = _UNKNOWN_ROUTE
 
         metric = RouteMetric(method=request.method, route=route)
-        metrics.set_active(metric)
+        set_active(metric)
 
     return before_request_middleware
 
@@ -114,13 +114,13 @@ def _after_request(config, notifier):
         if not config.get("performance_stats"):
             return response
 
-        metric = metrics.get_active()
+        metric = get_active()
         if metric is not None:
             metric.status_code = response.status_code
             metric.content_type = response.headers.get("Content-Type")
             metric.end_time = time.time()
             notifier.routes.notify(metric)
-            metrics.set_active(None)
+            set_active(None)
 
         return response
 
@@ -128,11 +128,11 @@ def _after_request(config, notifier):
 
 
 def _before_render_template(sender, template, context, **extra):
-    metrics.start_span("template")
+    start_span("template")
 
 
 def _template_rendered(sender, template, context, **extra):
-    metrics.end_span("template")
+    end_span("template")
 
 
 def _handle_exception(sender, exception, **_):
@@ -161,7 +161,7 @@ def _before_cursor(config):
     ):
         if not config.get("performance_stats"):
             return
-        metrics.start_span("sql")
+        start_span("sql")
 
     return _sqla_before_cursor_execute
 
@@ -172,8 +172,8 @@ def _after_cursor(config):
     ):
         if not config.get("performance_stats"):
             return
-        metrics.end_span("sql")
-        metric = metrics.get_active()
+        end_span("sql")
+        metric = get_active()
         if metric is not None:
             current_app.extensions["pybrake"].queries.notify(
                 query=statement,
