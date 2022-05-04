@@ -1,23 +1,29 @@
 import json
-import pybrake
 from datetime import datetime
-from bottle import run, get, response
+from bottle import run, get, response, Bottle
+from pybrake.middleware.bottle import init_app
 
-notifier = pybrake.Notifier(project_id=999999,
-                            project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                            environment='production')
+
+app = Bottle()
+
+app.config['PYBRAKE'] = dict(
+    project_id=999999,
+    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+)
+
+app = init_app(app)
 
 city_list = ["austin", "pune", "santabarbara"]
 
 
 # API for Hello Application
-@get('/')
+@app.get('/')
 def hello():
     return "Hello, Welcome to the Weather App!"
 
 
 # API for current server date
-@get('/date', method=['GET'])
+@app.get('/date', method=['GET'])
 def getdate():
     return {
         "date": "Current date and time is: %s" % datetime.now()
@@ -25,7 +31,7 @@ def getdate():
 
 
 # API for location details
-@get('/locations')
+@app.get('/locations')
 def get_location_details():
     return {
         'cities': city_list
@@ -33,7 +39,7 @@ def get_location_details():
 
 
 # API for weather details for a location
-@get('/weather/<location_name>')
+@app.get('/weather/<location_name>')
 def get_weather_details(location_name):
     response.headers['Content-Type'] = 'application/json'
     response.headers['Cache-Control'] = 'no-cache'
@@ -54,4 +60,5 @@ def get_weather_details(location_name):
         }
 
 
-run(host='localhost', port=3000, debug=True)
+if __name__ == '__main__':
+    run(app, host='localhost', port=3000, debug=True, reloader=True)
