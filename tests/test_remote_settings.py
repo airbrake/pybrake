@@ -14,7 +14,6 @@ def test_build_remote_setting_poll_url():
     res = RemoteSettings(project_id=403427,
                          host="https://notifier-configs.airbrake.io",
                          config=config)
-    print(res._poll_url(res._data))
     assert 'https://notifier-configs.airbrake.io/2020-06-18/config/403427' \
            '/config.json?notifier_name=pybrake&notifier_version=' + \
            __version__ in res._poll_url(res._data)
