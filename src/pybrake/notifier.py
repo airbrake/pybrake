@@ -192,6 +192,7 @@ class Notifier:
             notice["error"] = err
             logger.error(notice["error"])
             return notice
+
         try:
             body = resp.read()
         except IOError as err:

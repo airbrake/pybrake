@@ -181,9 +181,26 @@ app.config['PYBRAKE'] = dict(
 app = init_app(app)
 ```
 
+## Bottle integration
+
+Setup Airbrake's middleware and project config for your web application:
+
+```python
+from bottle import Bottle
+from pybrake.middleware.bottle import init_app
+
+app = Bottle()
+
+app.config['PYBRAKE'] = dict(
+    project_id=123,
+    project_key='FIXME',
+)
+app = init_app(app)
+```
+
 ## aiohttp integration (python 3.5+)
 
-Setup airbrake's middleware and config for your web application:
+Setup Airbrake's middleware and config for your web application:
 
 ```python
 # app.py
