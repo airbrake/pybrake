@@ -13,9 +13,9 @@ The example application provides three GET endpoints:
 1. Install the dependencies for the application
 
 ```bash
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
-2. You must get both project_id & project_key.
+2. You must get both `project_id` & `project_key`.
 
 To find your project_id and project_key from Airbrake account and replace it in below code in your project's `server.py` file.
 
@@ -24,7 +24,6 @@ app.config["PYBRAKE"] = dict(
     project_id="XXXXXXXXXXXX",
     project_key="XXXXXXXXXXXX",
     environment="test",
-    error_notifications=True,  # False to disable error notification
     performance_stats=True,  # False to disable APM
     query_stats=True,  # False to disable query monitoring
     queue_stats=True  # False to disable queue monitoring
@@ -34,7 +33,7 @@ app.config["PYBRAKE"] = dict(
 3. Run the localhost server
 
 ```bash
-python3 server.py
+python server.py
 ```
 
 3. To retrieve the responses, append the endpoints to the localhost URL.
@@ -45,9 +44,19 @@ Use the below curl commands to interact with the endpoints.
 curl "http://localhost:3000/date" 
 curl "http://localhost:3000/locations"
 curl "http://localhost:3000/weather/<austin/pune/santabarbara>"
-curl "http://localhost:3000/weather"
-curl "http://localhost:3000/weather/Ahmedabad"
 ```
 
-The second last curl command will raise `404 Not Found` error.
-The last curl command will raise `400 Location not found!` error.
+The below curl command will raise `404 Not Found` error.
+
+```bash
+curl "http://localhost:3000/weather"
+```
+
+The below curl command will raise `500 Internal server error` error.
+
+
+
+```bash
+# Should produce an intentional HTTP 500 error and report the error to Airbrake (since `washington` is in the supported cities list but there is no data for `washington`, an `if` condition is bypassed and the `data` variable is used but not initialized)
+curl "http://localhost:3000/weather/washington"
+```

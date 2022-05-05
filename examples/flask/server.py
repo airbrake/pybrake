@@ -6,7 +6,7 @@ from time import sleep
 import requests
 from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from pybrake.middleware.flask import init_app
+from pybrake.flask import init_app
 
 app = Flask(__name__)
 
@@ -26,7 +26,7 @@ app.config["PYBRAKE"] = dict(
 
 app = init_app(app)
 
-city_list = ["austin", "pune", "santabarbara"]
+city_list = ["austin", "pune", "santabarbara", "washington"]
 
 
 class User(db.Model):
@@ -83,24 +83,15 @@ def get_weather_details(location_name):
             }),
             mimetype='application/json'
         )
-    try:
-        with requests.get('https://airbrake.github.io/weatherapi/weather/' + location_name) as f:
-            data = f.json()
-            return app.response_class(
-                status=200,
-                response=json.dumps(data),
-                mimetype='application/json'
-            )
-    except Exception as e:
+    with requests.get('https://airbrake.github.io/weatherapi/weather/' + location_name) as f:
+        data = f.json()
         return app.response_class(
-            status=500,
-            response=json.dumps({
-                'error': str(e)
-            }),
+            status=200,
+            response=json.dumps(data),
             mimetype='application/json'
         )
 
 
 if __name__ == '__main__':
     app.debug = True
-    app.run()
+    app.run(port=3000)
