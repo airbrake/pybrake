@@ -32,10 +32,7 @@ AIRBRAKE = dict(
     project_id=999999,                               # Insert your Project Id here
     project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',  # Insert your Project Key here
     environment="test",
-    error_notifications=True,                        # False to disable error notification
     performance_stats=True,                          # False to disable APM
-    query_stats=True,                                # False to disable query monitoring
-    queue_stats=True                                 # False to disable queue monitoring
 )
 
 # Application definition

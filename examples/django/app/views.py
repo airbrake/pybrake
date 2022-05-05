@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 
 # Create your views here.
-city_list = ["pune", "austin", "santabarbara"]
+city_list = ["pune", "austin", "santabarbara", "washington"]
 
 
 # API for Hello Application
@@ -42,15 +42,7 @@ def get_weather_details(request, location_name):
                 "error": "Location not found!"
             }
         )
-    try:
-        with requests.get("https://airbrake.github.io/weatherapi/weather/" +
-                          location_name) as f:
-            data = f.json()
-    except Exception as e:
-        return JsonResponse(
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            data={
-                "error": str(e)
-            }
-        )
+    with requests.get("https://airbrake.github.io/weatherapi/weather/" +
+                      location_name) as f:
+        data = f.json()
     return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
