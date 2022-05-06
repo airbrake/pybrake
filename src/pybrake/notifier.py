@@ -9,6 +9,7 @@ from concurrent import futures
 import json
 import time
 import warnings
+from pathlib import Path
 
 from .notice import jsonify_notice
 from .git import find_git_dir
@@ -396,14 +397,18 @@ class Notifier:
 
 
 def pybrake_error_filter(notice):
-    backtrace = notice["errors"][0]["backtrace"]
-    for frame in backtrace:
-        dirname = os.path.dirname(frame["file"])
-        file_name = os.path.basename(dirname)
-        if file_name == "pybrake":
-            if os.path.basename(frame["file"]).startswith("test_"):
-                break
-
-            return None
-
+    backtrace = []
+    for frame in notice["errors"][0]["backtrace"]:
+        path = Path(frame["file"])
+        if (
+                (
+                        path.parent.name == "middleware" and
+                        path.parent.parent and
+                        path.parent.parent.name == 'pybrake'
+                ) or
+                path.parent.name == "pybrake"
+        ):
+            continue
+        backtrace.append(frame)
+    notice["errors"][0]["backtrace"] = backtrace
     return notice

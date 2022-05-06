@@ -190,7 +190,9 @@ def test_pybrake_error_filter():
         time_trunc_minute(None)
     except Exception as err:  # pylint: disable=broad-except
         notice = notifier.notify_sync(err)
-        assert notice["error"] == "notice is filtered out"
+        assert notice['errors'][0]['backtrace'][0][
+                   'file'] == '/PROJECT_ROOT/tests/test_notifier.py'
+        assert notice["error"] == "Project API key is required"
 
 
 def test_time_trunc_minute():
@@ -252,7 +254,8 @@ def _test_keys_blocklist(keys_blocklist):
     notifier = Notifier(keys_blocklist=keys_blocklist)
 
     notice = notifier.build_notice("hello")
-    notice["params"] = dict(key1="value1", key2="value2", key3=dict(key1="value1"))
+    notice["params"] = dict(key1="value1", key2="value2",
+                            key3=dict(key1="value1"))
     notice = notifier.send_notice_sync(notice)
 
     assert notice["params"] == {
@@ -268,12 +271,13 @@ def _test_deprecated_filter_keys(keys_blacklist):
         notifier = Notifier(keys_blacklist=keys_blacklist)
         assert len(w) == 1
         assert issubclass(w[-1].category, DeprecationWarning)
-        deprecation_message = "keys_blacklist is a deprecated option. "\
+        deprecation_message = "keys_blacklist is a deprecated option. " \
                               "Use keys_blocklist instead."
         assert deprecation_message in str(w[-1].message)
 
     notice = notifier.build_notice("hello")
-    notice["params"] = dict(key1="value1", key2="value2", key3=dict(key1="value1"))
+    notice["params"] = dict(key1="value1", key2="value2",
+                            key3=dict(key1="value1"))
     notice = notifier.send_notice_sync(notice)
 
     assert notice["params"] == {
@@ -318,7 +322,8 @@ def _test_rate_limited():
 def test_clean_filename():
     notifier = Notifier()
 
-    filename = notifier._clean_filename("home/lib/python3.6/site-packages/python.py")
+    filename = notifier._clean_filename(
+        "home/lib/python3.6/site-packages/python.py")
     assert filename == "/SITE_PACKAGES/python.py"
 
 
