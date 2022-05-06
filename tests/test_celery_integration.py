@@ -61,7 +61,7 @@ def test_celery_integration():
     assert error["message"] == "Test"
 
     backtrace = error["backtrace"]
-    assert len(backtrace) == 2
+    assert len(backtrace) == 1
 
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_celery.py"
