@@ -1,7 +1,4 @@
-from .middleware import django
-from .middleware import aiohttp
-from .middleware import celery
-from .middleware import flask
+from . import middleware
 from .notifier import Notifier
 from .logging import LoggingHandler
 from .version import version as __version__
