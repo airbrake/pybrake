@@ -198,6 +198,33 @@ app.config['PYBRAKE'] = dict(
 app = init_app(app)
 ```
 
+## Pyramid integration
+
+Setup Airbrake's middleware and project config for your web application:
+
+```python
+from wsgiref.simple_server import make_server
+from pybrake.middleware.pyramid import init_pybrake_config
+from pyramid.config import Configurator
+if __name__ == '__main__':
+    settings = {
+        'reload_all': True,
+        'debug_all': True,
+        'PYBRAKE': dict(
+                    project_id=999999,
+                    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                    ),
+    }
+    with Configurator(settings=settings) as config:
+        config.include('pyramid_basemodel')
+        config.include('pyramid_tm')
+        config.scan(".")
+        config = init_pybrake_config(config)
+        app = config.make_wsgi_app()
+    server = make_server('0.0.0.0', 3000, app)
+    server.serve_forever()
+```
+
 ## FastAPI integration
 
 Setup Airbrake's middleware and project config for your web application:
