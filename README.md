@@ -198,6 +198,21 @@ app.config['PYBRAKE'] = dict(
 app = init_app(app)
 ```
 
+## FastAPI integration
+
+Setup Airbrake's middleware and project config for your web application:
+
+```python
+from fastapi import FastAPI
+from pybrake.middleware.fastapi import init_app
+app = FastAPI()
+app.extra["PYBRAKE"] = dict(
+    project_id=123,
+    project_key='FIXME',
+)
+app = init_app(app)
+```
+
 ## CherryPy integration
 
 Setup Airbrake's middleware and project config for your web application:

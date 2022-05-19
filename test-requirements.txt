@@ -11,3 +11,4 @@ redis
 celery
 sqlalchemy
 werkzeug
+fastapi==0.70.1
