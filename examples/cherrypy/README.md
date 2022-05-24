@@ -1,36 +1,56 @@
 # CherryPy Sample Application for Pybrake
 
-## About the application:
+## About the application
 
 The example application provides three GET endpoints:
 
-1. `/date` - returns server date and time. 
-2. `/locations` - returns list of available locations. 
+1. `/date` - returns server date and time
+2. `/locations` - returns list of available locations
 3. `/weather/{locationName}` - returns the weather details for the locations.
 
-## Steps to run the API:
+## Steps to run the API
 
 1. Install the dependencies for the application
 
-```bash
-pip3 install -r requirements.txt
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-2.  Run the localhost server
+2. You must get both project_id & project_key. To find your project_id and project_key from Airbrake account and replace it in below code in your project's `main.py` file in config `dict`.
 
-```bash
-python main.py
-```
+    ```python
+    "PYBRAKE": {
+        'project_id': 999999,
+        'project_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        'environment': 'test'
+    },
+    ```
 
-3. To retrieve the responses, append the endpoints to the localhost URL with a `/`.
+3. Run the localhost server
 
-Use the below curl commands to interact with the endpoints. The endpoints require an api-key HTTP header.
+    ```bash
+    python main.py
+    ```
 
-```bash
-curl "http://localhost:8080/date/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:8080/locations/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:8080/weather/<austin/pune/santabarbara>/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673' 
-curl "http://localhost:8080/weather/" -H 'api-key: b761be830f7c23ebe1c3250d42c43673'
-```
-  
-The last curl command will raise `404 Not Found` error.
+4. To retrieve the responses, append the endpoints to the localhost URL.
+
+   Use the below curl commands to interact with the endpoints.
+
+    ```bash
+    curl "http://localhost:3000/date"
+    curl "http://localhost:3000/locations"
+    curl "http://localhost:3000/weather/<austin/pune/santabarbara>"
+    ```
+
+   The below curl command will raise `404 Not Found` error.
+
+    ```bash
+    curl -I "http://localhost:3000/weather"
+    ```
+
+   The below curl command will raise `500 Internal server error` error.
+
+    ```bash
+    # Should produce an intentional HTTP 500 error and report the error to Airbrake (since `washington` is in the supported cities list but there is no data for `washington`, an `if` condition is bypassed and the `data` variable is used but not initialized)
+    curl -I "http://localhost:3000/weather/washington"
+    ```
