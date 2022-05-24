@@ -5,6 +5,7 @@ pylint
 django
 flask
 blinker
+cherrypy
 aiohttp
 redis
 celery

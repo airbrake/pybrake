@@ -17,7 +17,7 @@ You **must** set both `project_id` & `project_key`.
 To find your `project_id` and `project_key` navigate to your project's
 _Settings_ and copy the values from the right sidebar.
 
-![][project-idkey]
+![](https://s3.amazonaws.com/airbrake-github-assets/pybrake/project-id-key.png)
 
 ```python
 import pybrake
@@ -196,6 +196,35 @@ app.config['PYBRAKE'] = dict(
     project_key='FIXME',
 )
 app = init_app(app)
+```
+
+## CherryPy integration
+
+Setup Airbrake's middleware and project config for your web application:
+
+```python
+import cherrypy
+from pybrake.middleware.cherrypy import PybrakePlugin
+
+config = {
+    "PYBRAKE": {
+        'project_id': 999999,
+        'project_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        'environment': 'development'
+    },
+}
+
+class Root(object):
+    pass
+
+if __name__ == '__main__':
+    pybrake_plugin = PybrakePlugin(
+        cherrypy.engine, **config.get('PYBRAKE')
+    )
+    pybrake_plugin.subscribe()
+    pybrake_plugin.create()
+
+    cherrypy.quickstart(Root(), config=config)
 ```
 
 ## aiohttp integration (python 3.5+)
