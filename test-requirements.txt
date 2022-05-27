@@ -10,5 +10,6 @@ aiohttp
 redis
 celery
 sqlalchemy
+sanic
 werkzeug
 fastapi==0.70.1
