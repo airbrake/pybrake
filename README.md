@@ -269,6 +269,21 @@ if __name__ == '__main__':
     cherrypy.quickstart(Root(), config=config)
 ```
 
+## Sanic integration
+
+Setup Airbrake's middleware and project config for your web application:
+
+```python
+from sanic import Sanic
+from pybrake.middleware.sanic import init_app
+app = Sanic(__name__)
+app.config["PYBRAKE"] = dict(
+    project_id=123,
+    project_key='FIXME',
+)
+app = init_app(app)
+```
+
 ## aiohttp integration (python 3.5+)
 
 Setup Airbrake's middleware and config for your web application:
