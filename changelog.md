@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-05-31
+
+### Added
+
+- Sanic Middleware
+- Sample example for Pyramid, CherryPy, Sanic, & FastAPI middleware
+
 ## [1.3.0] - 2022-05-26
 
 ### Added
@@ -120,6 +127,7 @@ to work)
 - Middleware for Flask, Django, celery, aiohttp frameworks
 
 [Unreleased]: https://github.com/airbrake/pybrake/compare/v1.3.0...HEAD
+[1.4.0]: https://github.com/airbrake/pybrake/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/airbrake/pybrake/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/airbrake/pybrake/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/airbrake/pybrake/compare/v0.2.0...v1.1.0
