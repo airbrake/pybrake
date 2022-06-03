@@ -1,5 +1,5 @@
 asgiref==3.4.1
-bottle==0.12.19
+bottle==0.12.20
 certifi==2021.10.8
 charset-normalizer==2.0.9
 coreapi==2.3.3
