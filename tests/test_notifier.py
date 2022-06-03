@@ -231,7 +231,6 @@ def test_truncation():
 def test_config_error_notifications():
     notifier = Notifier()
     notifier.config.update({'error_notifications': False})
-    print(notifier.config)
     notice = notifier.build_notice("hello")
     notice["params"]["param"] = "x" * 64000
     notice = notifier.send_notice_sync(notice)

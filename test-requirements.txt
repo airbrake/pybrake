@@ -6,6 +6,7 @@ django
 flask
 blinker
 cherrypy
+masonite
 aiohttp
 redis
 celery

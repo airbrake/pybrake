@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Masonite 4{% endblock %}</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    {% block head %}
+    <!-- <link rel="stylesheet" href="/assets/css/app.css"> -->
+    {% endblock %}
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+    {% block js %}
+    <!-- <script src="/assets/js/app.js"></script> -->
+    {% endblock %}
+  </body>
+</html>

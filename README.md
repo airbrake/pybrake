@@ -17,7 +17,7 @@ You **must** set both `project_id` & `project_key`.
 To find your `project_id` and `project_key` navigate to your project's
 _Settings_ and copy the values from the right sidebar.
 
-![](https://s3.amazonaws.com/airbrake-github-assets/pybrake/project-id-key.png)
+![project-id-key](https://s3.amazonaws.com/airbrake-github-assets/pybrake/project-id-key.png)
 
 ```python
 import pybrake
@@ -180,6 +180,63 @@ app.config['PYBRAKE'] = dict(
 )
 app = init_app(app)
 ```
+
+## Masonite integration
+
+Setup Airbrake's middleware and project config for your web application:
+
+First, configure `project_id` and `project_key` in `config/application.py`:
+
+```python
+PYBRAKE = {
+    'project_id': 999999,
+    'project_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'environment': 'test'
+}
+```
+
+Second, register the Pybrake notifier and PybrakeErrorListener in
+`app/providers/AppProvide.py`
+
+```python
+from pybrake.middleware.masonite import (
+    PybrakeNotifier, PybrakeErrorListener, PybrakeRouteMiddleware
+)
+
+class AppProvider(Provider):
+    def __init__(self, application):
+        self.application = application
+
+    def register(self):
+        self.application.bind(
+            "pybrake", PybrakeNotifier(self.application)
+        )
+        self.application.make("middleware").add([PybrakeRouteMiddleware])
+        self.application.make("event").listen("masonite.exception.*",
+                                              [PybrakeErrorListener])
+    ...
+
+```
+
+Third, utilise the `schedule_task` decorator to monitor schedule tasks, as
+shown below.
+
+```python
+import time
+from masonite.scheduling import Task
+from pybrake.middleware.masonite import schedule_task
+
+class WeatherTest(Task):
+
+    name = "WeatherTest"
+
+    @schedule_task
+    def handle(self):
+        time.sleep(10)
+
+```
+
+Now you are ready to start reporting errors to Airbrake from your Masonite app.
 
 ## Bottle integration
 

@@ -25,9 +25,7 @@ def test_find_git_dir():
     ]
 
     for test in tests:
-        print("#######",test)
         git_dir = find_git_dir(test["dir"])
-        print("git_dir :-", git_dir, "\tworks :---",work_dir)
         if test["ok"]:
             assert git_dir == work_dir
         else:
