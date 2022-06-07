@@ -6,8 +6,7 @@ import time
 
 from urllib.parse import urlencode
 from copy import deepcopy
-from .version import version
-from .notifier_name import notifier_name
+from .constant import notifier_name, version
 from .settings_data import SettingsData
 
 
@@ -21,6 +20,13 @@ _NOTIFIER_INFO = {
 
 
 class RemoteSettings:
+    """
+    The RemoteSettings class is used to retrieve configuration variables from
+    the Airbrake portal based on project id and update them in the Notifier
+    instance configuration. If a new instance of the Notifier is created
+    with `remote config=True`, the instance will be initialised and poll the
+    configurations.
+    """
     def __init__(self, project_id, host, config):
         self._project_id = project_id
         self._host = host

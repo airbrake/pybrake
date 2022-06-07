@@ -119,275 +119,6 @@ logger.addHandler(airbrake_handler)
 logger.error('something bad happened')
 ```
 
-## Django integration
-
-First, configure `project_id` and `project_key` in `settings.py`:
-
-```python
-AIRBRAKE = dict(
-    project_id=123,
-    project_key='FIXME',
-)
-```
-
-Next, activate the Airbrake middleware:
-
-```python
-MIDDLEWARE = [
-    ...
-    'pybrake.middleware.django.AirbrakeMiddleware',
-]
-```
-
-Finally, configure the airbrake logging handler:
-
-```python
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'airbrake': {
-            'level': 'ERROR',
-            'class': 'pybrake.LoggingHandler',
-        },
-    },
-    'loggers': {
-        'app': {
-            'handlers': ['airbrake'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    },
-}
-```
-
-Now you are ready to start reporting errors to Airbrake from your Django app.
-
-## Flask integration
-
-The Flask integration leverages Flask signals and therefore requires the
-[blinker](https://pythonhosted.org/blinker/) library.
-
-```python
-from flask import Flask
-from pybrake.middleware.flask import init_app
-
-app = Flask(__name__)
-
-app.config['PYBRAKE'] = dict(
-    project_id=123,
-    project_key='FIXME',
-)
-app = init_app(app)
-```
-
-## Masonite integration
-
-Setup Airbrake's middleware and project config for your web application:
-
-First, configure `project_id` and `project_key` in `config/application.py`:
-
-```python
-PYBRAKE = {
-    'project_id': 999999,
-    'project_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    'environment': 'test'
-}
-```
-
-Second, register the Pybrake notifier and PybrakeErrorListener in
-`app/providers/AppProvide.py`
-
-```python
-from pybrake.middleware.masonite import (
-    PybrakeNotifier, PybrakeErrorListener, PybrakeRouteMiddleware
-)
-
-class AppProvider(Provider):
-    def __init__(self, application):
-        self.application = application
-
-    def register(self):
-        self.application.bind(
-            "pybrake", PybrakeNotifier(self.application)
-        )
-        self.application.make("middleware").add([PybrakeRouteMiddleware])
-        self.application.make("event").listen("masonite.exception.*",
-                                              [PybrakeErrorListener])
-    ...
-
-```
-
-Third, utilise the `schedule_task` decorator to monitor schedule tasks, as
-shown below.
-
-```python
-import time
-from masonite.scheduling import Task
-from pybrake.middleware.masonite import schedule_task
-
-class WeatherTest(Task):
-
-    name = "WeatherTest"
-
-    @schedule_task
-    def handle(self):
-        time.sleep(10)
-
-```
-
-Now you are ready to start reporting errors to Airbrake from your Masonite app.
-
-## Bottle integration
-
-Setup Airbrake's middleware and project config for your web application:
-
-```python
-from bottle import Bottle
-from pybrake.middleware.bottle import init_app
-
-app = Bottle()
-
-app.config['PYBRAKE'] = dict(
-    project_id=123,
-    project_key='FIXME',
-)
-app = init_app(app)
-```
-
-## Pyramid integration
-
-Setup Airbrake's middleware and project config for your web application:
-
-```python
-from wsgiref.simple_server import make_server
-from pybrake.middleware.pyramid import init_pybrake_config
-from pyramid.config import Configurator
-if __name__ == '__main__':
-    settings = {
-        'reload_all': True,
-        'debug_all': True,
-        'PYBRAKE': dict(
-                    project_id=999999,
-                    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                    ),
-    }
-    with Configurator(settings=settings) as config:
-        config.include('pyramid_basemodel')
-        config.include('pyramid_tm')
-        config.scan(".")
-        config = init_pybrake_config(config)
-        app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 3000, app)
-    server.serve_forever()
-```
-
-## FastAPI integration
-
-Setup Airbrake's middleware and project config for your web application:
-
-```python
-from fastapi import FastAPI
-from pybrake.middleware.fastapi import init_app
-app = FastAPI()
-app.extra["PYBRAKE"] = dict(
-    project_id=123,
-    project_key='FIXME',
-)
-app = init_app(app)
-```
-
-## CherryPy integration
-
-Setup Airbrake's middleware and project config for your web application:
-
-```python
-import cherrypy
-from pybrake.middleware.cherrypy import PybrakePlugin
-
-config = {
-    "PYBRAKE": {
-        'project_id': 999999,
-        'project_key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        'environment': 'development'
-    },
-}
-
-class Root(object):
-    pass
-
-if __name__ == '__main__':
-    pybrake_plugin = PybrakePlugin(
-        cherrypy.engine, **config.get('PYBRAKE')
-    )
-    pybrake_plugin.subscribe()
-    pybrake_plugin.create()
-
-    cherrypy.quickstart(Root(), config=config)
-```
-
-## Sanic integration
-
-Setup Airbrake's middleware and project config for your web application:
-
-```python
-from sanic import Sanic
-from pybrake.middleware.sanic import init_app
-app = Sanic(__name__)
-app.config["PYBRAKE"] = dict(
-    project_id=123,
-    project_key='FIXME',
-)
-app = init_app(app)
-```
-
-## aiohttp integration (python 3.5+)
-
-Setup Airbrake's middleware and config for your web application:
-
-```python
-# app.py
-
-from aiohttp import web
-from pybrake.middleware.aiohttp import pybrake_middleware
-
-pybrake_middleware = pybrake_middleware()
-
-app = web.Application(middlewares=[pybrake_middleware])
-
-app['airbrake_config'] = dict(
-  project_id=123,
-  project_key='FIXME',
-  environment='production'  # optional
-)
-```
-
-Also, you can pass custom handlers to `create_airbrake_middleware`:
-
-```python
-# middlewares.py
-
-import aiohttp_jinja2
-from pybrake.middleware.aiohttp import create_airbrake_middleware
-
-
-async def handle_404(request):
-    return aiohttp_jinja2.render_template('404.html', request, {})
-
-
-async def handle_500(request):
-    return aiohttp_jinja2.render_template('500.html', request, {})
-
-
-def setup_middlewares(app):
-    airbrake_middleware = create_airbrake_middleware({
-        404: handle_404,
-        500: handle_500
-    })
-
-    app.middlewares.append(airbrake_middleware)
-```
-
 ## Disabling pybrake logs
 
 The pybrake logger can be silenced by setting the logging level to
@@ -465,6 +196,24 @@ metric = QueueMetric(queue="foo_queue")
 metric._groups = {'redis': 24.0, 'sql': 0.4}
 notifier.queues.notify(metric)
 ```
+
+## Framework Integration
+
+Pybrake provides a ready-to-use solution with minimal configuration for python 
+frameworks.
+
+* [AIOHTTP](https://docs.airbrake.io/docs/platforms/python/framework/aiohttp)
+* [BottlePy](https://docs.airbrake.io/docs/platforms/python/framework/bottle)
+* [Celery](https://docs.airbrake.io/docs/platforms/python/framework/celery)
+* [CherryPy](https://docs.airbrake.io/docs/platforms/python/framework/cherrypy)
+* [Django](https://docs.airbrake.io/docs/platforms/python/framework/django)
+* [FastAPI](https://docs.airbrake.io/docs/platforms/python/framework/fastapi)
+* [Flask](https://docs.airbrake.io/docs/platforms/python/framework/flask)
+* [Masonite](https://docs.airbrake.io/docs/platforms/python/framework/masonite)
+* [Pyramid](https://docs.airbrake.io/docs/platforms/python/framework/pyramid)
+* [Sanic](https://docs.airbrake.io/docs/platforms/python/framework/sanic)
+
+
 
 ## Development
 

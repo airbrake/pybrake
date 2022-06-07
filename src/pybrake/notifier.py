@@ -1,29 +1,28 @@
-import os
-import re
-import sys
-import platform
-import socket
-import urllib.request
-import urllib.error
-from concurrent import futures
 import json
+import os
+import platform
+import re
+import socket
+import sys
 import time
+import urllib.error
+import urllib.request
 import warnings
+from concurrent import futures
 from pathlib import Path
 
-from .notice import jsonify_notice
+from .blocklist_filter import make_blocklist_filter
+from .constant import AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST
+from .code_hunks import get_code_hunk
 from .git import find_git_dir
-from .routes import _Routes
+from .git import get_git_revision
+from .notice import jsonify_notice
+from .constant import notifier_name, version
 from .queries import QueryStats
 from .queues import QueueStats
-from .blocklist_filter import make_blocklist_filter
-from .code_hunks import get_code_hunk
-from .git import get_git_revision
-from .utils import logger
-from .version import version
-from .notifier_name import notifier_name
 from .remote_settings import RemoteSettings
-
+from .routes import _Routes
+from .utils import logger
 
 _ERR_IP_RATE_LIMITED = "IP is rate limited"
 
@@ -31,7 +30,8 @@ _AB_URL_FORMAT = "{}/api/v3/projects/{}/notices"
 
 _CONTEXT = dict(
     notifier=dict(
-        name=notifier_name, version=version, url="https://github.com/airbrake/pybrake"
+        name=notifier_name, version=version,
+        url="https://github.com/airbrake/pybrake"
     ),
     os=platform.platform(),
     language=f"Python/{platform.python_version()}",
@@ -41,9 +41,40 @@ _CONTEXT = dict(
 
 
 class Notifier:
+    """
+    Notifier is used to generate an error notification from an exception
+    object, as well as application performance statistics (Route,
+    Route breakdown, Query, Queue), and send it to Airbrake.
+    """
+
     def __init__(
-        self, *, project_id=0, project_key="", host="https://api.airbrake.io", **kwargs
+            self, *, project_id=0, project_key="", host=AIRBRAKE_HOST, **kwargs
     ):
+        """
+        Constructor that defines a particular configuration for the notifier
+        object.
+        :param project_id: Integer Airbrake project id.
+        :param project_key: Secret key of Airbrake project in string format.
+        :param performance_stats: Enable/disable performance monitoring,
+                default: True.
+        :param query_stats: Enable/disable query stats monitoring,
+                default: True.
+        :param queue_stats: Enable/disable queue stats monitoring,
+                default: True.
+        :param max_queue_size: Maximum number for thread pool queue size,
+                default value 1000.
+        :param max_workers: Maximum number of thread pool can make by
+                Notifier, default value number CPU count * 5.
+        :param root_directory: Root directory path of project.
+        :param environment: Project running environment, Like: development,
+                testing, production. Can make own environment.
+        :param keys_blocklist: To transmit an airbrake on an error
+                notification, a list of parameter's value must be blocked.,
+                default value [re.compile("password"), re.compile("secret")]
+        :param remote_config: Set up configuration from the Airbrake server,
+                default value False
+        """
+
         self.config = {
             "error_notifications": True,
             "performance_stats": kwargs.get("performance_stats", True),
@@ -58,10 +89,16 @@ class Notifier:
             project_id=project_id, project_key=project_key, **kwargs
         )
         self.queries = QueryStats(
-            project_id=project_id, project_key=project_key, host=host, **kwargs
+            project_id=project_id,
+            project_key=project_key,
+            host=host,
+            **kwargs
         )
         self.queues = QueueStats(
-            project_id=project_id, project_key=project_key, host=host, **kwargs
+            project_id=project_id,
+            project_key=project_key,
+            host=host,
+            **kwargs
         )
 
         self._filters = []
@@ -77,7 +114,8 @@ class Notifier:
         }
 
         self._context = _CONTEXT.copy()
-        self._context["rootDirectory"] = kwargs.get("root_directory", os.getcwd())
+        self._context["rootDirectory"] = kwargs.get("root_directory",
+                                                    os.getcwd())
 
         rev = kwargs.get("revision")
         if rev is None:
@@ -102,10 +140,10 @@ class Notifier:
         if keys_blacklist is not None:
             keys_blocklist = keys_blacklist
             warnings.warn(
-                    "keys_blacklist is a deprecated option. "
-                    "Use keys_blocklist instead.",
-                    DeprecationWarning
-                )
+                "keys_blacklist is a deprecated option. "
+                "Use keys_blocklist instead.",
+                DeprecationWarning
+            )
 
         if keys_blocklist is None:
             keys_blocklist = [re.compile("password"), re.compile("secret")]
@@ -118,7 +156,7 @@ class Notifier:
         if kwargs.get("remote_config"):
             RemoteSettings(
                 project_id,
-                "https://notifier-configs.airbrake.io",
+                AIRBRAKE_CONFIG_HOST,
                 self.config,
             ).poll()
 
@@ -183,7 +221,8 @@ class Notifier:
             return notice
 
         data = jsonify_notice(notice)
-        req = urllib.request.Request(self._ab_url, data=data, headers=self._ab_headers)
+        req = urllib.request.Request(self._ab_url, data=data,
+                                     headers=self._ab_headers)
 
         try:
             resp = urllib.request.urlopen(req, timeout=5)
@@ -202,7 +241,8 @@ class Notifier:
             return notice
 
         if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
-            notice["error"] = f"airbrake: unexpected response status_code={resp.code}"
+            notice["error"] = f"airbrake: unexpected response " \
+                              f"status_code={resp.code}"
             notice["error_info"] = dict(code=resp.code, body=body)
             logger.error(notice["error"])
             return notice
@@ -256,7 +296,8 @@ class Notifier:
         return notice
 
     def notify(self, err):
-        """Asynchronously notifies Airbrake about exception from separate thread.
+        """
+        Asynchronously notifies Airbrake about exception from separate thread.
 
         Returns concurrent.futures.Future.
         """
@@ -264,7 +305,8 @@ class Notifier:
         return self.send_notice(notice)
 
     def send_notice(self, notice):
-        """Asynchronously sends notice to Airbrake from separate thread.
+        """
+        Asynchronously sends notice to Airbrake from separate thread.
 
         Returns concurrent.futures.Future.
         """
@@ -312,7 +354,8 @@ class Notifier:
 
     def _build_error(self, err):
         backtrace = self._build_backtrace_tb(err.__traceback__)
-        error = dict(type=err.__class__.__name__, message=str(err), backtrace=backtrace)
+        error = dict(type=err.__class__.__name__, message=str(err),
+                     backtrace=backtrace)
         return error
 
     def _build_backtrace_tb(self, tb):
@@ -355,11 +398,13 @@ class Notifier:
         )
 
     def _frame_with_code(
-        self, filename, func, line, loader=None, module_name=None
+            self, filename, func, line, loader=None, module_name=None
     ):  # pylint: disable=too-many-arguments
-        frame = dict(file=self._clean_filename(filename), function=func, line=line)
+        frame = dict(file=self._clean_filename(filename), function=func,
+                     line=line)
 
-        lines = get_code_hunk(filename, line, loader=loader, module_name=module_name)
+        lines = get_code_hunk(filename, line, loader=loader,
+                              module_name=module_name)
         if lines is not None:
             frame["code"] = lines
 
@@ -370,7 +415,7 @@ class Notifier:
             needed = "/site-packages/"
             ind = s.find(needed)
             if ind > -1:
-                s = "/SITE_PACKAGES/" + s[ind + len(needed) :]
+                s = "/SITE_PACKAGES/" + s[ind + len(needed):]
                 return s
 
         s = s.replace(self._context["rootDirectory"], "/PROJECT_ROOT")
@@ -392,7 +437,8 @@ class Notifier:
         if self._thread_pool is None:
             if self._max_workers is None:
                 self._max_workers = (os.cpu_count() or 1) * 5
-            self._thread_pool = futures.ThreadPoolExecutor(max_workers=self._max_workers)
+            self._thread_pool = futures.ThreadPoolExecutor(
+                max_workers=self._max_workers)
         return self._thread_pool
 
 

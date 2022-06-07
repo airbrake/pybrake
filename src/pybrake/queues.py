@@ -55,6 +55,12 @@ class _QueueStat(TDigestStatGroups):
 
 
 class QueueStats:
+    """
+    Queue (background task, cron task) stats are transmitted to the Airbrake
+    site using QueueStats.
+    QueueStats will collect query execution statistics such as queue task
+    start time, end time, task name.
+    """
     def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 

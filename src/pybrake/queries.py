@@ -34,6 +34,11 @@ class QueryStat(TDigestStat):
 
 
 class QueryStats:
+    """
+    Query stats are transmitted to the Airbrake site using QueryStats.
+    QueryStat will collect query execution statistics such as query start time,
+     end time, query statement, query route, and route method.
+    """
     def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 
@@ -48,19 +53,24 @@ class QueryStats:
         self._lock = threading.Lock()
         self._stats = None
 
-    def notify(self, *, query="", method="", route="", start_time=None, end_time=None):
+    def notify(
+            self, *, query="", method="", route="", start_time=None,
+            end_time=None
+    ):
         if not self._config.get("performance_stats"):
             return
         if not self._config.get("query_stats"):
             return
 
-        key = query_stat_key(query=query, method=method, route=route, time=start_time)
+        key = query_stat_key(
+            query=query, method=method, route=route, time=start_time)
         ms = (end_time - start_time) * 1000
 
         with self._lock:
             if self._stats is None:
                 self._stats = {}
-                self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
+                self._thread = threading.Timer(
+                    metrics.FLUSH_PERIOD, self._flush)
                 self._thread.start()
 
             if key in self._stats:
@@ -132,9 +142,10 @@ class QueryStats:
             return
 
     def _ab_url(self):
-        return f"{self._config.get('apm_host')}/api/v5/projects/{self._project_id}/queries-stats"
+        return f"{self._config.get('apm_host')}/api/v5/projects" \
+               f"/{self._project_id}/queries-stats"
 
 
 def query_stat_key(*, query="", method="", route="", time=None):
     time = time // 60 * 60
-    return (query, method, route, time)
+    return query, method, route, time
