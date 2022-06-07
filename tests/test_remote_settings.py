@@ -1,5 +1,5 @@
 from pybrake.remote_settings import RemoteSettings
-from pybrake.version import version as __version__
+from pybrake.constant import version as __version__
 
 
 def test_build_remote_setting_poll_url():

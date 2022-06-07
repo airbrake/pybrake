@@ -1,1 +1,0 @@
-notifier_name = "pybrake"

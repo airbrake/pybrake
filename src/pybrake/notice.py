@@ -7,6 +7,11 @@ _NOTICE_KEYS = ["context", "params", "session", "environment"]
 
 
 def jsonify_notice(notice):
+    """
+    Convert error notice object from the python dictionary to the json object.
+    :param notice: Dictionary object of error notice
+    :return: json encode error notice.
+    """
     b = _jsonify(notice)
     if len(b) < _MAX_JSON_SIZE:
         return b.encode("utf8")

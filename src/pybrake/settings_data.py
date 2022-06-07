@@ -13,6 +13,10 @@ _APM_SETTING = "apm"
 
 
 class SettingsData:
+    """
+    SettingsData is used to keep track of the configuration data for remote
+    settings.
+    """
     def __init__(self, project_id, data):
         self._project_id = project_id
         self._data = data

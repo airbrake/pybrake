@@ -51,7 +51,10 @@ def get_git_head(dirpath):
 
 
 def find_git_dir(directory):
-    """Returns first directory containing .git file checking the dir and parent dirs."""
+    """
+    Returns first directory containing .git file checking the dir and parent
+    dirs.
+    """
     directory = os.path.abspath(directory)
     if not os.path.exists(directory):
         return ""

@@ -93,7 +93,7 @@ if __name__ == '__main__':
     sqlalchemy_plugin.create()
 
     pybrake_plugin = PybrakePlugin(
-        cherrypy.engine, ORMBase=Base, **config.get('PYBRAKE')
+        cherrypy.engine, **config.get('PYBRAKE')
     )
     pybrake_plugin.subscribe()
     pybrake_plugin.create()

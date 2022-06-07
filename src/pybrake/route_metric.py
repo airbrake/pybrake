@@ -39,6 +39,11 @@ class _RouteBreakdown(TDigestStatGroups):
 
 
 class RouteBreakdowns:
+    """
+    RouteBreakdowns will collect request execution with breakdown statistics
+    such as execution statistics of template rendering time and sql/nosql
+    query.
+    """
     def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 

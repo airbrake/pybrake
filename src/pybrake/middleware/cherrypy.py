@@ -177,7 +177,7 @@ def _after_sql_cursor(config):
 
 
 class PybrakePlugin(plugins.SimplePlugin):
-    def __init__(self, bus, project_id, project_key, ORMBase=None, **kw):
+    def __init__(self, bus, project_id, project_key, **kw):
         """
         The plugin is registered to the CherryPy engine and therefore
         is part of the bus (the engine *is* a bus) registry.
@@ -185,13 +185,13 @@ class PybrakePlugin(plugins.SimplePlugin):
         for Error notification and APM.
         :param project_id: Airbrake project id
         :param project_key: Airbrake project key
-        :param kw:
+        :param kw: Addition pybrake parameters like performance_stats,
+        queue_stats, etc.
         """
 
         plugins.SimplePlugin.__init__(self, bus)
         self.project_id = project_id
         self.project_key = project_key
-        self.ORMBase = ORMBase
         self.kwargs = kw
 
         self.bus.subscribe('pybrake.bind', self.bind)

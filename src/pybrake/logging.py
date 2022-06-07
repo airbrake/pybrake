@@ -28,6 +28,10 @@ _LOG_RECORD_ATTRS_TO_COPY = [
 
 
 class LoggingHandler(logging.Handler):
+    """
+    LoggingHandler is used to send application logs to Airbrake based on
+    different logging level filter.
+    """
     def __init__(self, notifier=None, level=logging.ERROR, **kwargs):
         logging.Handler.__init__(self, level=level)
         if notifier is None:

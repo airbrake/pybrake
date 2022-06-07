@@ -11,6 +11,11 @@ from .route_metric import RouteBreakdowns
 
 
 class _Routes:
+    """
+    Routes and route breakdown stats are transmitted to the Airbrake site
+    using _Routes. When the notifier is initialized, it will initialize the
+    RouteStats and RouteBreakdowns instances.
+    """
     def __init__(self, **kwargs):
         self.config = kwargs["config"]
         self.stats = RouteStats(**kwargs)
@@ -26,7 +31,10 @@ class _Routes:
 
 
 class RouteStat(TDigestStat):
-
+    """
+    RouteStat will collect request execution statistics such as request start
+    time, end time, request endpoint, response status code, and route method.
+    """
     def __new__(cls, *, method="", route="", status_code=0, time):
         instance = super(RouteStat, cls).__new__(cls)
         instance.__slots__ = instance.__slots__ + (
@@ -153,9 +161,10 @@ class RouteStats:
             return
 
     def _ab_url(self):
-        return f"{self._config.get('apm_host')}/api/v5/projects/{self._project_id}/routes-stats"
+        return f"{self._config.get('apm_host')}/api/v5/projects" \
+               f"/{self._project_id}/routes-stats"
 
 
 def route_stat_key(*, method="", route="", status_code=0, time=None):
     time = time // 60 * 60
-    return (method, route, status_code, time)
+    return method, route, status_code, time
