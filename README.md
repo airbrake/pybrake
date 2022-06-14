@@ -17,7 +17,7 @@ You **must** set both `project_id` & `project_key`.
 To find your `project_id` and `project_key` navigate to your project's
 _Settings_ and copy the values from the right sidebar.
 
-![project-id-key](https://s3.amazonaws.com/airbrake-github-assets/pybrake/project-id-key.png)
+![project-idkey]
 
 ```python
 import pybrake
@@ -349,11 +349,11 @@ Setup Airbrake's middleware and config for your web application:
 # app.py
 
 from aiohttp import web
-from pybrake.middleware.aiohttp import create_airbrake_middleware
+from pybrake.middleware.aiohttp import pybrake_middleware
 
-airbrake_middleware = create_airbrake_middleware()
+pybrake_middleware = pybrake_middleware()
 
-app = web.Application(middlewares=[airbrake_middleware])
+app = web.Application(middlewares=[pybrake_middleware])
 
 app['airbrake_config'] = dict(
   project_id=123,
