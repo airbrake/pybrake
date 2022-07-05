@@ -15,7 +15,7 @@ Jinja2==3.1.2
 MarkupSafe==2.1.1
 multidict==6.0.2
 pybrake==1.5.0
-pycares==4.1.2
+pycares==4.2.0
 pycparser==2.21
 pyudorandom==1.0.0
 requests==2.28.0
