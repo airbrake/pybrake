@@ -202,16 +202,16 @@ notifier.queues.notify(metric)
 Pybrake provides a ready-to-use solution with minimal configuration for python 
 frameworks.
 
-* [AIOHTTP](https://docs.airbrake.io/docs/platforms/python/framework/aiohttp)
-* [BottlePy](https://docs.airbrake.io/docs/platforms/python/framework/bottle)
-* [Celery](https://docs.airbrake.io/docs/platforms/python/framework/celery)
-* [CherryPy](https://docs.airbrake.io/docs/platforms/python/framework/cherrypy)
-* [Django](https://docs.airbrake.io/docs/platforms/python/framework/django)
-* [FastAPI](https://docs.airbrake.io/docs/platforms/python/framework/fastapi)
-* [Flask](https://docs.airbrake.io/docs/platforms/python/framework/flask)
-* [Masonite](https://docs.airbrake.io/docs/platforms/python/framework/masonite)
-* [Pyramid](https://docs.airbrake.io/docs/platforms/python/framework/pyramid)
-* [Sanic](https://docs.airbrake.io/docs/platforms/python/framework/sanic)
+* [AIOHTTP](https://docs.airbrake.io/docs/platforms/framework/python/aiohttp)
+* [BottlePy](https://docs.airbrake.io/docs/platforms/framework/python/bottle)
+* [Celery](https://docs.airbrake.io/docs/platforms/framework/python/celery)
+* [CherryPy](https://docs.airbrake.io/docs/platforms/framework/python/cherrypy)
+* [Django](https://docs.airbrake.io/docs/platforms/framework/python/django)
+* [FastAPI](https://docs.airbrake.io/docs/platforms/framework/python/fastapi)
+* [Flask](https://docs.airbrake.io/docs/platforms/framework/python/flask)
+* [Masonite](https://docs.airbrake.io/docs/platforms/framework/python/masonite)
+* [Pyramid](https://docs.airbrake.io/docs/platforms/framework/python/pyramid)
+* [Sanic](https://docs.airbrake.io/docs/platforms/framework/python/sanic)
 
 
 
