@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-07-08
+
+### Added
+
+- Add sample example for AIOHTTP Framework
+
+### Changed
+
+- Improve AIOHTTP middleware with APM support of Jinja Template, SqlAlchemy
+
+### Fixed
+
+- Fix for AIOHTTP middleware's "none type object has no attribute while handling error" 
+
 ## [1.5.0] - 2022-06-07
 
 ### Added
