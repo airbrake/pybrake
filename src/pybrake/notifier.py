@@ -80,6 +80,7 @@ class Notifier:
             "performance_stats": kwargs.get("performance_stats", True),
             "query_stats": kwargs.get("query_stats", True),
             "queue_stats": kwargs.get("queue_stats", True),
+            "max_failed_queue": kwargs.get("max_failed_queue", 100),
             "error_host": host,
             "apm_host": host,
         }
