@@ -1,3 +1,6 @@
+import json
+import urllib.request
+import urllib.error
 import threading
 from contextlib import contextmanager
 import time as pytime
@@ -136,3 +139,54 @@ class Span:
         if not self._paused():
             return
         self.start_time = pytime.time()
+
+
+def send(url, headers, failed_stats, payload=None, method="POST"):
+    if payload is None:
+        payload = {}
+
+    req = urllib.request.Request(
+        url, data=payload, headers=headers, method=method
+    )
+
+    try:
+        resp = urllib.request.urlopen(req, timeout=5)
+    except urllib.error.HTTPError as err:
+        resp = err
+        failed_stats.append_stats(payload)
+    except Exception as err:  # pylint: disable=broad-except
+        logger.error(err)
+        return
+
+    try:
+        body = resp.read()
+    except IOError as err:
+        logger.error(err)
+        return
+
+    if 200 <= resp.code < 300:
+        return
+
+    if not 400 <= resp.code < 500:
+        err = f"airbrake: unexpected response status_code={resp.code}"
+        logger.error(err)
+        return
+
+    if resp.code == 429:
+        return
+
+    try:
+        body = body.decode("utf-8")
+    except UnicodeDecodeError as err:
+        logger.error(err)
+        return
+
+    try:
+        in_data = json.loads(body)
+    except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
+        logger.error(err)
+        return
+
+    if "message" in in_data:
+        logger.error(in_data["message"])
+        return

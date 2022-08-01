@@ -1,13 +1,11 @@
 import base64
 import json
 import threading
-import urllib.request
-import urllib.error
 
 from . import metrics
+from .failed_stats import FailedStats
 from .tdigest import as_bytes, TDigestStatGroups
-from .utils import logger, time_trunc_minute
-
+from .utils import time_trunc_minute
 
 QUEUE_HANDLER = "queue.handler"
 
@@ -61,6 +59,7 @@ class QueueStats:
     QueueStats will collect query execution statistics such as queue task
     start time, end time, task name.
     """
+
     def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 
@@ -74,6 +73,12 @@ class QueueStats:
         self._thread = None
         self._lock = threading.Lock()
         self._stats = None
+        self._failed_stats = FailedStats(
+            header=self._ab_headers,
+            url=self._ab_url(),
+            method="POST",
+            maxlen=self._config.get('max_failed_queue'),
+        )
 
     def notify(self, metric):
         if not self._config.get("performance_stats"):
@@ -89,7 +94,8 @@ class QueueStats:
         with self._lock:
             if self._stats is None:
                 self._stats = {}
-                self._thread = threading.Timer(metrics.FLUSH_PERIOD, self._flush)
+                self._thread = threading.Timer(metrics.FLUSH_PERIOD,
+                                               self._flush)
                 self._thread.start()
 
             if key in self._stats:
@@ -115,50 +121,11 @@ class QueueStats:
             out["environment"] = self._env
 
         out_json = json.dumps(out).encode("utf8")
-        req = urllib.request.Request(
-            self._ab_url(), data=out_json, headers=self._ab_headers, method="POST"
+        metrics.send(
+            url=self._ab_url(), headers=self._ab_headers,
+            payload=out_json, method="POST",
+            failed_stats=self._failed_stats
         )
-
-        try:
-            resp = urllib.request.urlopen(req, timeout=5)
-        except urllib.error.HTTPError as err:
-            resp = err
-        except Exception as err:  # pylint: disable=broad-except
-            logger.error(err)
-            return
-
-        try:
-            body = resp.read()
-        except IOError as err:
-            logger.error(err)
-            return
-
-        if 200 <= resp.code < 300:
-            return
-
-        if not 400 <= resp.code < 500:
-            err = f"airbrake: unexpected response status_code={resp.code}"
-            logger.error(err)
-            return
-
-        if resp.code == 429:
-            return
-
-        try:
-            body = body.decode("utf-8")
-        except UnicodeDecodeError as err:
-            logger.error(err)
-            return
-
-        try:
-            in_data = json.loads(body)
-        except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
-            logger.error(err)
-            return
-
-        if "message" in in_data:
-            logger.error(in_data["message"])
-            return
 
     def _ab_url(self):
         return f"{self._config.get('apm_host')}/api/v5/projects/{self._project_id}/queues-stats"
