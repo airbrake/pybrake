@@ -11,13 +11,16 @@ import warnings
 from concurrent import futures
 from pathlib import Path
 
+from . import metrics
+from .backlog import Backlog
 from .blocklist_filter import make_blocklist_filter
-from .constant import AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST
 from .code_hunks import get_code_hunk
+from .constant import (
+    AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST, notifier_name, version
+)
 from .git import find_git_dir
 from .git import get_git_revision
 from .notice import jsonify_notice
-from .constant import notifier_name, version
 from .queries import QueryStats
 from .queues import QueueStats
 from .remote_settings import RemoteSettings
@@ -73,6 +76,10 @@ class Notifier:
                 default value [re.compile("password"), re.compile("secret")]
         :param remote_config: Set up configuration from the Airbrake server,
                 default value False
+        :param max_backlog_size: Set up length of failed stats queue
+        :param backlog_enabled: If backlog_enabled set as true then
+                pybrake will manage failed stats and error notification and
+                try to send it again. Default value: False
         """
 
         self.config = {
@@ -80,7 +87,8 @@ class Notifier:
             "performance_stats": kwargs.get("performance_stats", True),
             "query_stats": kwargs.get("query_stats", True),
             "queue_stats": kwargs.get("queue_stats", True),
-            "max_failed_queue": kwargs.get("max_failed_queue", 100),
+            "max_backlog_size": kwargs.get("max_backlog_size", 100),
+            "backlog_enabled": kwargs.get("backlog_enabled", False),
             "error_host": host,
             "apm_host": host,
         }
@@ -117,6 +125,15 @@ class Notifier:
         self._context = _CONTEXT.copy()
         self._context["rootDirectory"] = kwargs.get("root_directory",
                                                     os.getcwd())
+        self._backlog = None
+        if self.config.get('backlog_enabled'):
+            self._backlog = Backlog(
+                interval=metrics.FLUSH_PERIOD,
+                header=self._ab_headers,
+                url=self._ab_url,
+                method="POST",
+                maxlen=self.config.get('max_backlog_size'),
+            )
 
         rev = kwargs.get("revision")
         if rev is None:
@@ -229,9 +246,13 @@ class Notifier:
             resp = urllib.request.urlopen(req, timeout=5)
         except urllib.error.HTTPError as err:
             resp = err
+            if self._backlog is not None:
+                self._backlog.append_stats(data)
         except Exception as err:  # pylint: disable=broad-except
             notice["error"] = err
             logger.error(notice["error"])
+            if self._backlog is not None:
+                self._backlog.append_stats(data)
             return notice
 
         try:

@@ -5,6 +5,7 @@ import urllib.request
 import urllib.error
 
 from . import metrics
+from .backlog import Backlog
 from .tdigest import as_bytes, TDigestStatGroups
 from .utils import logger, time_trunc_minute
 
@@ -44,6 +45,7 @@ class RouteBreakdowns:
     such as execution statistics of template rendering time and sql/nosql
     query.
     """
+
     def __init__(self, *, project_id=0, project_key="", **kwargs):
         self._config = kwargs["config"]
 
@@ -57,6 +59,15 @@ class RouteBreakdowns:
         self._thread = None
         self._lock = threading.Lock()
         self._stats = None
+        self._backlog = None
+        if self._config.get('backlog_enabled'):
+            self._backlog = Backlog(
+                interval=metrics.FLUSH_PERIOD,
+                header=self._ab_headers,
+                url=self._ab_url(),
+                method="POST",
+                maxlen=self._config.get('max_backlog_size'),
+            )
 
     def notify(self, metric):
         if not self._config.get("performance_stats"):
@@ -92,6 +103,10 @@ class RouteBreakdowns:
             stat.add_groups(total_ms, metric._groups)
 
     def _flush(self):
+        """
+        TODO: Below disabled pylint will remove in refactoring
+        """
+        # pylint: disable=too-many-branches
         stats = None
         with self._lock:
             stats = self._stats
@@ -106,15 +121,20 @@ class RouteBreakdowns:
 
         out_json = json.dumps(out).encode("utf8")
         req = urllib.request.Request(
-            self._ab_url(), data=out_json, headers=self._ab_headers, method="POST"
+            self._ab_url(), data=out_json, headers=self._ab_headers,
+            method="POST"
         )
 
         try:
             resp = urllib.request.urlopen(req, timeout=5)
         except urllib.error.HTTPError as err:
             resp = err
+            if self._backlog:
+                self._backlog.append_stats(out_json)
         except Exception as err:  # pylint: disable=broad-except
             logger.error(err)
+            if self._backlog:
+                self._backlog.append_stats(out_json)
             return
 
         try:
