@@ -1,11 +1,13 @@
 import base64
 import json
 import threading
+import urllib.error
+import urllib.request
 
 from . import metrics
-from .failed_stats import FailedStats
+from .backlog import Backlog
 from .tdigest import TDigestStat, as_bytes
-from .utils import time_trunc_minute
+from .utils import logger, time_trunc_minute
 
 
 class QueryStat(TDigestStat):
@@ -52,12 +54,15 @@ class QueryStats:
         self._thread = None
         self._lock = threading.Lock()
         self._stats = None
-        self._failed_stats = FailedStats(
-            header=self._ab_headers,
-            url=self._ab_url(),
-            method="POST",
-            maxlen=self._config.get('max_failed_queue'),
-        )
+        self._backlog = None
+        if self._config.get('backlog_enabled'):
+            self._backlog = Backlog(
+                interval=metrics.FLUSH_PERIOD,
+                header=self._ab_headers,
+                url=self._ab_url(),
+                method="POST",
+                maxlen=self._config.get('max_backlog_size'),
+            )
 
     def notify(
             self, *, query="", method="", route="", start_time=None,
@@ -89,6 +94,10 @@ class QueryStats:
             stat.add(ms)
 
     def _flush(self):
+        """
+        TODO: Below disabled pylint will remove in refactoring
+        """
+        # pylint: disable=too-many-branches
         stats = None
         with self._lock:
             stats = self._stats
@@ -102,11 +111,54 @@ class QueryStats:
             out["environment"] = self._env
 
         out = json.dumps(out).encode("utf8")
-        metrics.send(
-            url=self._ab_url(), payload=out,
-            headers=self._ab_headers, method="POST",
-            failed_stats=self._failed_stats
+        req = urllib.request.Request(
+            self._ab_url(), data=out, headers=self._ab_headers, method="POST"
         )
+
+        try:
+            resp = urllib.request.urlopen(req, timeout=5)
+        except urllib.error.HTTPError as err:
+            resp = err
+            if self._backlog:
+                self._backlog.append_stats(out)
+        except Exception as err:  # pylint: disable=broad-except
+            logger.error(err)
+            if self._backlog:
+                self._backlog.append_stats(out)
+            return
+
+        try:
+            body = resp.read()
+        except IOError as err:
+            logger.error(err)
+            return
+
+        if 200 <= resp.code < 300:
+            return
+
+        if not 400 <= resp.code < 500:
+            err = f"airbrake: unexpected response status_code={resp.code}"
+            logger.error(err)
+            return
+
+        if resp.code == 429:
+            return
+
+        try:
+            body = body.decode("utf-8")
+        except UnicodeDecodeError as err:
+            logger.error(err)
+            return
+
+        try:
+            in_data = json.loads(body)
+        except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
+            logger.error(err)
+            return
+
+        if "message" in in_data:
+            logger.error(in_data["message"])
+            return
 
     def _ab_url(self):
         return f"{self._config.get('apm_host')}/api/v5/projects" \

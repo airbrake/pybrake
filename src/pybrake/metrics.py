@@ -141,7 +141,7 @@ class Span:
         self.start_time = pytime.time()
 
 
-def send(url, headers, failed_stats, payload=None, method="POST"):
+def send(url, headers, backlog, payload=None, method=None):
     if payload is None:
         payload = {}
 
@@ -153,9 +153,12 @@ def send(url, headers, failed_stats, payload=None, method="POST"):
         resp = urllib.request.urlopen(req, timeout=5)
     except urllib.error.HTTPError as err:
         resp = err
-        failed_stats.append_stats(payload)
+        if backlog:
+            backlog.append_stats(payload)
     except Exception as err:  # pylint: disable=broad-except
         logger.error(err)
+        if backlog:
+            backlog.append_stats(payload)
         return
 
     try:
