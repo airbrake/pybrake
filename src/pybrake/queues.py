@@ -1,27 +1,23 @@
 import base64
 import json
 import threading
-import urllib.request
-import urllib.error
 
+from . import constant
 from . import metrics
 from .backlog import Backlog
 from .tdigest import as_bytes, TDigestStatGroups
-from .utils import logger, time_trunc_minute
-
-
-QUEUE_HANDLER = "queue.handler"
+from .utils import time_trunc_minute
 
 
 class QueueMetric(metrics.Metric):
     def __init__(self, *, queue=""):
         super().__init__()
         self.queue = queue
-        self.start_span(QUEUE_HANDLER, start_time=self.start_time)
+        self.start_span(constant.QUEUE_HANDLER, start_time=self.start_time)
 
     def end(self):
         super().end()
-        self.end_span(QUEUE_HANDLER, end_time=self.end_time)
+        self.end_span(constant.QUEUE_HANDLER, end_time=self.end_time)
 
     def _key(self):
         time = self.start_time // 60 * 60
@@ -79,7 +75,7 @@ class QueueStats:
         self._backlog = None
         if self._config.get('backlog_enabled'):
             self._backlog = Backlog(
-                interval=metrics.FLUSH_PERIOD,
+                interval=constant.FLUSH_PERIOD,
                 header=self._ab_headers,
                 url=self._ab_url(),
                 method="POST",
@@ -100,7 +96,7 @@ class QueueStats:
         with self._lock:
             if self._stats is None:
                 self._stats = {}
-                self._thread = threading.Timer(metrics.FLUSH_PERIOD,
+                self._thread = threading.Timer(constant.FLUSH_PERIOD,
                                                self._flush)
                 self._thread.start()
 
@@ -131,55 +127,11 @@ class QueueStats:
             out["environment"] = self._env
 
         out_json = json.dumps(out).encode("utf8")
-        req = urllib.request.Request(
-            self._ab_url(), data=out_json, headers=self._ab_headers,
-            method="POST"
+        metrics.send(
+            url=self._ab_url(), headers=self._ab_headers,
+            payload=out_json, method="POST",
+            backlog=self._backlog
         )
-
-        try:
-            resp = urllib.request.urlopen(req, timeout=5)
-        except urllib.error.HTTPError as err:
-            resp = err
-            if self._backlog:
-                self._backlog.append_stats(out_json)
-        except Exception as err:  # pylint: disable=broad-except
-            logger.error(err)
-            if self._backlog:
-                self._backlog.append_stats(out_json)
-            return
-
-        try:
-            body = resp.read()
-        except IOError as err:
-            logger.error(err)
-            return
-
-        if 200 <= resp.code < 300:
-            return
-
-        if not 400 <= resp.code < 500:
-            err = f"airbrake: unexpected response status_code={resp.code}"
-            logger.error(err)
-            return
-
-        if resp.code == 429:
-            return
-
-        try:
-            body = body.decode("utf-8")
-        except UnicodeDecodeError as err:
-            logger.error(err)
-            return
-
-        try:
-            in_data = json.loads(body)
-        except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
-            logger.error(err)
-            return
-
-        if "message" in in_data:
-            logger.error(in_data["message"])
-            return
 
     def _ab_url(self):
         return f"{self._config.get('apm_host')}/api/v5/projects/{self._project_id}/queues-stats"

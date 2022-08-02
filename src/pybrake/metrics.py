@@ -1,16 +1,14 @@
 import json
-import urllib.request
-import urllib.error
 import threading
-from contextlib import contextmanager
 import time as pytime
+import urllib.error
+import urllib.request
+from contextlib import contextmanager
 
 from .utils import logger
 
-
 threadLocal = threading.local()
 
-FLUSH_PERIOD = 15
 _METRIC_KEY = "_ab_metric"
 
 

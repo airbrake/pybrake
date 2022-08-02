@@ -11,12 +11,11 @@ import warnings
 from concurrent import futures
 from pathlib import Path
 
-from . import metrics
 from .backlog import Backlog
 from .blocklist_filter import make_blocklist_filter
 from .code_hunks import get_code_hunk
 from .constant import (
-    AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST, notifier_name, version
+    AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST, FLUSH_PERIOD, notifier_name, version
 )
 from .git import find_git_dir
 from .git import get_git_revision
@@ -128,7 +127,7 @@ class Notifier:
         self._backlog = None
         if self.config.get('backlog_enabled'):
             self._backlog = Backlog(
-                interval=metrics.FLUSH_PERIOD,
+                interval=FLUSH_PERIOD,
                 header=self._ab_headers,
                 url=self._ab_url,
                 method="POST",
