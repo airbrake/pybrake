@@ -9,3 +9,9 @@ AIRBRAKE_HOST = "https://api.airbrake.io"
 
 # End point of Airbrake remote configuration.
 AIRBRAKE_CONFIG_HOST = "https://notifier-configs.airbrake.io"
+
+FLUSH_PERIOD = 15
+
+HTTP_HANDLER = "http.handler"
+
+QUEUE_HANDLER = "queue.handler"
