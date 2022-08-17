@@ -1,8 +1,10 @@
 import re
 import warnings
+import time
 from urllib.error import URLError
 
 from pybrake.notifier import Notifier
+from pybrake.notice import jsonify_notice
 from pybrake.utils import time_trunc_minute
 from .test_helper import (get_exception, get_nested_exception,
                           get_exception_in_cython, build_notice_from_str)
@@ -335,3 +337,29 @@ def test_error_notifications_disabled():
 
     notice = future.result()
     assert notice["error"] == "error notifications are disabled"
+
+
+def test_notifier_with_backlog_append():
+    notifier = Notifier(test_backlog_enabled=True)
+
+    err = get_nested_exception()
+    notice = notifier.build_notice(err)
+
+    data = jsonify_notice(notice)
+    notifier._backlog.cancel()
+    notifier._backlog.append_stats(data)
+
+    assert len(notifier._backlog._backlog) == 1
+
+
+def test_notifier_with_backlog_sent():
+    notifier = Notifier(test_backlog_enabled=True)
+
+    err = get_nested_exception()
+    notice = notifier.build_notice(err)
+
+    data = jsonify_notice(notice)
+
+    notifier._backlog.append_stats(data)
+
+    assert len(notifier._backlog._backlog) == 0
