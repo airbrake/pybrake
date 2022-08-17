@@ -88,6 +88,7 @@ class Notifier:
             "queue_stats": kwargs.get("queue_stats", True),
             "max_backlog_size": kwargs.get("max_backlog_size", 100),
             "backlog_enabled": kwargs.get("backlog_enabled", False),
+            "test_backlog_enabled": kwargs.get("test_backlog_enabled", False),
             "error_host": host,
             "apm_host": host,
         }
@@ -125,13 +126,15 @@ class Notifier:
         self._context["rootDirectory"] = kwargs.get("root_directory",
                                                     os.getcwd())
         self._backlog = None
-        if self.config.get('backlog_enabled'):
+        if self.config.get('backlog_enabled') or\
+                self.config.get('test_backlog_enabled'):
             self._backlog = Backlog(
                 interval=FLUSH_PERIOD,
                 header=self._ab_headers,
                 url=self._ab_url,
                 method="POST",
                 maxlen=self.config.get('max_backlog_size'),
+                test_backlog_enabled=self.config.get('test_backlog_enabled'),
             )
 
         rev = kwargs.get("revision")
