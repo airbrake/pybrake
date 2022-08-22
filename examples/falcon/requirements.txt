@@ -1,0 +1,5 @@
+falcon==3.1.0
+jinja2==3.1.2
+falcon_sqla==0.3.0
+requests==2.28.1
+pybrake

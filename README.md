@@ -208,6 +208,7 @@ frameworks.
 * [CherryPy](https://docs.airbrake.io/docs/platforms/framework/python/cherrypy)
 * [Django](https://docs.airbrake.io/docs/platforms/framework/python/django)
 * [FastAPI](https://docs.airbrake.io/docs/platforms/framework/python/fastapi)
+* [Falcon](https://docs.airbrake.io/docs/platforms/framework/python/falcon)
 * [Flask](https://docs.airbrake.io/docs/platforms/framework/python/flask)
 * [Masonite](https://docs.airbrake.io/docs/platforms/framework/python/masonite)
 * [Pyramid](https://docs.airbrake.io/docs/platforms/framework/python/pyramid)

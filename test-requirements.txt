@@ -12,5 +12,6 @@ redis
 celery
 sqlalchemy
 sanic
+falcon
 werkzeug
 fastapi==0.70.1
