@@ -1,12 +1,9 @@
-import json
 import os
 import platform
 import re
 import socket
 import sys
 import time
-import urllib.error
-import urllib.request
 import warnings
 from concurrent import futures
 from pathlib import Path
@@ -19,12 +16,11 @@ from .constant import (
 )
 from .git import find_git_dir
 from .git import get_git_revision
-from .notice import jsonify_notice
+from . import metrics
 from .queries import QueryStats
 from .queues import QueueStats
 from .remote_settings import RemoteSettings
 from .routes import _Routes
-from .utils import logger
 
 _ERR_IP_RATE_LIMITED = "IP is rate limited"
 
@@ -87,8 +83,7 @@ class Notifier:
             "query_stats": kwargs.get("query_stats", True),
             "queue_stats": kwargs.get("queue_stats", True),
             "max_backlog_size": kwargs.get("max_backlog_size", 100),
-            "backlog_enabled": kwargs.get("backlog_enabled", False),
-            "test_backlog_enabled": kwargs.get("test_backlog_enabled", False),
+            "backlog_enabled": kwargs.get("backlog_enabled", True),
             "error_host": host,
             "apm_host": host,
         }
@@ -126,15 +121,15 @@ class Notifier:
         self._context["rootDirectory"] = kwargs.get("root_directory",
                                                     os.getcwd())
         self._backlog = None
-        if self.config.get('backlog_enabled') or\
-                self.config.get('test_backlog_enabled'):
+        if self.config.get('backlog_enabled'):
             self._backlog = Backlog(
                 interval=FLUSH_PERIOD,
                 header=self._ab_headers,
                 url=self._ab_url,
                 method="POST",
                 maxlen=self.config.get('max_backlog_size'),
-                test_backlog_enabled=self.config.get('test_backlog_enabled'),
+                error_notice=True,
+                notifier=self,
             )
 
         rev = kwargs.get("revision")
@@ -240,67 +235,9 @@ class Notifier:
             notice["error"] = _ERR_IP_RATE_LIMITED
             return notice
 
-        data = jsonify_notice(notice)
-        req = urllib.request.Request(self._ab_url, data=data,
-                                     headers=self._ab_headers)
-
-        try:
-            resp = urllib.request.urlopen(req, timeout=5)
-        except urllib.error.HTTPError as err:
-            resp = err
-            if self._backlog is not None:
-                self._backlog.append_stats(data)
-        except Exception as err:  # pylint: disable=broad-except
-            notice["error"] = err
-            logger.error(notice["error"])
-            if self._backlog is not None:
-                self._backlog.append_stats(data)
-            return notice
-
-        try:
-            body = resp.read()
-        except IOError as err:
-            notice["error"] = err
-            logger.error(notice["error"])
-            return notice
-
-        if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
-            notice["error"] = f"airbrake: unexpected response " \
-                              f"status_code={resp.code}"
-            notice["error_info"] = dict(code=resp.code, body=body)
-            logger.error(notice["error"])
-            return notice
-
-        if resp.code == 429:
-            return self._rate_limited(notice, resp)
-
-        try:
-            body = body.decode("utf-8")
-        except UnicodeDecodeError as err:
-            notice["error"] = err
-            logger.error(notice["error"])
-            return notice
-
-        try:
-            data = json.loads(body)
-        except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
-            notice["error"] = err
-            logger.error(notice["error"])
-            return notice
-
-        if "id" in data:
-            notice["id"] = data["id"]
-            return notice
-
-        if "message" in data:
-            notice["error"] = data["message"]
-            logger.error(notice["error"])
-            return notice
-
-        notice["error"] = "unexpected Airbrake response"
-        notice["error_info"] = dict(data=data)
-        logger.error(notice["error"])
-        return notice
+        return metrics.send_notice(notifier=self, notice=notice,
+                                   url=self._ab_url, headers=self._ab_headers,
+                                   backlog=self._backlog, method="POST")
 
     def _rate_limited(self, notice, resp):
         v = resp.headers.get("X-RateLimit-Delay")

@@ -5,11 +5,15 @@ import urllib.error
 import urllib.request
 from contextlib import contextmanager
 
+from .constant import MaxRetryAttempt
+from .notice import jsonify_notice
 from .utils import logger
 
 threadLocal = threading.local()
 
 _METRIC_KEY = "_ab_metric"
+
+_STATUS_CODE_CRITERIA_FOR_BACKLOG = (404, 408, 409, 410, 500, 502, 504)
 
 
 @contextmanager
@@ -139,7 +143,7 @@ class Span:
         self.start_time = pytime.time()
 
 
-def send(url, headers, backlog, payload=None, method=None):
+def send(url, headers, backlog, payload=None, method=None, retry_count=0):
     if payload is None:
         payload = {}
 
@@ -151,12 +155,8 @@ def send(url, headers, backlog, payload=None, method=None):
         resp = urllib.request.urlopen(req, timeout=5)
     except urllib.error.HTTPError as err:
         resp = err
-        if backlog:
-            backlog.append_stats(payload)
     except Exception as err:  # pylint: disable=broad-except
         logger.error(err)
-        if backlog:
-            backlog.append_stats(payload)
         return
 
     try:
@@ -167,6 +167,10 @@ def send(url, headers, backlog, payload=None, method=None):
 
     if 200 <= resp.code < 300:
         return
+
+    if resp.code in _STATUS_CODE_CRITERIA_FOR_BACKLOG and backlog and\
+            retry_count < MaxRetryAttempt:
+        backlog.append_stats(payload, retry_count)
 
     if not 400 <= resp.code < 500:
         err = f"airbrake: unexpected response status_code={resp.code}"
@@ -191,3 +195,69 @@ def send(url, headers, backlog, payload=None, method=None):
     if "message" in in_data:
         logger.error(in_data["message"])
         return
+
+
+def send_notice(notifier, notice, url, headers, backlog,
+                method=None, retry_count=0):
+    payload = jsonify_notice(notice)
+    req = urllib.request.Request(
+        url, data=payload, headers=headers, method=method)
+
+    try:
+        resp = urllib.request.urlopen(req, timeout=5)
+    except urllib.error.HTTPError as err:
+        resp = err
+    except Exception as err:  # pylint: disable=broad-except
+        notice["error"] = err
+        logger.error(notice["error"])
+
+        return notice
+
+    try:
+        body = resp.read()
+    except IOError as err:
+        notice["error"] = err
+        logger.error(notice["error"])
+        return notice
+
+    if resp.code in _STATUS_CODE_CRITERIA_FOR_BACKLOG and backlog and\
+            retry_count < MaxRetryAttempt:
+        backlog.append_stats(notice, retry_count)
+
+    if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
+        notice["error"] = f"airbrake: unexpected response " \
+                          f"status_code={resp.code}"
+        notice["error_info"] = dict(code=resp.code, body=body)
+        logger.error(notice["error"])
+        return notice
+
+    if resp.code == 429:
+        return notifier._rate_limited(notice, resp)
+
+    try:
+        body = body.decode("utf-8")
+    except UnicodeDecodeError as err:
+        notice["error"] = err
+        logger.error(notice["error"])
+        return notice
+
+    try:
+        data = json.loads(body)
+    except ValueError as err:  # json.JSONDecodeError requires Python 3.5+
+        notice["error"] = err
+        logger.error(notice["error"])
+        return notice
+
+    if "id" in data:
+        notice["id"] = data["id"]
+        return notice
+
+    if "message" in data:
+        notice["error"] = data["message"]
+        logger.error(notice["error"])
+        return notice
+
+    notice["error"] = "unexpected Airbrake response"
+    notice["error_info"] = dict(data=data)
+    logger.error(notice["error"])
+    return notice
