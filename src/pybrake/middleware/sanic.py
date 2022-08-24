@@ -17,7 +17,6 @@ from ..route_metric import RouteMetric
 
 try:
     from sqlalchemy import event
-    from sqlalchemy.ext.asyncio.engine import AsyncEngine
 except ImportError:
     _sqla_available = False
 else:
@@ -81,7 +80,7 @@ class PybrakeErrorHandler(ErrorHandler):
         return super().default(request, exception)
 
 
-def init_app(app: Sanic, sqlEngine: AsyncEngine = None) -> Sanic:
+def init_app(app, sqlEngine=None) -> Sanic:
     if "pybrake" in app.config:
         raise ValueError("pybrake is already injected")
     if "PYBRAKE" not in app.config:
@@ -141,7 +140,7 @@ def init_app(app: Sanic, sqlEngine: AsyncEngine = None) -> Sanic:
     return app
 
 
-def _sqla_instrument(notifier: Notifier, sqlEngine: AsyncEngine):
+def _sqla_instrument(notifier, sqlEngine):
     event.listen(sqlEngine.sync_engine, "before_cursor_execute",
                  _before_cursor(notifier))
     event.listen(sqlEngine.sync_engine, "after_cursor_execute",

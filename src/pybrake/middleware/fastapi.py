@@ -21,7 +21,6 @@ current_request = contextvars.ContextVar("request_global",
 
 
 try:
-    from sqlalchemy import future
     from sqlalchemy import event
 except ImportError:
     _sqla_available = False
@@ -121,7 +120,7 @@ def _after_cursor(notifier):
     return _sqla_after_cursor_execute
 
 
-def init_app(app: FastAPI, sqlEngine: future.Engine = None) -> FastAPI:
+def init_app(app, sqlEngine=None) -> FastAPI:
     """
     Initiate the pybrake notifier and apply the patch for
     error monitoring and APM.
