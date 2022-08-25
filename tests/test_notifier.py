@@ -1,8 +1,11 @@
 import re
 import warnings
+import pytest
 import time
 from urllib.error import URLError
 
+import requests
+import werkzeug
 from pybrake.notifier import Notifier
 from pybrake.notice import jsonify_notice
 from pybrake.utils import time_trunc_minute
@@ -186,7 +189,7 @@ def test_filter_ignore_async():
 
 
 def test_pybrake_error_filter():
-    notifier = Notifier()
+    notifier = Notifier(project_id=999999)
 
     try:
         time_trunc_minute(None)
@@ -204,7 +207,7 @@ def test_time_trunc_minute():
 
 
 def test_unauthorized():
-    notifier = Notifier()
+    notifier = Notifier(project_id=999999)
 
     notice = notifier.notify_sync("hello")
 
