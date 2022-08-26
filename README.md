@@ -210,6 +210,7 @@ frameworks.
 * [FastAPI](https://docs.airbrake.io/docs/platforms/framework/python/fastapi)
 * [Falcon](https://docs.airbrake.io/docs/platforms/framework/python/falcon)
 * [Flask](https://docs.airbrake.io/docs/platforms/framework/python/flask)
+* [Hug](https://docs.airbrake.io/docs/platforms/framework/python/hug)
 * [Masonite](https://docs.airbrake.io/docs/platforms/framework/python/masonite)
 * [Pyramid](https://docs.airbrake.io/docs/platforms/framework/python/pyramid)
 * [Sanic](https://docs.airbrake.io/docs/platforms/framework/python/sanic)
