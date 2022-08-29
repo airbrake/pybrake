@@ -212,6 +212,7 @@ frameworks.
 * [Flask](https://docs.airbrake.io/docs/platforms/framework/python/flask)
 * [Hug](https://docs.airbrake.io/docs/platforms/framework/python/hug)
 * [Masonite](https://docs.airbrake.io/docs/platforms/framework/python/masonite)
+* [Pycnic](https://docs.airbrake.io/docs/platforms/framework/python/pycnic)
 * [Pyramid](https://docs.airbrake.io/docs/platforms/framework/python/pyramid)
 * [Sanic](https://docs.airbrake.io/docs/platforms/framework/python/sanic)
 
