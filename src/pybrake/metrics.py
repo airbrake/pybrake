@@ -15,6 +15,9 @@ _METRIC_KEY = "_ab_metric"
 
 _STATUS_CODE_CRITERIA_FOR_BACKLOG = (404, 408, 409, 410, 500, 502, 504)
 
+APM_Backlog = None
+Error_Backlog = None
+
 
 @contextmanager
 def activated_metric(metric):
@@ -143,7 +146,7 @@ class Span:
         self.start_time = pytime.time()
 
 
-def send(url, headers, backlog, payload=None, method=None, retry_count=0):
+def send(url, headers, payload=None, method=None, retry_count=0):
     if payload is None:
         payload = {}
 
@@ -168,9 +171,9 @@ def send(url, headers, backlog, payload=None, method=None, retry_count=0):
     if 200 <= resp.code < 300:
         return
 
-    if resp.code in _STATUS_CODE_CRITERIA_FOR_BACKLOG and backlog and\
-            retry_count < MaxRetryAttempt:
-        backlog.append_stats(payload, retry_count)
+    if resp.code in _STATUS_CODE_CRITERIA_FOR_BACKLOG and APM_Backlog is not\
+            None and retry_count < MaxRetryAttempt:
+        APM_Backlog.append_stats(val=payload, url=url, retry_count=retry_count)
 
     if not 400 <= resp.code < 500:
         err = f"airbrake: unexpected response status_code={resp.code}"
@@ -197,8 +200,7 @@ def send(url, headers, backlog, payload=None, method=None, retry_count=0):
         return
 
 
-def send_notice(notifier, notice, url, headers, backlog,
-                method=None, retry_count=0):
+def send_notice(notifier, notice, url, headers, method=None, retry_count=0):
     payload = jsonify_notice(notice)
     req = urllib.request.Request(
         url, data=payload, headers=headers, method=method)
@@ -220,9 +222,9 @@ def send_notice(notifier, notice, url, headers, backlog,
         logger.error(notice["error"])
         return notice
 
-    if resp.code in _STATUS_CODE_CRITERIA_FOR_BACKLOG and backlog and\
-            retry_count < MaxRetryAttempt:
-        backlog.append_stats(notice, retry_count)
+    if resp.code in _STATUS_CODE_CRITERIA_FOR_BACKLOG and Error_Backlog is \
+            not None and retry_count < MaxRetryAttempt:
+        Error_Backlog.append_stats(val=notice, url=url, retry_count=retry_count)
 
     if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
         notice["error"] = f"airbrake: unexpected response " \
