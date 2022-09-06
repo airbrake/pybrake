@@ -74,13 +74,13 @@ class RouteStats:
         self._stats = None
         self._backlog = None
         if self._config.get('backlog_enabled'):
-            self._backlog = Backlog(
-                interval=constant.FLUSH_PERIOD,
-                header=self._ab_headers,
-                url=self._ab_url(),
-                method="POST",
-                maxlen=self._config.get('max_backlog_size'),
-            )
+            if not metrics.APM_Backlog:
+                metrics.APM_Backlog = Backlog(
+                    header=self._ab_headers,
+                    method="POST",
+                    maxlen=self._config.get('max_backlog_size'),
+                )
+            self._backlog = metrics.APM_Backlog
 
     def notify(self, metric):
         if not self._config.get("performance_stats"):
@@ -133,7 +133,6 @@ class RouteStats:
         metrics.send(
             url=self._ab_url(), headers=self._ab_headers,
             method="POST", payload=out,
-            backlog=self._backlog
         )
 
     def _ab_url(self):

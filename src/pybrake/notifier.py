@@ -12,7 +12,7 @@ from .backlog import Backlog
 from .blocklist_filter import make_blocklist_filter
 from .code_hunks import get_code_hunk
 from .constant import (
-    AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST, FLUSH_PERIOD, notifier_name, version
+    AIRBRAKE_HOST, AIRBRAKE_CONFIG_HOST, notifier_name, version
 )
 from .git import find_git_dir
 from .git import get_git_revision
@@ -122,15 +122,15 @@ class Notifier:
                                                     os.getcwd())
         self._backlog = None
         if self.config.get('backlog_enabled'):
-            self._backlog = Backlog(
-                interval=FLUSH_PERIOD,
-                header=self._ab_headers,
-                url=self._ab_url,
-                method="POST",
-                maxlen=self.config.get('max_backlog_size'),
-                error_notice=True,
-                notifier=self,
-            )
+            if metrics.Error_Backlog is None:
+                metrics.Error_Backlog = Backlog(
+                    header=self._ab_headers,
+                    method="POST",
+                    maxlen=self.config.get('max_backlog_size'),
+                    error_notice=True,
+                    notifier=self,
+                )
+            self._backlog = metrics.Error_Backlog
 
         rev = kwargs.get("revision")
         if rev is None:
@@ -235,9 +235,10 @@ class Notifier:
             notice["error"] = _ERR_IP_RATE_LIMITED
             return notice
 
-        return metrics.send_notice(notifier=self, notice=notice,
-                                   url=self._ab_url, headers=self._ab_headers,
-                                   backlog=self._backlog, method="POST")
+        return metrics.send_notice(
+            notifier=self, notice=notice, url=self._ab_url,
+            headers=self._ab_headers, method="POST"
+        )
 
     def _rate_limited(self, notice, resp):
         v = resp.headers.get("X-RateLimit-Delay")

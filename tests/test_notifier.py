@@ -349,6 +349,6 @@ def test_notifier_with_backlog():
     notice = notifier.build_notice(err)
 
     data = jsonify_notice(notice)
-    notifier._backlog.append_stats(data)
+    notifier._backlog.append_stats(data, notifier._ab_url)
 
     assert len(notifier._backlog._backlog) == 1
