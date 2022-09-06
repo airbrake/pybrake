@@ -11,8 +11,8 @@ from sqlalchemy.ext.declarative import declarative_base
 app = Bottle()
 
 app.config['PYBRAKE'] = dict(
-    project_id=415799,
-    project_key='ad3b547922fb0a691c6e7a5a5842b8b7',
+    project_id=999999,
+    project_key='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
 )
 
 Base = declarative_base()
