@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2022-09-13
+
+### Added
+
+- Added support for the Pycnic framework with a sample example
+- Added support for the Starlette framework with a sample example
+
+### Changes
+
+- Receives notices and APM events and periodically sends them
+  asynchronously in the background (1 minute). Up to 100 backlog items for
+  notice and APM Performance (Shared for Routes, Route breakdown, query,
+  queue stats). In the event that the backlog queue becomes full, the item
+  will be replaced and an error will be recorded.
+
 ## [1.7.0] - 2022-09-02
 
 ### Added
@@ -162,7 +177,8 @@ to work)
 - Pybrake SDK
 - Middleware for Flask, Django, celery, aiohttp frameworks
 
-[Unreleased]: https://github.com/airbrake/pybrake/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/airbrake/pybrake/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/airbrake/pybrake/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/airbrake/pybrake/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/airbrake/pybrake/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/airbrake/pybrake/compare/v1.4.0...v1.5.0
