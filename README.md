@@ -215,8 +215,8 @@ frameworks.
 * [Pycnic](https://docs.airbrake.io/docs/platforms/framework/python/pycnic)
 * [Pyramid](https://docs.airbrake.io/docs/platforms/framework/python/pyramid)
 * [Sanic](https://docs.airbrake.io/docs/platforms/framework/python/sanic)
-
-
+* [Starlette](https://docs.airbrake.io//docs/platforms/framework/python/starlette)
+* [Tornado](https://docs.airbrake.io//docs/platforms/framework/python/tornado)
 
 ## Development
 
