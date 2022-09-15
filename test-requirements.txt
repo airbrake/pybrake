@@ -16,3 +16,4 @@ falcon>=3.1.0
 pycnic
 werkzeug
 fastapi==0.70.1
+tornado
