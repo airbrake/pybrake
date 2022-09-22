@@ -1,0 +1,7 @@
+backlash
+kajiki
+pybrake
+requests
+TurboGears2
+sqlalchemy
+tg.devtools
