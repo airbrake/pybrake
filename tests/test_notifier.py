@@ -343,7 +343,7 @@ def test_error_notifications_disabled():
 
 
 def test_notifier_with_backlog():
-    notifier = Notifier()
+    notifier = Notifier(backlog_enabled=True)
 
     err = get_nested_exception()
     notice = notifier.build_notice(err)

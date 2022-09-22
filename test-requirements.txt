@@ -17,3 +17,4 @@ pycnic
 werkzeug
 fastapi==0.70.1
 tornado
+TurboGears2

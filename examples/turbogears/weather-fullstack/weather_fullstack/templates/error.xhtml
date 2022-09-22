@@ -1,0 +1,17 @@
+<html >
+    <head py:block="head" py:strip="True">
+        <title py:block="master_title">A ${code} error has Occurred</title>
+    </head>
+
+<body py:block="body" py:strip="True">
+  <h1>Error ${code}</h1>
+
+<?python
+import re
+mf = re.compile(r'(</?)script', re.IGNORECASE)
+def fixmessage(message):
+    return mf.sub(r'\1noscript', message)
+?>
+  <div><p>${literal(fixmessage(message))}</p></div>
+</body>
+</html>

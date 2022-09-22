@@ -217,6 +217,7 @@ frameworks.
 * [Sanic](https://docs.airbrake.io/docs/platforms/framework/python/sanic)
 * [Starlette](https://docs.airbrake.io//docs/platforms/framework/python/starlette)
 * [Tornado](https://docs.airbrake.io//docs/platforms/framework/python/tornado)
+* [Turbogears2](https://docs.airbrake.io//docs/platforms/framework/python/turbogears2)
 
 ## Development
 

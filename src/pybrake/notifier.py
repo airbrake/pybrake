@@ -83,7 +83,7 @@ class Notifier:
             "query_stats": kwargs.get("query_stats", True),
             "queue_stats": kwargs.get("queue_stats", True),
             "max_backlog_size": kwargs.get("max_backlog_size", 100),
-            "backlog_enabled": kwargs.get("backlog_enabled", True),
+            "backlog_enabled": kwargs.get("backlog_enabled", False),
             "error_host": host,
             "apm_host": host,
         }
