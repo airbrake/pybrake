@@ -17,7 +17,11 @@ def test_queue_metric_key():
     assert ("test", metric.start_time // 60 * 60) == metric._key()
 
 
-def test_queue_stats_performance_stats():
+def test_queue_stats_performance_stats(mocker):
+    mocker.patch(
+        "pybrake.queues.QueueStats._flush",
+        return_value=None
+    )
     metric = QueueMetric(queue="foo_queue")
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {"performance_stats": False}})
@@ -31,11 +35,15 @@ def test_queue_stats_queue_stat_value():
     assert stat.__dict__.get('queue') == 'foo_queue'
 
 
-def test_queue_stats_queue_stats():
+def test_queue_stats_queue_stats(mocker):
     """
     To see what happens if performance_stats is set to false, run this test.
     :return:
     """
+    mocker.patch(
+        "pybrake.queues.QueueStats._flush",
+        return_value=None
+    )
     metric = QueueMetric(queue="foo_queue")
     stats = QueueStats(**{"config": {
         "performance_stats": False,
@@ -44,11 +52,15 @@ def test_queue_stats_queue_stats():
     assert stats.notify(metric) is None
 
 
-def test_queue_stats_false():
+def test_queue_stats_false(mocker):
     """
     To see what happens if queue_stats is set to false, run this test.
     :return:
     """
+    mocker.patch(
+        "pybrake.queues.QueueStats._flush",
+        return_value=None
+    )
     metric = QueueMetric(queue="foo_queue")
     stats = QueueStats(**{"config": {
         "performance_stats": True,
@@ -58,7 +70,11 @@ def test_queue_stats_false():
     assert stats.notify(metric) is None
 
 
-def test_queue_stats_notify():
+def test_queue_stats_notify(mocker):
+    mocker.patch(
+        "pybrake.queues.QueueStats._flush",
+        return_value=None
+    )
     metric = QueueMetric(queue="foo_queue")
     metric._groups = {'redis': 24.0, 'sql': 0.4}
     stats = QueueStats(**{"config": {

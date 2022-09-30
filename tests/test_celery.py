@@ -1,6 +1,5 @@
-from celery import Celery
+from celery.app.base import Celery
 
-# from pybrake.middleware.celery import patch_celery
 from pybrake.notifier import Notifier
 
 from pybrake.middleware.celery import patch_celery

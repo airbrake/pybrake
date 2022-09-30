@@ -1,11 +1,7 @@
 import re
 import warnings
-import pytest
-import time
 from urllib.error import URLError
 
-import requests
-import werkzeug
 from pybrake.notifier import Notifier
 from pybrake.notice import jsonify_notice
 from pybrake.utils import time_trunc_minute
@@ -32,13 +28,13 @@ def test_build_notice_from_exception():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_helper.py"
     assert frame["function"] == "get_exception"
-    assert frame["line"] == 6
+    assert frame["line"] == 7
     assert frame["code"] == {
-        4: "def get_exception():",
-        5: "    try:",
-        6: '        raise ValueError("hello")',
-        7: "    except ValueError as err:",
-        8: "        return err",
+        5: "def get_exception():",
+        6: "    try:",
+        7: '        raise ValueError("hello")',
+        8: "    except ValueError as err:",
+        9: "        return err",
     }
 
     context = notice["context"]
@@ -90,7 +86,7 @@ def test_build_notice_from_nested_exception():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_helper.py"
     assert frame["function"] == "get_nested_exception"
-    assert frame["line"] == 51
+    assert frame["line"] == 52
 
     error = errors[1]
     assert error["type"] == "ValueError"
@@ -102,7 +98,7 @@ def test_build_notice_from_nested_exception():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_helper.py"
     assert frame["function"] == "get_exception"
-    assert frame["line"] == 6
+    assert frame["line"] == 7
 
 
 def test_build_notice_from_str():
@@ -122,13 +118,13 @@ def test_build_notice_from_str():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_helper.py"
     assert frame["function"] == "build_notice_from_str"
-    assert frame["line"] == 12
+    assert frame["line"] == 13
     assert frame["code"] == {
-        10: "",
-        11: "def build_notice_from_str(notifier, s):",
-        12: "    return notifier.build_notice(s)",
-        13: "",
+        11: "",
+        12: "def build_notice_from_str(notifier, s):",
+        13: "    return notifier.build_notice(s)",
         14: "",
+        15: "",
     }
 
 
@@ -342,7 +338,11 @@ def test_error_notifications_disabled():
     assert notice["error"] == "error notifications are disabled"
 
 
-def test_notifier_with_backlog():
+def test_notifier_with_backlog(mocker):
+    mocker.patch(
+        "pybrake.backlog.Backlog.send",
+        return_value=None
+    )
     notifier = Notifier(backlog_enabled=True)
 
     err = get_nested_exception()

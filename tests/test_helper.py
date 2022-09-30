@@ -1,4 +1,5 @@
 import logging
+import urllib
 
 
 def get_exception():
@@ -62,3 +63,27 @@ def get_exception_in_cython():
         return t.insert('1', '1')
     except TypeError as err:
         return err
+
+
+class MockResponse(object):
+
+    def __init__(self, resp_data, code=200, msg='OK'):
+        self.resp_data = resp_data
+        self.code = code
+        self.msg = msg
+        self.headers = {'content-type': 'text/plain; charset=utf-8'}
+
+    def read(self):
+        if self.resp_data == "IOError":
+            raise IOError("IOError: for test")
+        if self.resp_data == "HTTPError":
+            raise urllib.error.HTTPError(*[None] * 5)
+        return self.resp_data
+
+    def getcode(self):
+        return self.code
+
+
+class TestBacklog(object):
+    def append_stats(self, val, url, retry_count=0):
+        pass
