@@ -22,13 +22,13 @@ def test_logging_handler_record_error():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_helper.py"
     assert frame["function"] == "build_logging_record_error"
-    assert frame["line"] == 17
+    assert frame["line"] == 18
     assert frame["code"] == {
-        15: "def build_logging_record_error(*args, **kwargs):",
-        16: "    logger, dh = logger_dummy_handler()",
-        17: "    logger.error(*args, **kwargs)",
-        18: "    return dh.record",
-        19: "",
+        16: "def build_logging_record_error(*args, **kwargs):",
+        17: "    logger, dh = logger_dummy_handler()",
+        18: "    logger.error(*args, **kwargs)",
+        19: "    return dh.record",
+        20: "",
     }
 
     ctx = notice["context"]
@@ -60,11 +60,11 @@ def test_logging_handler_record_exception():
     frame = backtrace[0]
     assert frame["file"] == "/PROJECT_ROOT/tests/test_helper.py"
     assert frame["function"] == "build_logging_record_exception"
-    assert frame["line"] == 24
+    assert frame["line"] == 25
     assert frame["code"] == {
-        22: "    logger, dh = logger_dummy_handler()",
-        23: "    try:",
-        24: '        raise ValueError("hello")',
-        25: "    except ValueError as err:",
-        26: "        logger.exception(err)",
+        23: "    logger, dh = logger_dummy_handler()",
+        24: "    try:",
+        25: '        raise ValueError("hello")',
+        26: "    except ValueError as err:",
+        27: "        logger.exception(err)",
     }

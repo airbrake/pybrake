@@ -1,6 +1,7 @@
+celery
 pytest>=4.3.0
 pytest-benchmark>=3.2.2
-pytest-mock-server
+pytest-mock
 pylint
 django
 flask
@@ -9,7 +10,6 @@ cherrypy
 masonite
 aiohttp
 redis
-celery
 sqlalchemy
 sanic
 falcon>=3.1.0

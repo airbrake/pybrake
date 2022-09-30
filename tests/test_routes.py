@@ -59,18 +59,21 @@ def test_routes_performance_stats():
     assert routes.notify(metric) is None
 
 
-@pytest.mark.server(url='/api/v5/projects/0/routes-stats',
-                    response="", method='POST')
-def test_routes_notify():
+def test_routes_notify(mocker):
+    mocker.patch(
+        "pybrake.routes.RouteStats._flush", return_value=None
+    )
+    mocker.patch(
+        "pybrake.routes.RouteBreakdowns._flush", return_value=None
+    )
     routes = _Routes(**CONFIG)
 
     metric = RouteMetric(method="GET", route="/test")
     metric.status_code = 200
     metric.content_type = "application/json"
-    metric.FLUSH_PERIOD = 5
+    metric.FLUSH_PERIOD = 0
     metric.end_time = time.time()
-    assert routes.notify(metric) is None
-    time.sleep(5)
+    assert routes.notify(metric) == None
 
 
 def test_routes_flash_empty_stats():
@@ -84,45 +87,33 @@ def test_routes_flash_empty_stats():
         routes.stats._flush()
 
 
-@pytest.mark.server(url='/api/v5/projects/1/routes-stats',
-                    response="", method='POST')
-def test_routes_flash_ok():
-    CONFIG.update({'project_id': 1})
-    routes = _test_setup(CONFIG)
-    assert routes.stats._flush() is None
+def test_routes_flash_with_500():
+    routes = _Routes(**CONFIG)
+
+    metric = RouteMetric(method="GET", route="/test")
+    metric.status_code = 500
+    metric.content_type = "application/json"
+    metric.end_time = time.time()
+    with pytest.raises(ValueError, match=r"stats is empty"):
+        routes.stats._flush()
 
 
-@pytest.mark.server(url='/api/v5/projects/2/routes-stats',
-                    response={}, method='POST', status_code=502)
-def test_routes_flash_json_load_error():
-    CONFIG.update({'project_id': 2})
-    routes = _test_setup(CONFIG)
-    assert routes.stats._flush() is None
+def test_routes_flash_with_400():
+    routes = _Routes(**CONFIG)
+
+    metric = RouteMetric(method="GET", route="/test")
+    metric.status_code = 400
+    metric.content_type = "application/json"
+    metric.end_time = time.time()
+    with pytest.raises(ValueError, match=r"stats is empty"):
+        routes.stats._flush()
 
 
-@pytest.mark.server(url='/api/v5/projects/3/routes-stats',
-                    response={},
-                    method='POST', status_code=429)
-def test_routes_flash_json_too_many_redirects():
-    CONFIG.update({'project_id': 3})
-    routes = _test_setup(CONFIG)
-    assert routes.stats._flush() is None
-
-
-@pytest.mark.server(url='/api/v5/projects/4/routes-stats',
-                    response={"message": "in_data _flash Test"},
-                    method='POST', status_code=400)
-def test_routes_flash_decode():
-    CONFIG.update({'project_id': 4})
-    routes = _test_setup(CONFIG)
-    assert routes.stats._flush() is None
-
-
-@pytest.mark.server(url='/api/v5/projects/5/routes-stats',
-                    response={},
-                    method='POST', status_code=306)
-def test_routes_flash_unused():
-    CONFIG.update({'project_id': 5})
+def test_routes_flash_ok(mocker):
+    mocker.patch(
+        "pybrake.metrics.send",
+        return_value=None
+    )
     routes = _test_setup(CONFIG)
     assert routes.stats._flush() is None
 

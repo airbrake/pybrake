@@ -34,3 +34,10 @@ def test_truncation(param, wanted_size):
 
     b = jsonify_notice(notice)
     assert len(b) == wanted_size
+
+
+def test_truncation_string():
+    notice = ""
+
+    b = jsonify_notice(notice)
+    assert len(b) == 2
