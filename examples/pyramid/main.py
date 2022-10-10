@@ -75,7 +75,7 @@ if __name__ == '__main__':
         'reload_all': True,
         'debug_all': True,
         'PYBRAKE': PYBRAKE_CONFIG,
-        'sqlalchemy.url': 'sqlite:////tmp/test.db',
+        'sqlalchemy.url': 'sqlite:///:memory:',
         'basemodel.should_create_all': True,
         'fixtures': True,
     }
