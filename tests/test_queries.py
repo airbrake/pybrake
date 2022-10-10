@@ -36,6 +36,9 @@ def test_query_metric_start_end():
     stats = QueryStat(time=1648551580.0367732)
     assert stats.__dict__ == {
         'count': 0,
+        'file': '',
+        'function': '',
+        'line': 0,
         'sum': 0,
         'sumsq': 0,
         'tdigest': 'AAAAAkAkAAAAAAAAAAAAAA==',
