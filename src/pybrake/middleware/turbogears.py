@@ -1,4 +1,5 @@
 import time
+import traceback
 from urllib.parse import quote as urllib_quote
 
 from tg import hooks
@@ -50,16 +51,16 @@ class AirbrakeMiddleware:
     def __init__(self, notifier):
         self.notifier = notifier
 
-    def report(self, traceback):
-        environ = traceback.context.get('environ', {})
-        is_backlash_event = getattr(traceback.exc_value, 'backlash_event',
+    def report(self, traceback_ex):
+        environ = traceback_ex.context.get('environ', {})
+        is_backlash_event = getattr(traceback_ex.exc_value, 'backlash_event',
                                     False)
         if is_backlash_event:
             # Just a Stack Dump request from backlash
-            _handle_exception(self.notifier, traceback.exception, environ)
+            _handle_exception(self.notifier, traceback_ex.exception, environ)
         else:
             # This is a real crash
-            _handle_exception(self.notifier, traceback.exception, environ)
+            _handle_exception(self.notifier, traceback_ex.exception, environ)
 
 
 def init_app(config):
@@ -139,12 +140,19 @@ def _after_cursor(notifier):
         end_span("sql")
         metric = get_active_metrics()
         if metric is not None:
+            try:
+                traceback_frm = traceback.extract_stack(limit=12)[0]
+            except IndexError as er:  # pylint: disable=unused-variable
+                traceback_frm = None
             notifier.queries.notify(
                 query=statement,
                 method=getattr(metric, "method", ""),
                 route=getattr(metric, "route", ""),
                 start_time=metric.start_time,
                 end_time=time.time(),
+                function=traceback_frm.name if traceback_frm else '',
+                file=traceback_frm.filename if traceback_frm else '',
+                line=traceback_frm.lineno if traceback_frm else 0,
             )
 
     return _sqla_after_cursor_execute

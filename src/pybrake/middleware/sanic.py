@@ -1,4 +1,5 @@
 import time
+import traceback
 from typing import (
     Dict,
     Optional,
@@ -159,6 +160,10 @@ def _before_cursor(notifier):
 
 
 def _after_cursor(notifier):
+    # pylint: disable=fixme
+    #  TODO: In the query stats notice add filename, function, and line
+    #   number. As of present, it is not possible to obtain a complete
+    #   execution traceback.
     def _sqla_after_cursor_execute(
             conn, cursor, statement, parameters, context, executemany
     ):
