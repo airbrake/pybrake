@@ -178,6 +178,9 @@ notifier.queries.notify(
     query="SELECT * FROM foos",
     method=request.method,
     route=route,
+    function="test",
+    file="test",
+    line=10,
     start_time=time.time(),
     end_time=time.time(),
 )
