@@ -1,5 +1,4 @@
 import time
-import traceback
 from typing import (
     Dict,
     Optional,
