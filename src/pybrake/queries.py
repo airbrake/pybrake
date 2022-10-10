@@ -11,10 +11,11 @@ from .utils import time_trunc_minute
 
 class QueryStat(TDigestStat):
 
-    def __new__(cls, *, query="", method="", route="", time):
+    def __new__(cls, *, query="", method="", route="", function="",
+                 file="", line=0, time):
         instance = super(QueryStat, cls).__new__(cls)
         instance.__slots__ = instance.__slots__ + (
-            "query", "method", "route", "time"
+            "query", "method", "route", "time", "function", "file", "line"
         )
         return instance
 
@@ -25,11 +26,15 @@ class QueryStat(TDigestStat):
 
         return {s: getattr(self, s) for s in self.__slots__ if s != "td"}
 
-    def __init__(self, *, query="", method="", route="", time=None):
+    def __init__(self, *, query="", method="", route="", function="",
+                 file="", line=0, time=None):
         super().__init__()
         self.query = query
         self.method = method
         self.route = route
+        self.function = function
+        self.file = file
+        self.line = line
         self.time = time_trunc_minute(time)
 
 
@@ -65,7 +70,7 @@ class QueryStats:
 
     def notify(
             self, *, query="", method="", route="", start_time=None,
-            end_time=None
+            function="",  file="", line=0, end_time=None
     ):
         if not self._config.get("performance_stats"):
             return
@@ -73,7 +78,9 @@ class QueryStats:
             return
 
         key = query_stat_key(
-            query=query, method=method, route=route, time=start_time)
+            query=query, method=method, route=route, time=start_time,
+            function=function, file=file, line=line
+        )
         ms = (end_time - start_time) * 1000
 
         with self._lock:
@@ -87,7 +94,8 @@ class QueryStats:
                 stat = self._stats[key]
             else:
                 stat = QueryStat(
-                    query=query, method=method, route=route, time=start_time
+                    query=query, method=method, route=route, time=start_time,
+                    function=function, file=file, line=line
                 )
                 self._stats[key] = stat
             stat.add(ms)
@@ -120,6 +128,7 @@ class QueryStats:
                f"/{self._project_id}/queries-stats"
 
 
-def query_stat_key(*, query="", method="", route="", time=None):
+def query_stat_key(*, query="", method="", route="", function="", file="",
+                   line=0, time=None):
     time = time // 60 * 60
-    return query, method, route, time
+    return query, method, route, function, file, line, time
