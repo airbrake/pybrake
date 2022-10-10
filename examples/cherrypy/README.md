@@ -37,20 +37,20 @@ The example application provides three GET endpoints:
    Use the below curl commands to interact with the endpoints.
 
     ```bash
-    curl "http://localhost:3000/date"
-    curl "http://localhost:3000/locations"
-    curl "http://localhost:3000/weather/<austin/pune/santabarbara>"
+    curl "http://localhost:8080/date"
+    curl "http://localhost:8080/locations"
+    curl "http://localhost:8080/weather/<austin/pune/santabarbara>"
     ```
 
    The below curl command will raise `404 Not Found` error.
 
     ```bash
-    curl -I "http://localhost:3000/weather"
+    curl -I "http://localhost:8080/weather"
     ```
 
    The below curl command will raise `500 Internal server error` error.
 
     ```bash
     # Should produce an intentional HTTP 500 error and report the error to Airbrake (since `washington` is in the supported cities list but there is no data for `washington`, an `if` condition is bypassed and the `data` variable is used but not initialized)
-    curl -I "http://localhost:3000/weather/washington"
+    curl -I "http://localhost:8080/weather/washington"
     ```
