@@ -1,4 +1,5 @@
 import time
+import traceback
 
 from flask import (
     request,
@@ -175,12 +176,19 @@ def _after_cursor(config):
         end_span("sql")
         metric = get_active()
         if metric is not None:
+            try:
+                traceback_frm = traceback.extract_stack(limit=10)[0]
+            except IndexError as er:  # pylint: disable=unused-variable
+                traceback_frm = None
             current_app.extensions["pybrake"].queries.notify(
                 query=statement,
                 method=getattr(metric, "method", ""),
                 route=getattr(metric, "route", ""),
                 start_time=metric.start_time,
                 end_time=time.time(),
+                function=traceback_frm.name if traceback_frm else '',
+                file=traceback_frm.filename if traceback_frm else '',
+                line=traceback_frm.lineno if traceback_frm else 0,
             )
 
     return _sqla_after_cursor_execute

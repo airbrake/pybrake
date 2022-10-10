@@ -1,5 +1,6 @@
 import time
 import functools
+import traceback
 import threading
 
 from django.conf import settings
@@ -187,12 +188,19 @@ class CursorWrapper:
             end_span("sql", end_time=end_time)
             if hasattr(sql, "as_string"):
                 sql = sql.as_string(self._cursor.cursor)
+            try:
+                traceback_frm = traceback.extract_stack(limit=8)[0]
+            except IndexError as er:  # pylint: disable=unused-variable
+                traceback_frm = None
             self._notifier.queries.notify(
                 query=sql,
                 method=getattr(metric, "method", ""),
                 route=getattr(metric, "route", ""),
                 start_time=start_time,
                 end_time=end_time,
+                function=traceback_frm.name if traceback_frm else '',
+                file=traceback_frm.filename if traceback_frm else '',
+                line=traceback_frm.lineno if traceback_frm else 0,
             )
 
     def __getattr__(self, attr):
@@ -204,7 +212,7 @@ class CursorWrapper:
     def __enter__(self):
         return self
 
-    def __exit__(self, typ, value, traceback):
+    def __exit__(self, typ, value, traceback_ex):
         self._cursor.close()
 
 
