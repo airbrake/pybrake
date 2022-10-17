@@ -12,6 +12,7 @@ aiohttp
 redis
 sqlalchemy
 sanic
+morepath
 falcon>=3.1.0
 pycnic
 werkzeug
