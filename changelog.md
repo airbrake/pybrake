@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2022-10-20
+
+### Added
+
+- Added support for the Morepath framework with a sample example
+
+### Changes
+
+- Query statistics improved to pass function, file, and line number
+
+
 ## [1.9.0] - 2022-09-27
 
 ### Added
@@ -185,7 +196,8 @@ to work)
 - Pybrake SDK
 - Middleware for Flask, Django, celery, aiohttp frameworks
 
-[Unreleased]: https://github.com/airbrake/pybrake/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/airbrake/pybrake/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/airbrake/pybrake/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/airbrake/pybrake/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/airbrake/pybrake/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/airbrake/pybrake/compare/v1.6.0...v1.7.0
