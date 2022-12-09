@@ -1,5 +1,5 @@
 asgiref==3.4.1
-certifi==2021.10.8
+certifi==2022.12.7
 charset-normalizer==2.0.9
 coreapi==2.3.3
 coreschema==0.0.4
