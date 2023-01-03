@@ -1,3 +1,4 @@
+import json
 import os
 import platform
 import re
@@ -253,8 +254,8 @@ class Notifier:
             return notice
 
         self._rate_limit_reset = time.time() + delay
-
-        notice["error"] = _ERR_IP_RATE_LIMITED
+        data = json.loads(resp.read().decode("utf-8"))
+        notice["error"] = data['message']
         return notice
 
     def notify(self, err):
