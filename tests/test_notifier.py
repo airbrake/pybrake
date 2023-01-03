@@ -5,8 +5,9 @@ from urllib.error import URLError
 from pybrake.notifier import Notifier
 from pybrake.notice import jsonify_notice
 from pybrake.utils import time_trunc_minute
-from .test_helper import (get_exception, get_nested_exception,
-                          get_exception_in_cython, build_notice_from_str)
+from .test_helper import (
+    get_exception, get_nested_exception, get_exception_in_cython,
+    build_notice_from_str, MockResponse)
 
 
 def test_build_notice_from_exception():
@@ -309,7 +310,13 @@ def _test_full_queue():
     assert notice["error"] == "queue is full"
 
 
-def _test_rate_limited():
+def test_rate_limited(mocker):
+    resp = MockResponse(resp_data='{"message": "test"}'.encode("utf-8"),
+                        code=429, headers={'X-RateLimit-Delay': 100})
+    mocker.patch(
+        "urllib.request.urlopen",
+        return_value=resp
+    )
     notifier = Notifier()
 
     for _ in range(101):

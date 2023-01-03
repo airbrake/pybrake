@@ -67,11 +67,14 @@ def get_exception_in_cython():
 
 class MockResponse(object):
 
-    def __init__(self, resp_data, code=200, msg='OK'):
+    def __init__(self, resp_data, code=200, headers=None, msg='OK'):
+        if headers is None:
+            headers = {}
         self.resp_data = resp_data
         self.code = code
         self.msg = msg
         self.headers = {'content-type': 'text/plain; charset=utf-8'}
+        self.headers.update(headers)
 
     def read(self):
         if self.resp_data == "IOError":
