@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2023-01-10
+
+### Changes
+
+- Started handling HTTP response 429 from the Airbrake Notice API more 
+  granularly. Previously, we would return IP is rate limited whenever the 
+  Airbrake Notice API returned a 429. However, this response code may also indicate an error cap hit ([#254])
+
 ## [1.10.0] - 2022-10-20
 
 ### Added
@@ -196,7 +204,8 @@ to work)
 - Pybrake SDK
 - Middleware for Flask, Django, celery, aiohttp frameworks
 
-[Unreleased]: https://github.com/airbrake/pybrake/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/airbrake/pybrake/compare/v1.10.1...HEAD
+[1.10.1]: https://github.com/airbrake/pybrake/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/airbrake/pybrake/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/airbrake/pybrake/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/airbrake/pybrake/compare/v1.7.0...v1.8.0
@@ -214,3 +223,4 @@ to work)
 [1.0.2]: https://github.com/airbrake/pybrake/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/airbrake/pybrake/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/airbrake/pybrake/compare/v0.4.6...v1.0.0
+[#254]: https://github.com/airbrake/pybrake/pull/254

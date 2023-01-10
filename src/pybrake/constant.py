@@ -2,7 +2,7 @@
 notifier_name = "pybrake"
 
 # Pybrake Notifier Version
-version = "1.10.0"
+version = "1.10.1"
 
 # End point of Airbrake API host. That will always be as default value.
 AIRBRAKE_HOST = "https://api.airbrake.io"
