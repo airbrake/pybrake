@@ -48,5 +48,5 @@ tomli==2.0.1
 typing_extensions==4.2.0
 urllib3==1.26.9
 watchdog==2.1.8
-Werkzeug==2.1.2
+Werkzeug==2.2.3
 whitenoise==5.2.0
