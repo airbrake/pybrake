@@ -24,7 +24,7 @@ sanic==21.12.2
 sanic-routing==0.7.2
 simplejson==3.17.6
 SQLAlchemy==1.4.36
-sqlparse==0.4.2
+sqlparse==0.4.4
 typing_extensions==4.2.0
 ujson==5.4.0
 uritemplate==4.1.1
