@@ -1,3 +1,4 @@
+import importlib
 import json
 import os
 import platform
@@ -391,8 +392,10 @@ class Notifier:
         for name, mod in sys.modules.copy().items():
             if name.startswith("_"):
                 continue
-            if hasattr(mod, "__version__"):
-                versions[name] = mod.__version__
+            try:
+                versions[name] = importlib.metadata.version(name)
+            except importlib.metadata.PackageNotFoundError:
+                versions[name] = None
 
         return ctx
 
