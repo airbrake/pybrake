@@ -1,9 +1,9 @@
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 def time_trunc_minute(time):
-    t = datetime.utcfromtimestamp(time).replace(second=0, microsecond=0)
+    t = datetime.fromtimestamp(time, UTC).replace(second=0, microsecond=0)
     return t.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

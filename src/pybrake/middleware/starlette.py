@@ -5,7 +5,7 @@ import traceback
 import types
 
 from starlette.applications import Starlette
-from starlette.exceptions import ExceptionMiddleware
+from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.responses import Response
 from starlette.routing import Match
 from starlette.types import Receive, Scope, Send
