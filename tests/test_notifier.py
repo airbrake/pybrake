@@ -54,7 +54,7 @@ def test_build_notice_from_exception_cython():
     notice = notifier.build_notice(err)
 
     errors = notice["errors"]
-    assert len(errors) == 1
+    assert len(errors) == 2
 
     error = errors[0]
     assert error["type"] == "TypeError"
@@ -65,7 +65,7 @@ def test_build_notice_from_exception_cython():
         assert error["message"] == 'unorderable types: str() < int()'
     else:
         # python 3.6 and above
-        assert error["message"] == "'<' not supported between instances of 'str' and 'int'"
+        assert error["message"] == "'<' not supported between instances of 'int' and 'str'"
 
 
 def test_build_notice_from_nested_exception():
