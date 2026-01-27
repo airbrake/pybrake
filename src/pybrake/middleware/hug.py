@@ -43,13 +43,13 @@ def request_filter(request, notice):
                 curr_user[s] = getattr(hug.directives.user, s)
         ctx["user"] = curr_user
 
-    notice["params"]["request"] = dict(
-        json=request.params,
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        environ=request.env,
-        url_rule=request.uri_template,
-    )
+    notice["params"]["request"] = {
+        "json": request.params,
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "environ": request.env,
+        "url_rule": request.uri_template,
+    }
 
     return notice
 
@@ -82,7 +82,7 @@ def after_request_middleware(notifier, req, resp):
 
 
 def _before_sql_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -93,7 +93,7 @@ def _before_sql_cursor(notifier):
 
 
 def _after_sql_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):

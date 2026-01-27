@@ -56,23 +56,23 @@ def request_filter(notice):
 
     if _pyramid_login_available:
         curr_user = current_user(request)
-        user = dict(id=curr_user.id)
+        user = {"id": curr_user.id}
         for s in ["username", "firstname", "lastname"]:
             if hasattr(curr_user, s):
                 user[s] = getattr(curr_user, s)
         ctx["user"] = user
 
-    notice["params"]["Request"] = dict(
-        get=dict(request.GET),
-        post=dict(request.POST),
-        params=dict(request.params),
-        body=dict(request.body),
-        files=dict(request.body_file),
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        environ=request.environ,
-        view_args=request.urlargs,
-    )
+    notice["params"]["Request"] = {
+        "get": dict(request.GET),
+        "post": dict(request.POST),
+        "params": dict(request.params),
+        "body": dict(request.body),
+        "files": dict(request.body_file),
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "environ": request.environ,
+        "view_args": request.urlargs,
+    }
 
     return notice
 
@@ -88,7 +88,7 @@ def _sqla_instrument(notifier):
 
 
 def _before_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -99,7 +99,7 @@ def _before_cursor(notifier):
 
 
 def _after_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):

@@ -37,8 +37,16 @@ def renderer(function):
     return wrapper
 
 
-def patch__init__(self, model, render=None, template=None, load=None,
-                  permission=None, internal=False, **predicates):
+def patch__init__(  # pylint: disable=R0917
+    self,
+    model,
+    render=None,
+    template=None,
+    load=None,
+    permission=None,
+    internal=False,
+    **predicates
+):
     render = render or renderer(render_html)
     super(HtmlAction, self).__init__(
         model, render, template, load, permission, internal, **predicates
@@ -107,14 +115,14 @@ def request_filter(request, notice):
     except AttributeError:
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        body=dict(request.body),
-        params=dict(request.params) if request.params else {},
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        url=request.path,
-        env=request.environ,
-    )
+    notice["params"]["request"] = {
+        "body": dict(request.body),
+        "params": dict(request.params) if request.params else {},
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "url": request.path,
+        "env": request.environ,
+    }
 
     return notice
 
@@ -175,7 +183,7 @@ def _sqla_instrument(notifier, sqlEngine):
 
 
 def _before_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not notifier.config.get("performance_stats"):
@@ -186,7 +194,7 @@ def _before_cursor(notifier):
 
 
 def _after_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not notifier.config.get("performance_stats"):

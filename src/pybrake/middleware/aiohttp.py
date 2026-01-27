@@ -40,7 +40,7 @@ else:
 
 
 def _before_sql_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context,
             executemany
     ):
@@ -52,7 +52,7 @@ def _before_sql_cursor(notifier):
 
 
 def _after_sql_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context,
             executemany
     ):
@@ -150,12 +150,12 @@ def handle_exception(ex, notifier, request):
 
 
 def additional_context(request):
-    return dict(
-        userAgent=get_user_agent(request),
-        userAddr=attr_from_request(request, "remote"),
-        httpMethod=attr_from_request(request, "method"),
-        url=attr_from_request(request, "url"),
-    )
+    return {
+        "userAgent": get_user_agent(request),
+        "userAddr": attr_from_request(request, "remote"),
+        "httpMethod": attr_from_request(request, "method"),
+        "url": attr_from_request(request, "url"),
+    }
 
 
 def get_user_agent(request):
@@ -165,7 +165,7 @@ def get_user_agent(request):
 
 def get_headers(request):
     headers = attr_from_request(request, "headers")
-    return dict(headers=headers) if headers else {}
+    return {"headers": headers} if headers else {}
 
 
 def attr_from_request(request, attr_name):

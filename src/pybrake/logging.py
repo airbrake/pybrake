@@ -56,17 +56,17 @@ class LoggingHandler(logging.Handler):
         if record.exc_info:
             return self._build_error_from_exc_info(record.exc_info)
 
-        error = dict(
-            type=record.name,
-            message=record.getMessage(),
-            backtrace=self._build_backtrace(record),
-        )
+        error = {
+            "type": record.name,
+            "message": record.getMessage(),
+            "backtrace": self._build_backtrace(record),
+        }
         return error
 
     def _build_error_from_exc_info(self, exc_info):
         cls, err, tb = exc_info
         backtrace = self._notifier._build_backtrace_tb(tb)
-        error = dict(type=cls.__name__, message=str(err), backtrace=backtrace)
+        error = {"type": cls.__name__, "message": str(err), "backtrace": backtrace}
         return error
 
     def _build_backtrace(self, record):

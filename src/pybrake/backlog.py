@@ -6,8 +6,18 @@ from . import metrics
 
 
 class Backlog(Timer):
-    def __init__(self, method, header, interval=60, maxlen=100,
-                 error_notice=False, notifier=None, args=None, kwargs=None):
+    def __init__(
+        self,
+        method,
+        header,
+        *,
+        interval=60,
+        maxlen=100,
+        error_notice=False,
+        notifier=None,
+        args=None,
+        kwargs=None,
+    ):
         super().__init__(interval, self.send, args, kwargs)
         self._backlog = deque(maxlen=maxlen)
         self._method = method

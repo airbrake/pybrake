@@ -27,16 +27,16 @@ _ERR_IP_RATE_LIMITED = "IP is rate limited"
 
 _AB_URL_FORMAT = "{}/api/v3/projects/{}/notices"
 
-_CONTEXT = dict(
-    notifier=dict(
-        name=notifier_name, version=version,
-        url="https://github.com/airbrake/pybrake"
-    ),
-    os=platform.platform(),
-    language=f"Python/{platform.python_version()}",
-    hostname=socket.gethostname(),
-    versions=dict(python=platform.python_version()),
-)
+_CONTEXT = {
+    "notifier": {
+        "name": notifier_name, "version": version,
+        "url": "https://github.com/airbrake/pybrake"
+    },
+    "os": platform.platform(),
+    "language": f"Python/{platform.python_version()}",
+    "hostname": socket.gethostname(),
+    "versions": {"python": platform.python_version()},
+}
 
 
 class Notifier:
@@ -198,11 +198,11 @@ class Notifier:
 
     def build_notice(self, err):
         """Builds Airbrake notice from the exception."""
-        notice = dict(
-            errors=self._build_errors(err),
-            context=self._build_context(),
-            params=dict(sys_executable=sys.executable, sys_path=sys.path),
-        )
+        notice = {
+            "errors": self._build_errors(err),
+            "context": self._build_context(),
+            "params": {"sys_executable": sys.executable, "sys_path": sys.path},
+        }
         return notice
 
     def _filter_notice(self, notice):
@@ -317,8 +317,8 @@ class Notifier:
 
     def _build_error(self, err):
         backtrace = self._build_backtrace_tb(err.__traceback__)
-        error = dict(type=err.__class__.__name__, message=str(err),
-                     backtrace=backtrace)
+        error = {"type": err.__class__.__name__, "message": str(err),
+                 "backtrace": backtrace}
         return error
 
     def _build_backtrace_tb(self, tb):
@@ -360,11 +360,11 @@ class Notifier:
             filename, func, line, loader=loader, module_name=module_name
         )
 
-    def _frame_with_code(
+    def _frame_with_code(  # pylint: disable=R0917
             self, filename, func, line, loader=None, module_name=None
     ):  # pylint: disable=too-many-arguments
-        frame = dict(file=self._clean_filename(filename), function=func,
-                     line=line)
+        frame = {"file": self._clean_filename(filename), "function": func,
+                 "line": line}
 
         lines = get_code_hunk(filename, line, loader=loader,
                               module_name=module_name)

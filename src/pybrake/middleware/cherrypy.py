@@ -49,17 +49,17 @@ def request_filter(notice):
     if request.login:
         ctx["user"] = request.login
 
-    notice["params"]["request"] = dict(
-        body=request.body.__dict__,
-        cookie=dict(request.cookie),
-        headers=dict(request.headers),
-        request_line=request.request_line,
-        url_args=request.args,
-        script_name=request.script_name,
-        kwargs=request.kwargs,
-        query_string=dict(request.query_string),
-        environ=dict(request.wsgi_environ),
-    )
+    notice["params"]["request"] = {
+        "body": request.body.__dict__,
+        "cookie": dict(request.cookie),
+        "headers": dict(request.headers),
+        "request_line": request.request_line,
+        "url_args": request.args,
+        "script_name": request.script_name,
+        "kwargs": request.kwargs,
+        "query_string": dict(request.query_string),
+        "environ": dict(request.wsgi_environ),
+    }
     return notice
 
 
@@ -144,7 +144,7 @@ cherrypy.tools.pybrake_query_stats = PybrakeQueryStats()
 
 
 def _before_sql_cursor(config):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context,
             executemany
     ):
@@ -156,7 +156,7 @@ def _before_sql_cursor(config):
 
 
 def _after_sql_cursor(config):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context,
             executemany
     ):

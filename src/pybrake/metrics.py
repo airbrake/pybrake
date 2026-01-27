@@ -200,7 +200,7 @@ def send(url, headers, payload=None, method=None, retry_count=0):
         return
 
 
-def send_notice(notifier, notice, url, headers, method=None, retry_count=0):
+def send_notice(notifier, notice, url, headers, method=None, retry_count=0):   # pylint: disable=R0917
     payload = jsonify_notice(notice)
     req = urllib.request.Request(
         url, data=payload, headers=headers, method=method)
@@ -229,7 +229,10 @@ def send_notice(notifier, notice, url, headers, method=None, retry_count=0):
     if not (200 <= resp.code < 300 or 400 <= resp.code < 500):
         notice["error"] = f"airbrake: unexpected response " \
                           f"status_code={resp.code}"
-        notice["error_info"] = dict(code=resp.code, body=body)
+        notice["error_info"] = {
+            "code": resp.code,
+            "body": body,
+        }
         logger.error(notice["error"])
         return notice
 
@@ -260,6 +263,8 @@ def send_notice(notifier, notice, url, headers, method=None, retry_count=0):
         return notice
 
     notice["error"] = "unexpected Airbrake response"
-    notice["error_info"] = dict(data=data)
+    notice["error_info"] = {
+        "data": data,
+    }
     logger.error(notice["error"])
     return notice

@@ -61,7 +61,7 @@ def after_request(handler):
 
 
 def _before_sql_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -72,7 +72,7 @@ def _before_sql_cursor(notifier):
 
 
 def _after_sql_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -110,13 +110,13 @@ def request_filter(request, notice):
     except IndexError:
         ctx["userAddr"] = request.remote_addr
 
-    notice["params"]["request"] = dict(
-        json=request.json_args,
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        environ=request.environ,
-        url_rule=request.path,
-    )
+    notice["params"]["request"] = {
+        "json": request.json_args,
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "environ": request.environ,
+        "url_rule": request.path,
+    }
 
     return notice
 

@@ -1,3 +1,5 @@
+# pylint: disable=import-error,no-name-in-module
+
 import functools
 import traceback
 import time
@@ -42,12 +44,12 @@ def request_filter(request, notice):
     except AttributeError:
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        path_with_query=request.get_path_with_query,
-        input=dict(request.all()),
-        headers=request.header_bag.to_dict(),
-        url=request.get_path(),
-    )
+    notice["params"]["request"] = {
+        "path_with_query": request.get_path_with_query,
+        "input": dict(request.all()),
+        "headers": request.header_bag.to_dict(),
+        "url": request.get_path(),
+    }
 
     return notice
 
@@ -87,7 +89,7 @@ class PybrakeNotifier:
             def patch_statement(selfC, query, bindings=()):
                 if self.notifier.config.get('performance_stats'):
                     start_span("sql")
-                res = old_statement(selfC, query, bindings)
+                res = old_statement(selfC, query, bindings)  # pylint: disable=assignment-from-no-return
                 if self.notifier.config.get('performance_stats'):
                     end_span("sql")
                     metric = get_active_metric()

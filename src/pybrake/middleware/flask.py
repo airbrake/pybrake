@@ -47,23 +47,23 @@ def request_filter(notice):
         ctx["userAddr"] = user_addr
 
     if _flask_login_available and current_user.is_authenticated:
-        user = dict(id=current_user.get_id())
+        user = {"id": current_user.get_id()}
         for s in ["username", "name"]:
             if hasattr(current_user, s):
                 user[s] = getattr(current_user, s)
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        form=dict(request.form),
-        json=request.is_json and dict(request.json) or {},
-        files=dict(request.files),
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        environ=request.environ,
-        blueprint=request.blueprint,
-        url_rule=request.url_rule,
-        view_args=request.view_args,
-    )
+    notice["params"]["request"] = {
+        "form": dict(request.form),
+        "json": request.is_json and dict(request.json) or {},
+        "files": dict(request.files),
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "environ": request.environ,
+        "blueprint": request.blueprint,
+        "url_rule": request.url_rule,
+        "view_args": request.view_args,
+    }
 
     return notice
 
@@ -157,7 +157,7 @@ def _sqla_instrument(config, app):
 
 
 def _before_cursor(config):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
         conn, cursor, statement, parameters, context, executemany
     ):
         if not config.get("performance_stats"):
@@ -168,7 +168,7 @@ def _before_cursor(config):
 
 
 def _after_cursor(config):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
         conn, cursor, statement, parameters, context, executemany
     ):
         if not config.get("performance_stats"):
