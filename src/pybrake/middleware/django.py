@@ -36,16 +36,16 @@ def request_filter(notice):
         return notice
 
     req_filter = get_exception_reporter_filter(request)
-    notice["params"]["request"] = dict(
-        scheme=request.scheme,
-        method=request.method,
-        GET=dict(request.GET),
-        POST=dict(req_filter.get_post_parameters(request)),
-        META=dict(request.META),
-        FILES=dict(request.FILES),
-        COOKIES=dict(request.COOKIES),
-        session=dict(request.session),
-    )
+    notice["params"]["request"] = {
+        "scheme": request.scheme,
+        "method": request.method,
+        "GET": dict(request.GET),
+        "POST": dict(req_filter.get_post_parameters(request)),
+        "META": dict(request.META),
+        "FILES": dict(request.FILES),
+        "COOKIES": dict(request.COOKIES),
+        "session": dict(request.session),
+    }
 
     return notice
 
@@ -121,7 +121,7 @@ class AirbrakeMiddleware:
 
         if request.user.is_authenticated:
             user = request.user
-            user_info = dict(username=user.get_username(), name=user.get_full_name())
+            user_info = {"username": user.get_username(), "name": user.get_full_name()}
             if hasattr(user, "get_email_field_name"):
                 user_info["email"] = getattr(user, user.get_email_field_name())
             elif hasattr(user, "email"):

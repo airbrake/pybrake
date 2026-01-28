@@ -59,24 +59,24 @@ def request_filter(notice):
         for plugin in bottle_request.app.plugins:
             if isinstance(plugin, LoginPlugin):
                 current_user = plugin.get_user()
-                user = dict(id=current_user.get_id())
+                user = {"id": current_user.get_id()}
                 for s in ["username", "name"]:
                     if hasattr(current_user, s):
                         user[s] = getattr(current_user, s)
                 ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        form=dict(bottle_request.forms),
-        json=bottle_request.json and dict(bottle_request.json) or {},
-        files=dict(bottle_request.files),
-        cookies=dict(bottle_request.cookies),
-        headers=dict(bottle_request.headers),
-        url_rule=bottle_request.url,
-        url_args=dict(bottle_request.url_args),
-        script_name=bottle_request.script_name,
-        query=bottle_request.query,
-        query_string=dict(bottle_request.query_string),
-    )
+    notice["params"]["request"] = {
+        "form": dict(bottle_request.forms),
+        "json": bottle_request.json and dict(bottle_request.json) or {},
+        "files": dict(bottle_request.files),
+        "cookies": dict(bottle_request.cookies),
+        "headers": dict(bottle_request.headers),
+        "url_rule": bottle_request.url,
+        "url_args": dict(bottle_request.url_args),
+        "script_name": bottle_request.script_name,
+        "query": bottle_request.query,
+        "query_string": dict(bottle_request.query_string),
+    }
     return notice
 
 
@@ -153,7 +153,7 @@ def _sqla_instrument(app):
 
 
 def _before_cursor():
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
         conn, cursor, statement, parameters, context, executemany
     ):
         notifier = get_notifier()
@@ -165,7 +165,7 @@ def _before_cursor():
 
 
 def _after_cursor():
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
         conn, cursor, statement, parameters, context, executemany
     ):
         notifier = get_notifier()

@@ -37,21 +37,21 @@ def request_filter(notice, handler):
         ctx["userAddr"] = request.remote_ip
 
     if handler.current_user:
-        user = dict(id=getattr(handler.current_user, 'id'))
+        user = {"id": getattr(handler.current_user, 'id')}
         for s in ["username", "name"]:
             if hasattr(handler.current_user, s):
                 user[s] = getattr(handler.current_user, s)
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        body_arguments=dict(request.body_arguments),
-        body=dict(request.body),
-        files=dict(request.files),
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        query_arguments=request.query_arguments,
-        path_kwargs=handler.path_kwargs,
-    )
+    notice["params"]["request"] = {
+        "body_arguments": dict(request.body_arguments),
+        "body": dict(request.body),
+        "files": dict(request.files),
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "query_arguments": request.query_arguments,
+        "path_kwargs": handler.path_kwargs,
+    }
 
     return notice
 
@@ -164,7 +164,7 @@ def _sqla_instrument(config, app):
 
 
 def _before_cursor(config):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not config.get("performance_stats"):
@@ -175,7 +175,7 @@ def _before_cursor(config):
 
 
 def _after_cursor(config, app):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not config.get("performance_stats"):

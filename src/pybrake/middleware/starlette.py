@@ -61,14 +61,14 @@ def request_filter(notice):
     except AssertionError:
         session = {}
 
-    notice["params"]["request"] = dict(
-        session=session,
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        path=request_values.get('path'),
-        path_params=dict(request.path_params),
-        query_params=dict(request.query_params),
-    )
+    notice["params"]["request"] = {
+        "session": session,
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "path": request_values.get('path'),
+        "path_params": dict(request.path_params),
+        "query_params": dict(request.query_params),
+    }
 
     return notice
 
@@ -102,7 +102,7 @@ def _after_request(response, notifier):
 
 
 def _before_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -113,7 +113,7 @@ def _before_cursor(notifier):
 
 
 def _after_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):

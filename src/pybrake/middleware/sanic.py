@@ -45,20 +45,20 @@ def request_filter(request, notice):
     except AttributeError:
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        query_args=request.query_args,
-        query_string=request.query_string,
-        form=dict(request.form),
-        forwarded=dict(request.forwarded),
-        json=dict(request.json) if request.json else {},
-        files=dict(request.files),
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        endpoint=request.name,
-        url=request.path,
-        args=request.args,
-        match_info=request.match_info,
-    )
+    notice["params"]["request"] = {
+        "query_args": request.query_args,
+        "query_string": request.query_string,
+        "form": dict(request.form),
+        "forwarded": dict(request.forwarded),
+        "json": dict(request.json) if request.json else {},
+        "files": dict(request.files),
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "endpoint": request.name,
+        "url": request.path,
+        "args": request.args,
+        "match_info": request.match_info,
+    }
 
     return notice
 
@@ -148,7 +148,7 @@ def _sqla_instrument(notifier, sqlEngine):
 
 
 def _before_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not notifier.config.get("performance_stats"):
@@ -163,7 +163,7 @@ def _after_cursor(notifier):
     #  TODO: In the query stats notice add filename, function, and line
     #   number. As of present, it is not possible to obtain a complete
     #   execution traceback.
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not notifier.config.get("performance_stats"):

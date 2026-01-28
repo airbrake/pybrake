@@ -94,7 +94,7 @@ class PybrakeMiddleware:
 
 
 def _before_sql_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -105,7 +105,7 @@ def _before_sql_cursor(notifier):
 
 
 def _after_sql_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if notifier and not notifier.config.get("performance_stats"):
@@ -163,13 +163,13 @@ def request_filter(request, notice):
                 user[s] = getattr(curr_user, s)
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        json=request.params,
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        environ=request.env,
-        url_rule=request.uri_template,
-    )
+    notice["params"]["request"] = {
+        "json": request.params,
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "environ": request.env,
+        "url_rule": request.uri_template,
+    }
 
     return notice
 

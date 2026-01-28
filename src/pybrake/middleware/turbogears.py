@@ -121,7 +121,7 @@ def _sqla_instrument(engine, notifier):
 
 
 def _before_cursor(notifier):
-    def _sqla_before_cursor_execute(
+    def _sqla_before_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not notifier.config.get("performance_stats"):
@@ -132,7 +132,7 @@ def _before_cursor(notifier):
 
 
 def _after_cursor(notifier):
-    def _sqla_after_cursor_execute(
+    def _sqla_after_cursor_execute(  # pylint: disable=R0917
             conn, cursor, statement, parameters, context, executemany
     ):
         if not notifier.config.get("performance_stats"):
@@ -232,15 +232,15 @@ def request_filter(notice, environ):
                 user[s] = getattr(getattr(request, 'identity'), s)
         ctx["user"] = user
 
-    notice["params"]["request"] = dict(
-        body=dict(request.body),
-        data=environ.get(' wsgi.input'),
-        params=dict(request.params),
-        cookies=dict(request.cookies),
-        headers=dict(request.headers),
-        environ=environ,
-        query_string=environ.get('QUERY_STRING'),
-    )
+    notice["params"]["request"] = {
+        "body": dict(request.body),
+        "data": environ.get(' wsgi.input'),
+        "params": dict(request.params),
+        "cookies": dict(request.cookies),
+        "headers": dict(request.headers),
+        "environ": environ,
+        "query_string": environ.get('QUERY_STRING'),
+    }
 
     return notice
 
